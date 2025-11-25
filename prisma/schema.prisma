@@ -1,9 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,16 +8,365 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Core User Model
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
+  id           String  @id @default(uuid())
+  email        String  @unique
+  phone        String?
+  firstName    String?
+  lastName     String?
+  passwordHash String?
+  avatar       String?
+
+  // Role & Permissions
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  // Invitation System
+  invitedById  String?
+  invitedBy    User?   @relation("InvitedUsers", fields: [invitedById], references: [id])
+  invitedUsers User[]  @relation("InvitedUsers")
+
+  invitationLinkId       String?          @unique
+  invitationLink         InvitationLink?  @relation("InvitationUser", fields: [invitationLinkId], references: [id])
+  invitationLinksCreated InvitationLink[] @relation("InvitationCreatedBy")
+
+  // Status & Timestamps
+  isActive   Boolean   @default(false)
+  isVerified Boolean   @default(false)
+  lastLogin  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // KYC Information
+  kycStatus            KYCStatus     @default(PENDING)
+  kycDocuments         KycDocument[] @relation("KycDocumentUser")
+  kycDocumentsVerified KycDocument[] @relation("KycVerifiedBy")
+  kycVerifiedAt        DateTime?
+  kycVerifiedById      String?
+  kycVerifiedBy        User?         @relation("KYCVerifiedUsers", fields: [kycVerifiedById], references: [id])
+  kycVerifiedUsers     User[]        @relation("KYCVerifiedUsers")
+
+  // Market Assignment (for Market Masters and related roles)
+  marketAssignments         MarketAssignment[] @relation("MarketAssignmentUser")
+  marketAssignmentsAssigned MarketAssignment[] @relation("MarketAssignmentAssignedBy")
+
+  // Session Management
+  userSessions UserSession[]
+  auditLogs    AuditLog[]
+
+  // Vendor/Supplier specific (if applicable)
+  vendorProfile   VendorProfile?
+  supplierProfile SupplierProfile?
+  userTOTP        UserTOTP?
+
+  @@index([email])
+  @@index([roleId])
+  @@index([createdAt])
+  @@map("users")
 }
 
-enum Role {
-  USER
-  ADMIN
+// Role-Based Access Control
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique // SuperAdmin, MarketMaster, GateCounter, etc.
+  level       Int // 1-8 as per hierarchy
+  description String?
+
+  // Permissions
+  rolePermissions RolePermission[]
+
+  // Users with this role
+  users           User[]
+  invitationLinks InvitationLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([level])
+  @@map("roles")
+}
+
+// Permission System
+model Permission {
+  id          String  @id @default(uuid())
+  moduleName  String // UserManagement, MarketAdmin, Revenue, etc.
+  operation   String // CREATE, READ, UPDATE, DELETE, MANAGE
+  description String?
+  code        String  @unique // e.g., "UM_CREATE_USER", "RM_VIEW_REPORTS"
+
+  rolePermissions RolePermission[]
+
+  createdAt DateTime @default(now())
+
+  @@index([moduleName, operation])
+  @@map("permissions")
+}
+
+// Junction table for Role-Permissions
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  status       Boolean    @default(true) // Active/Inactive
+  assignedAt   DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// Invitation Link Management
+model InvitationLink {
+  id          String @id @default(uuid())
+  email       String
+  token       String @unique
+  permissions Json? // JSON array of permission IDs ["PID_OP1", "PID_OP7"]
+  roleId      String
+  role        Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  // Link Constraints
+  expiresAt DateTime
+  maxUses   Int        @default(1)
+  usedCount Int        @default(0)
+  status    LinkStatus @default(ACTIVE)
+
+  // Creator & Tracking
+  createdById     String
+  createdBy       User    @relation("InvitationCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  regeneratedFrom String? // Original link ID if regenerated
+
+  // Market Assignment for specific roles
+  marketId String?
+  market   Market? @relation(fields: [marketId], references: [id])
+
+  // Additional security options
+  requiresMFA Boolean @default(false)
+  enableKYC   Boolean @default(false)
+  customTTL   Int? // Custom time-to-live in minutes
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User? @relation("InvitationUser")
+
+  @@index([token])
+  @@index([email])
+  @@index([expiresAt])
+  @@index([status])
+  @@map("invitation_links")
+}
+
+// KYC Document Management
+model KycDocument {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation("KycDocumentUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  documentType   String // NATIONAL_ID, PASSPORT, BUSINESS_LICENSE, etc.
+  documentNumber String?
+  frontImage     String // File path or URL
+  backImage      String? // File path or URL
+  selfieImage    String? // Real-time face capture
+
+  // Verification
+  status          KYCStatus @default(PENDING)
+  verifiedAt      DateTime?
+  verifiedById    String?
+  verifiedBy      User?     @relation("KycVerifiedBy", fields: [verifiedById], references: [id])
+  rejectionReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, documentType])
+  @@map("kyc_documents")
+}
+
+// Market Assignment for Users
+model MarketAssignment {
+  id       String @id @default(uuid())
+  userId   String
+  user     User   @relation("MarketAssignmentUser", fields: [userId], references: [id], onDelete: Cascade)
+  marketId String
+  market   Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  // Assignment details
+  assignedAt   DateTime @default(now())
+  assignedById String
+  assignedBy   User     @relation("MarketAssignmentAssignedBy", fields: [assignedById], references: [id])
+
+  // Role-specific market permissions
+  canManageMarket   Boolean @default(false)
+  canManageVendors  Boolean @default(false)
+  canCollectRevenue Boolean @default(false)
+
+  @@unique([userId, marketId])
+  @@map("market_assignments")
+}
+
+// Market Model (Simplified for User Module)
+model Market {
+  id     String     @id @default(uuid())
+  name   String
+  code   String     @unique
+  type   MarketType
+  cityId String
+  city   City       @relation(fields: [cityId], references: [id])
+
+  // Relations
+  marketAssignments MarketAssignment[]
+  invitationLinks   InvitationLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("markets")
+}
+
+// Geographical Hierarchy
+model City {
+  id         String   @id @default(uuid())
+  name       String
+  code       String   @unique
+  districtId String
+  district   District @relation(fields: [districtId], references: [id])
+
+  markets Market[]
+
+  createdAt DateTime @default(now())
+
+  @@map("cities")
+}
+
+model District {
+  id   String @id @default(uuid())
+  name String
+  code String @unique
+
+  cities City[]
+
+  createdAt DateTime @default(now())
+
+  @@map("districts")
+}
+
+// User Session Management
+model UserSession {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sessionToken String  @unique
+  refreshToken String?
+  deviceInfo   Json? // Device type, browser, IP, etc.
+
+  expiresAt    DateTime
+  lastActiveAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+// TOTP for MFA
+model UserTOTP {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  secret      String
+  backupCodes String[] // Array of backup codes
+  isEnabled   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_totp")
+}
+
+// Audit Logging
+model AuditLog {
+  id     String  @id @default(uuid())
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  action    String // CREATE_USER, SEND_INVITATION, etc.
+  resource  String? // User ID, Market ID, etc.
+  details   Json? // Additional context
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Vendor Profile (for Vendor users)
+model VendorProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  businessName String?
+  businessType String?
+  taxNumber    String?
+
+  // Shop/Stall assignment
+  shopId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vendor_profiles")
+}
+
+// Supplier Profile (for Supplier users)
+model SupplierProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyName       String?
+  companyType       String?
+  taxNumber         String?
+  warehouseLocation String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("supplier_profiles")
+}
+
+// Enums
+enum KYCStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum LinkStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
+}
+
+enum MarketType {
+  GOVERNMENT
+  PRIVATE
+  PPP
+  GENERAL_MERCHANDISE
+  FRESH_PRODUCE
+  CLOTHING_TEXTILE
+  ELECTRONICS
+  SPECIALTY
 }
