@@ -1,7 +1,9 @@
 # MarketMasterApi
+
 Backend APIs for MarketMasterERP
 
-## Project Structure:
+## Project Structure
+
 ```bash
 MarketMasterApi/
 │── prisma/
@@ -19,31 +21,41 @@ MarketMasterApi/
 │── package.json
 │── README.md
 ```
-## How to run:
-1. Install dependencies
+
+## How to run
+
+1 Install dependencies
+
 ```bash
 npm install
 ```
 
-2. Generate Prisma Client
+2 Generate Prisma Client
+
 ```bash
 npx prisma generate
 ```
-3. Apply initial database migrations
+
+3 Apply initial database migrations
+
 ```bash
 npx prisma migrate dev --name init_user
 ```
-4. Start the development server
+
+4 Start the development server
+
 ```bash
 npm run dev
 ```
 
 or
+
 ```bash
 npm start
 ```
 
 Server should run at:
+
 ```bash
 http://localhost:5000
 ```
