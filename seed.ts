@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding started...');
 
-  //  Clean  existing data (respect FK order)
+  //  Clean  existing data (according to FK order)
   await prisma.vendorProfile.deleteMany();
   await prisma.supplierProfile.deleteMany();
   await prisma.rolePermission.deleteMany();
