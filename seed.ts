@@ -3,7 +3,7 @@ import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-//Email: superadmin@marketmaster.com, Password: superadmin123
+//Email: superadmin@marketmaster.com, Password: superadmin123 
 
 async function main() {
   console.log('Seeding started...');
