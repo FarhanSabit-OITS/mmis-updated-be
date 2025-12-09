@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const { sendVerificationEmail } = require('../services/email.service');
 const {
   validateEmail,
   validatePassword,
@@ -132,18 +133,25 @@ exports.register = async (req, res) => {
 
     // Build verification link
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    
     const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+    
+    // send verification email
+    // Build verification link and send email
+    const apiBase = process.env.PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:5000';
+    const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
-    // For now, log to console;TODO later integrate with nodemailer/SES
-    console.log(`
+    try {
+      await sendVerificationEmail(
+        normalizedEmail,
+        verifyUrl,
+        { firstName: normalizedFirstName, lastName: normalizedLastName } // optional, if your service supports it
+      );
+    } catch (mailErr) {
+      console.error('Verification email failed to send:', mailErr);
+      
+    }
 
-EMAIL VERIFICATION (DEV MODE)                 
-----------------------------
- To: ${normalizedEmail}
- Verification Link:
- ${verificationLink}
-
-    `);
 
     // Respond with success
     return res.status(201).json({
@@ -214,7 +222,9 @@ exports.verifyEmail = async (req, res) => {
     if (invitation.expiresAt <= new Date()) {
       return res.status(400).json({
         success: false,
-        message: 'This verification link has expired. Please register again to receive a new link.',
+        message: 'This verification link has expired. Please request a new verification link.',
+        code: 'TOKEN_EXPIRED',
+        resendUrl: '/api/auth/resend-verification',
       });
     }
 
@@ -284,6 +294,146 @@ exports.verifyEmail = async (req, res) => {
     });
   } catch (err) {
     console.error('Verify email error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+/**
+ * POST /api/auth/resend-verification
+ * Body: { "email": "user@example.com" }
+ * - Only for users with status=PENDING and emailVerified=false
+ * - Rate limited: 1/min, 5/day
+ */
+exports.resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Basic input validation
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid email is required',
+      });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+
+    // Look up user (avoid enumeration but still enforce correct states)
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    // Respond generically if user not found
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message:
+          'If this email is registered and pending verification, a new verification email has been sent.',
+      });
+    }
+
+    // Must be pending + unverified to resend
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified.',
+      });
+    }
+    if (user.status !== 'PENDING') {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Account is not in a pending state. Please contact support if you believe this is an error.',
+      });
+    }
+
+    // Simple rate limits: 1/min & 5/day
+    const now = new Date();
+    const oneMinuteAgo = new Date(now.getTime() - 60 * 1000);
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const [minuteCount, dayCount] = await Promise.all([
+      prisma.invitation.count({
+        where: {
+          email: normalizedEmail,
+          invitationType: 'USER_REGISTRATION',
+          createdAt: { gte: oneMinuteAgo },
+        },
+      }),
+      prisma.invitation.count({
+        where: {
+          email: normalizedEmail,
+          invitationType: 'USER_REGISTRATION',
+          createdAt: { gte: oneDayAgo },
+        },
+      }),
+    ]);
+
+    if (minuteCount > 0) {
+      return res.status(429).json({
+        success: false,
+        message: 'Please wait at least 1 minute before requesting again.',
+      });
+    }
+    if (dayCount >= 5) {
+      return res.status(429).json({
+        success: false,
+        message:
+          'Daily resend limit reached. Please try again tomorrow or contact support.',
+      });
+    }
+
+    // Invalidate any prior PENDING invites (optional but recommended)
+    await prisma.invitation.updateMany({
+      where: {
+        email: normalizedEmail,
+        invitationType: 'USER_REGISTRATION',
+        status: 'PENDING',
+      },
+      data: { status: 'CANCELLED' }, // ensure your enum includes CANCELLED
+    });
+
+    // Create a fresh token + invitation
+    const token = crypto.randomBytes(32).toString('hex');
+    await prisma.invitation.create({
+      data: {
+        email: normalizedEmail,
+        token,
+        invitationType: 'USER_REGISTRATION',
+        status: 'PENDING',
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+        metadata: { purpose: 'VERIFY_EMAIL', reason: 'RESEND' },
+      },
+    });
+
+    // Send email
+    const apiBase =
+      process.env.PUBLIC_API_URL ||
+      process.env.APP_URL ||
+      'http://localhost:5000';
+    const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(
+      token
+    )}`;
+
+    try {
+      await sendVerificationEmail(normalizedEmail, verifyUrl, {
+        firstName: user.profile?.firstName || user.firstName || 'there',
+        lastName: user.profile?.lastName || user.lastName || '',
+      });
+    } catch (mailErr) {
+      console.error('Resend verification email failed:', mailErr);
+      // Still respond generically to avoid enumeration
+    }
+
+    return res.status(200).json({
+      success: true,
+      message:
+        'If this email is registered and pending verification, a new verification email has been sent.',
+    });
+  } catch (err) {
+    console.error('Resend verification error:', err);
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',

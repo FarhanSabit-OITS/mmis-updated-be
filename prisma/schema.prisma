@@ -82,6 +82,7 @@ enum InvitationStatus {
   EXPIRED
   REVOKED
   USED
+  CANCELLED
 }
 
 enum InvitationType {
