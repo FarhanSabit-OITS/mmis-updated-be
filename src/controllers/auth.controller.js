@@ -1,8 +1,15 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { sendVerificationEmail } = require('../services/email.service');
+const {
+  validateEmail,
+  validatePassword,
+  normalizeEmail,
+  normalizeName,
+} = require('../utils/validation');
 const {
   validateEmail,
   validatePassword,
@@ -26,6 +33,7 @@ const prisma = new PrismaClient();
  */
 exports.register = async (req, res) => {
   try {
+    const { firstName, lastName, email, password } = req.body;
     const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -170,6 +178,10 @@ exports.register = async (req, res) => {
     });
   } catch (err) {
     console.error('Register error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
