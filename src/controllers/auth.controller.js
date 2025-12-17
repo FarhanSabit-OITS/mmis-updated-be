@@ -1,6 +1,5 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-// const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { sendVerificationEmail } = require('../services/email.service');
@@ -10,12 +9,7 @@ const {
   normalizeEmail,
   normalizeName,
 } = require('../utils/validation');
-// const {
-//   validateEmail,
-//   validatePassword,
-//   normalizeEmail,
-//   normalizeName,
-// } = require('../utils/validation');
+
 
 const prisma = new PrismaClient();
 
@@ -65,8 +59,6 @@ exports.register = async (req, res) => {
     // Normalize inputs
     const normalizedEmail = normalizeEmail(email);
     const normalizedName = normalizeName(name);
-    // const normalizedFirstName = normalizeName(firstName);
-    // const normalizedLastName = normalizeName(lastName);
 
     //  Check email uniqueness
     const existingUser = await prisma.user.findUnique({
