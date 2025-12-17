@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const crypto = require('crypto');
+// const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const { sendVerificationEmail } = require('../services/email.service');
@@ -10,12 +10,12 @@ const {
   normalizeEmail,
   normalizeName,
 } = require('../utils/validation');
-const {
-  validateEmail,
-  validatePassword,
-  normalizeEmail,
-  normalizeName,
-} = require('../utils/validation');
+// const {
+//   validateEmail,
+//   validatePassword,
+//   normalizeEmail,
+//   normalizeName,
+// } = require('../utils/validation');
 
 const prisma = new PrismaClient();
 
@@ -31,16 +31,176 @@ const prisma = new PrismaClient();
  *   "password": "SecurePassword123"
  * }
  */
+// exports.register = async (req, res) => {
+//   try {
+//     const { firstName, lastName, email, password } = req.body;
+//     // const { firstName, lastName, email, password } = req.body;
+
+//     // Validate all fields are present
+//     if (!firstName || !lastName || !email || !password) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Missing required fields: firstName, lastName, email, password',
+//       });
+//     }
+
+//     // Validate email format
+//     if (!validateEmail(email)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Invalid email format',
+//       });
+//     }
+
+//     // Validate password length (8-64 characters)
+//     if (!validatePassword(password)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Password must be between 8 and 64 characters',
+//       });
+//     }
+
+//     // Normalize inputs
+//     const normalizedEmail = normalizeEmail(email);
+//     const normalizedFirstName = normalizeName(firstName);
+//     const normalizedLastName = normalizeName(lastName);
+
+//     //  Check email uniqueness
+//     const existingUser = await prisma.user.findUnique({
+//       where: { email: normalizedEmail },
+//     });
+//     if (existingUser) {
+//       return res.status(409).json({
+//         success: false,
+//         message: 'An account with this email already exists.',
+//       });
+//     }
+
+//     // Find Guest role
+//     const guestRole = await prisma.role.findUnique({
+//       where: { name: 'Guest' },
+//     });
+//     if (!guestRole) {
+//       console.error('Guest role not found in database');
+//       return res.status(500).json({
+//         success: false,
+//         message: 'Service temporarily unavailable. Please try again later.',
+//       });
+//     }
+
+//     // Hash password with bcrypt (10 rounds) and Generate verification token (32 bytes = 64 hex characters)
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     const verificationToken = crypto.randomBytes(32).toString('hex');
+
+//     // Create User and Invitation in a transaction
+//     const result = await prisma.$transaction(
+//       async (tx) => {
+//         // Create user with PENDING status and emailVerified = false
+//         const user = await tx.user.create({
+//           data: {
+//             email: normalizedEmail,
+//             passwordHash,
+//             status: 'PENDING',
+//             emailVerified: false,
+//             // Relate to Guest role
+//             userRoles: {
+//               create: {
+//                 roleId: guestRole.id,
+//               },
+//             },
+//           },
+//           include: {
+//             userRoles: {
+//               include: {
+//                 role: true,
+//               },
+//             },
+//           },
+//         });
+
+//         // Create verification invitation
+//         const invitation = await tx.invitation.create({
+//           data: {
+//             email: normalizedEmail,
+//             token: verificationToken,
+//             invitationType: 'USER_REGISTRATION',
+//             status: 'PENDING',
+//             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+//             metadata: {
+//               purpose: 'VERIFY_EMAIL',
+//             },
+//           },
+//         });
+
+//         return { user, invitation };
+//       },
+//       {
+//         timeout: 10000, // 10 secs
+//       }
+//     );
+
+//     // Build verification link
+//     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    
+//     const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+    
+//     // send verification email
+//     // Build verification link and send email
+//     const apiBase = process.env.PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:5000';
+//     const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
+
+//     try {
+//       await sendVerificationEmail(
+//         normalizedEmail,
+//         verifyUrl,
+//         { firstName: normalizedFirstName, lastName: normalizedLastName } // optional, if your service supports it
+//       );
+//     } catch (mailErr) {
+//       console.error('Verification email failed to send:', mailErr);
+      
+//     }
+
+
+//     // Respond with success
+//     return res.status(201).json({
+//       success: true,
+//       message: 'Registration successful. Please check your email to verify your account.',
+//       data: {
+//         user: {
+//           id: result.user.id,
+//           email: result.user.email,
+//           status: result.user.status,
+//           emailVerified: result.user.emailVerified,
+//           role: result.user.userRoles[0]?.role?.name || 'Guest',
+//         },
+//         verificationTokenExpiresIn: '24 hours',
+//       },
+//     });
+//   } catch (err) {
+//     console.error('Register error:', err);
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Internal server error. Please try again later.',
+//     });
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Internal server error. Please try again later.',
+//     });
+//   }
+// };
+
+
+//new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
-    const { firstName, lastName, email, password } = req.body;
+    const { name ,email, password } = req.body;
+    // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
-    if (!firstName || !lastName || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: firstName, lastName, email, password',
+        message: 'Missing required fields: name, email, password',
       });
     }
 
@@ -62,8 +222,9 @@ exports.register = async (req, res) => {
 
     // Normalize inputs
     const normalizedEmail = normalizeEmail(email);
-    const normalizedFirstName = normalizeName(firstName);
-    const normalizedLastName = normalizeName(lastName);
+    const normalizedName = normalizeName(name);
+    // const normalizedFirstName = normalizeName(firstName);
+    // const normalizedLastName = normalizeName(lastName);
 
     //  Check email uniqueness
     const existingUser = await prisma.user.findUnique({
@@ -153,7 +314,7 @@ exports.register = async (req, res) => {
       await sendVerificationEmail(
         normalizedEmail,
         verifyUrl,
-        { firstName: normalizedFirstName, lastName: normalizedLastName } // optional, if your service supports it
+        { name: normalizedName } // optional, if your service supports it
       );
     } catch (mailErr) {
       console.error('Verification email failed to send:', mailErr);
@@ -188,7 +349,6 @@ exports.register = async (req, res) => {
     });
   }
 };
-
 /**
  * GET /api/auth/verify-email?token=...
  * Verify user email and activate account
@@ -536,8 +696,8 @@ exports.login = async (req, res) => {
     const roleName = userRole?.role?.name || 'Guest';
     const roleLevel = userRole?.role?.level || null;
 
-    // Generate JWT token
-    const token = jwt.sign(
+    // Generate Access Token (short-lived)
+    const accessToken = jwt.sign(
       {
         userId: user.id,
         email: user.email,
@@ -545,8 +705,37 @@ exports.login = async (req, res) => {
         roleLevel,
       },
       process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
     );
+
+    // Generate Refresh Token (long-lived)
+    const refreshToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        type: 'refresh',
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
+    );
+
+    // Calculate refresh token expiration time
+    const refreshTokenExpiryDays = process.env.REFRESH_TOKEN_EXPIRY?.includes('d')
+      ? parseInt(process.env.REFRESH_TOKEN_EXPIRY)
+      : 7;
+    const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiryDays * 24 * 60 * 60 * 1000);
+
+    // Create/update UserSession (for multi-device support)
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    await prisma.userSession.create({
+      data: {
+        userId: user.id,
+        sessionToken,
+        refreshToken,
+        expiresAt: refreshTokenExpiresAt,
+        isActive: true,
+      },
+    });
 
     //  Update last login
     await prisma.user.update({
@@ -556,12 +745,21 @@ exports.login = async (req, res) => {
       },
     });
 
-    // Respond with token
+    // Set refresh token as HTTP-only cookie (for frontend)
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: refreshTokenExpiryDays * 24 * 60 * 60 * 1000, // milliseconds
+      path: '/',
+    });
+
+    // Respond with access token and user data
     return res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
-        token,
+        accessToken,
         user: {
           id: user.id,
           email: user.email,
@@ -572,6 +770,175 @@ exports.login = async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+/**
+ * POST /api/auth/refresh
+ * Refresh access token using refresh token from cookie
+ * 
+ * Request: No body needed (refresh token comes from HTTP-only cookie)
+ * Response: New access token
+ */
+exports.refresh = async (req, res) => {
+  try {
+    // Get refresh token from cookie
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token not found. Please log in again.',
+      });
+    }
+
+    // Verify refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'your-secret-key');
+    } catch (err) {
+      console.error('Refresh token verification error:', err.message);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired refresh token. Please log in again.',
+      });
+    }
+
+    // Find active session with this refresh token
+    const session = await prisma.userSession.findUnique({
+      where: { refreshToken },
+    });
+
+    if (!session || !session.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Session is not active. Please log in again.',
+      });
+    }
+
+    // Check if session has expired
+    if (session.expiresAt <= new Date()) {
+      // Invalidate session
+      await prisma.userSession.update({
+        where: { id: session.id },
+        data: { isActive: false, logoutReason: 'Token expired' },
+      });
+      return res.status(401).json({
+        success: false,
+        message: 'Refresh token has expired. Please log in again.',
+      });
+    }
+
+    // Get user info
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: {
+        userRoles: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found.',
+      });
+    }
+
+    // Check if account is still active
+    if (user.status !== 'ACTIVE') {
+      await prisma.userSession.update({
+        where: { id: session.id },
+        data: { isActive: false, logoutReason: 'Account inactive' },
+      });
+      return res.status(403).json({
+        success: false,
+        message: 'Your account is not active.',
+      });
+    }
+
+    // Get user's primary role
+    const userRole = user.userRoles[0];
+    const roleName = userRole?.role?.name || 'Guest';
+    const roleLevel = userRole?.role?.level || null;
+
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        roleName,
+        roleLevel,
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+    );
+
+    // Update session last activity
+    await prisma.userSession.update({
+      where: { id: session.id },
+      data: { lastActivity: new Date() },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Access token refreshed successfully',
+      data: {
+        accessToken: newAccessToken,
+      },
+    });
+  } catch (err) {
+    console.error('Refresh token error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/logout
+ * Logout user and invalidate refresh token
+ * 
+ * Request: No body needed (refresh token comes from HTTP-only cookie)
+ * Response: Success message
+ */
+exports.logout = async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (refreshToken) {
+      // Invalidate the session
+      await prisma.userSession.updateMany({
+        where: { refreshToken },
+        data: {
+          isActive: false,
+          logoutReason: 'User initiated logout',
+          loggedOutAt: new Date(),
+        },
+      });
+    }
+
+    // Clear refresh token cookie
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
