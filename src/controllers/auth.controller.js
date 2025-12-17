@@ -141,10 +141,9 @@ exports.register = async (req, res) => {
     
     // send verification email
     // Build verification link and send email
-    const apiBase = process.env.PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:5000';
     const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
-    // const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
-    const verifyUrl = `${frontendBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    // Point to frontend verify page instead of backend endpoint
+    const verifyUrl = `${frontendBase}/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
     try {
       await sendVerificationEmail(
@@ -291,13 +290,75 @@ exports.verifyEmail = async (req, res) => {
       }
     );
 
-    // Respond wsuccess
+    // Generate Access Token (short-lived) to auto-login the user
+    const userRole = user.userRoles[0];
+    const roleName = userRole?.role?.name || 'Guest';
+    const roleLevel = userRole?.role?.level || null;
+
+    const accessToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        roleName,
+        roleLevel,
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+    );
+
+    // Generate Refresh Token (long-lived)
+    const refreshToken = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        type: 'refresh',
+      },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
+    );
+
+    // Calculate refresh token expiration time
+    const refreshTokenExpiryDays = process.env.REFRESH_TOKEN_EXPIRY?.includes('d')
+      ? parseInt(process.env.REFRESH_TOKEN_EXPIRY)
+      : 7;
+    const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiryDays * 24 * 60 * 60 * 1000);
+
+    // Hash the refresh token for database storage
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+    // Create UserSession (for multi-device support)
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    await prisma.userSession.create({
+      data: {
+        userId: user.id,
+        sessionToken,
+        refreshToken: refreshTokenHash,
+        expiresAt: refreshTokenExpiresAt,
+        isActive: true,
+      },
+    });
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: refreshTokenExpiryDays * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    // Respond with success and access token for auto-login
     return res.status(200).json({
       success: true,
-      message: 'Email verified successfully. You can now log in.',
+      message: 'Email verified successfully. Logging you in...',
       data: {
-        email: user.email,
-        emailVerified: true,
+        accessToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          role: roleName,
+          status: 'ACTIVE',
+        },
       },
     });
   } catch (err) {
@@ -417,11 +478,9 @@ exports.resendVerification = async (req, res) => {
     });
 
     // Send email
-    const apiBase =
-      process.env.PUBLIC_API_URL ||
-      process.env.APP_URL ||
-      'http://localhost:5000';
-    const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // Point to frontend verify page instead of backend endpoint
+    const verifyUrl = `${frontendBase}/verify-email?token=${encodeURIComponent(
       token
     )}`;
 
@@ -561,13 +620,16 @@ exports.login = async (req, res) => {
       : 7;
     const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiryDays * 24 * 60 * 60 * 1000);
 
+    // Hash the refresh token for database storage
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
     // Create/update UserSession (for multi-device support)
     const sessionToken = crypto.randomBytes(32).toString('hex');
     await prisma.userSession.create({
       data: {
         userId: user.id,
         sessionToken,
-        refreshToken,
+        refreshToken: refreshTokenHash,
         expiresAt: refreshTokenExpiresAt,
         isActive: true,
       },
