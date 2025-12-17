@@ -142,7 +142,9 @@ exports.register = async (req, res) => {
     // send verification email
     // Build verification link and send email
     const apiBase = process.env.PUBLIC_API_URL || process.env.APP_URL || 'http://localhost:5000';
-    const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    // const verifyUrl = `${apiBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    const verifyUrl = `${frontendBase}/api/auth/verify-email?token=${encodeURIComponent(verificationToken)}`;
 
     try {
       await sendVerificationEmail(
