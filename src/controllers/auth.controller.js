@@ -663,6 +663,7 @@ exports.login = async (req, res) => {
           email: user.email,
           role: roleName,
           status: user.status,
+          emailVerified: user.emailVerified
         },
       },
     });
