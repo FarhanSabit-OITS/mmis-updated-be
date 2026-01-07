@@ -24,11 +24,12 @@ exports.getUsersUnderMeCount = async (req, res) => {
       return res.status(401).json({ message: 'Unauthorized: No user in request context' });
     }
 
+    // 1. SuperAdmin: Count all active users (excluding self)
     if (roleName === 'SuperAdmin') {
       const count = await prisma.user.count({
         where: {
-          isActive: true,
-          id: { not: currentUserId },  // exclude self
+          status: 'ACTIVE',
+          id: { not: currentUserId },
         },
       });
 
@@ -39,51 +40,78 @@ exports.getUsersUnderMeCount = async (req, res) => {
       });
     }
 
-    // Finding market assignments for the current user
-    const assignments = await prisma.marketAssignment.findMany({
+    // 2. Resolve Admin Scope (Market vs City vs District)
+    const admin = await prisma.admin.findUnique({
       where: { userId: currentUserId },
-      include: { market: true }, // gives market.cityId
+      include: {
+        marketMaster: true,
+        pseudoMarketAdmin: true,
+        cityAdmin: true,
+        districtAdmin: true,
+        nationalAdmin: true,
+      },
     });
 
-    let scopeType;
     let count = 0;
+    let scopeType = 'invited'; // Default fallback
 
-    if (assignments.length > 0) {
-      // Primary: city-based scope 
-      scopeType = 'city';
-
-      // get unique cityIds
-      const cityIds = [
-        ...new Set(assignments.map((a) => a.market?.cityId).filter(Boolean)),
-      ];
-
-      if (cityIds.length === 0) {
-        count = 0;
-      } else {
-        // Count users with at least one marketAssignment whose market.cityId is in cityIds
-        count = await prisma.user.count({
+    if (admin) {
+      if (admin.marketMaster) {
+        // Market Master: Count Vendors in their Market
+        scopeType = 'market';
+        count = await prisma.vendor.count({
+          where: { primaryMarketId: admin.marketMaster.marketId },
+        });
+      } else if (admin.pseudoMarketAdmin) {
+        // Pseudo Admin (Gate/Stock/etc): Count Vendors in their Market
+        scopeType = 'market';
+        count = await prisma.vendor.count({
+          where: { primaryMarketId: admin.pseudoMarketAdmin.marketId },
+        });
+      } else if (admin.cityAdmin) {
+        // City Admin: Count Vendors in all Markets in the City
+        scopeType = 'city';
+        count = await prisma.vendor.count({
           where: {
-            isActive: true,
-            marketAssignments: {
-              some: {
-                market: {
-                  cityId: { in: cityIds },
-                },
-              },
+            primaryMarket: {
+              cityId: admin.cityAdmin.cityId,
             },
           },
         });
+      } else if (admin.districtAdmin) {
+        // District Admin: Count Vendors in all Markets in the District
+        // Market -> City -> District
+        scopeType = 'district';
+        count = await prisma.vendor.count({
+          where: {
+            primaryMarket: {
+              city: {
+                districtId: admin.districtAdmin.districtId
+              }
+            }
+          }
+        });
       }
-    } else {
-      //  Fallback: invitation-based scope 
+    }
+
+    // 3. Fallback: If no admin scope matched (or count is 0?), checks for invitations?
+    // The original code fell back to 'invited' only if no assignments were found.
+    // Here, if we found an admin role but the count was 0, we still return 0 for that scope.
+    // If we didn't find an admin role (e.g. regular User), we check invitations.
+
+    if (!admin || (!admin.marketMaster && !admin.pseudoMarketAdmin && !admin.cityAdmin && !admin.districtAdmin && !admin.nationalAdmin)) {
+      // Fallback: invitation-based scope (e.g. for regular users who invited others)
+      // Note: 'invitedById' is not on User model in schema. User has 'sentInvitations'.
+      // So we count invitations sent by this user that are ACCEPTED.
       scopeType = 'invited';
 
-      count = await prisma.user.count({
+      const invitations = await prisma.invitation.count({
         where: {
-          invitedById: currentUserId,
-          isActive: true,
-        },
+          senderUserId: currentUserId,
+          status: 'ACCEPTED'
+        }
       });
+      count = invitations;
     }
 
     return res.json({

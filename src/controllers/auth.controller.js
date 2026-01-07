@@ -29,7 +29,7 @@ const prisma = new PrismaClient();
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name ,email, password } = req.body;
+    const { name, email, password } = req.body;
     // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -136,9 +136,9 @@ exports.register = async (req, res) => {
 
     // Build verification link
     const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-    
+
     const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
-    
+
     // send verification email
     // Build verification link and send email
     const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -153,7 +153,7 @@ exports.register = async (req, res) => {
       );
     } catch (mailErr) {
       console.error('Verification email failed to send:', mailErr);
-      
+
     }
 
 
@@ -838,6 +838,160 @@ exports.logout = async (req, res) => {
     });
   } catch (err) {
     console.error('Logout error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/gate-token/:supplierId
+ * Generate a temporary gate pass token for improved supplier access
+ */
+exports.generateGateToken = async (req, res) => {
+  try {
+    const { supplierId } = req.params;
+    const { gateId } = req.body || {};
+    const adminId = req.user.id;
+
+    if (!gateId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Gate ID is required',
+      });
+    }
+
+    // 1. Verify Gate exists and get Market details
+    const gate = await prisma.marketGate.findUnique({
+      where: { id: gateId },
+      include: { market: true },
+    });
+
+    if (!gate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Gate not found',
+      });
+    }
+
+    // 2. Find Supplier (by UUID or Code) and their linked User
+    let supplier = await prisma.supplier.findUnique({
+      where: { id: supplierId },
+      include: { stakeholder: true },
+    });
+
+    if (!supplier) {
+      // Try finding by code
+      supplier = await prisma.supplier.findUnique({
+        where: { supplierCode: supplierId },
+        include: { stakeholder: true },
+      });
+    }
+
+    if (!supplier) {
+      // Try finding by Linked User ID
+      // The input might be the User ID of the supplier
+      supplier = await prisma.supplier.findFirst({
+        where: {
+          stakeholder: {
+            userId: supplierId
+          }
+        },
+        include: { stakeholder: true }
+      });
+    }
+
+
+
+    let supplierUserId;
+    let supplierData = {};
+
+    if (supplier) {
+      if (!supplier.stakeholder || !supplier.stakeholder.userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Supplier is not linked to a valid user account',
+        });
+      }
+      supplierUserId = supplier.stakeholder.userId;
+      supplierData = {
+        id: supplier.id,
+        code: supplier.supplierCode,
+        name: supplier.businessName
+      };
+    } else {
+      // Fallback: Check if input is a valid User ID directly
+      // This allows generating tokens for regular users/members/customers
+      const user = await prisma.user.findUnique({
+        where: { id: supplierId },
+        include: { profile: true }
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'Supplier or User not found',
+        });
+      }
+
+      supplierUserId = user.id;
+      supplierData = {
+        id: user.id,
+        code: 'GENERIC_USER', // Placeholder
+        name: user.profile ? `${user.profile.firstName} ${user.profile.lastName}` : user.email
+      };
+    }
+
+    // 3. Generate Token Code: SUP_{MKT}_{GATE}_{RAND}
+    const randomSuffix = crypto.randomBytes(3).toString('hex').toUpperCase(); // 6 chars
+    const tokenCode = `SUP_${gate.market.uniqueCode}_${gate.gateNumber}_${randomSuffix}`;
+
+    // 4. Calculate Expiry (End of Day)
+    const now = new Date();
+    const expiresAt = new Date(now);
+    expiresAt.setHours(23, 59, 59, 999);
+
+    // 5. Create MarketToken
+    const token = await prisma.marketToken.create({
+      data: {
+        tokenCode,
+        tokenType: 'GATE_ENTRY',
+        status: 'PENDING',
+        marketId: gate.marketId,
+        gateId: gate.id,
+        userId: supplierUserId,
+        createdById: adminId,
+        expiresAt,
+        metadata: {
+          supplierId: supplierData.id,
+          supplierCode: supplierData.code,
+          generatedBy: 'API',
+          isGenericUser: !supplier
+        },
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Gate token generated successfully',
+      data: {
+        tokenCode: token.tokenCode,
+        expiresAt: token.expiresAt,
+        supplier: {
+          name: supplierData.name,
+          code: supplierData.code,
+        },
+        gate: {
+          name: gate.gateName,
+          number: gate.gateNumber,
+          market: gate.market.name,
+        },
+      },
+    });
+
+  } catch (err) {
+    console.error('Generate Gate Token error:', err);
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
