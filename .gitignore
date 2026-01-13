@@ -147,3 +147,12 @@ vite.config.ts.timestamp-*
 .github\instructions\codacy.instructions.md
 .git-personal-mirror/
 task_list/
+old_md_files/
+.vscode
+.git-personal-mirror
+MarketMasterApi.zip
+test_context.py
+test_context.txt
+docs/
+tests
+postman/
