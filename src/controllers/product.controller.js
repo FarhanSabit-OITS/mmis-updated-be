@@ -424,17 +424,38 @@ exports.bulkUpload = async (req, res) => {
     }
 
     // Parse CSV
-    const csv = require('csv-parse/sync');
-    const fileContent = file.data.toString('utf8');
+    const { parse } = require('csv-parse/sync');
+    const fs = require('fs');
+    
+    // Read file from temp path since useTempFiles: true is set in middleware
+    let fileContent;
+    if (file.tempFilePath) {
+      fileContent = fs.readFileSync(file.tempFilePath, 'utf8');
+    } else {
+      fileContent = file.data.toString('utf8');
+    }
+    
+    console.log('Raw file content length:', fileContent.length);
+    console.log('First 200 chars:', fileContent.substring(0, 200));
+    
+    // Remove empty lines and trim
+    fileContent = fileContent.split('\n').filter(line => line.trim()).join('\n');
+    
+    console.log('After filtering, content length:', fileContent.length);
+    console.log('After filtering, first 200 chars:', fileContent.substring(0, 200));
+    
     let rows;
 
     try {
-      rows = csv.parse(fileContent, {
+      rows = parse(fileContent, {
         columns: true,
         skip_empty_lines: true,
         trim: true
       });
+      console.log('Successfully parsed. Rows:', rows.length);
+      console.log('First row:', rows[0]);
     } catch (parseErr) {
+      console.error('CSV Parse Error:', parseErr);
       return res.status(400).json({
         success: false,
         message: 'Invalid CSV format',
@@ -442,6 +463,7 @@ exports.bulkUpload = async (req, res) => {
       });
     }
 
+    console.log('Parsed rows count:', rows.length);
     if (rows.length === 0) {
       return res.status(400).json({
         success: false,
