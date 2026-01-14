@@ -81,7 +81,13 @@ const getProductById = async (productId) => {
         include: {
           vendor: {
             include: {
-              stakeholder: true
+              stakeholder: {
+                include: {
+                  user: {
+                    select: { id: true, email: true }
+                  }
+                }
+              }
             }
           }
         }
@@ -336,7 +342,7 @@ const getVendorProducts = async (vendorId, filters = {}) => {
       }
     },
     orderBy: {
-      [sort]: order.toUpperCase()
+      [sort]: order.toLowerCase()
     },
     skip: offset,
     take: parseInt(limit)

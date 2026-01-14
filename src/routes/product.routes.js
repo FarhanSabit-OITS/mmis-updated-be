@@ -31,10 +31,18 @@ router.post('/:vendorId/products', productController.createProduct);
 router.get('/:vendorId/products', productController.listProducts);
 
 /**
+ * Bulk import products from CSV
+ * POST /api/vendors/:vendorId/products/bulk-upload
+ * File: multipart/form-data with 'file' field
+ * Query params: dryRun, stopOnError
+ */
+router.post('/:vendorId/products/bulk-upload', productController.bulkUpload);
+
+/**
  * Get single product details
  * GET /api/products/:productId
  */
-router.get('/product/:productId', productController.getProduct);
+router.get('/:productId', productController.getProduct);
 
 /**
  * Update product information
