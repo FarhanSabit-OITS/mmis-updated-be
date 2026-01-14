@@ -166,7 +166,7 @@ const softDeleteProduct = async (productId, userId, reason = '') => {
       where: { id: productId }
     });
 
-    if (!currentProduct) {
+    if (!product) {
       throw new Error('Product not found');
     }
 
