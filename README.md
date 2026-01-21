@@ -29,7 +29,10 @@ MarketMasterApi/
 ```bash
 npm install
 ```
-
+if needed run 
+```bash
+npm audit fix
+```
 2 Generate Prisma Client
 
 ```bash
