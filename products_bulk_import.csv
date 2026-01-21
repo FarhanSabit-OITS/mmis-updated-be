@@ -1,0 +1,7 @@
+stall_id,name,category,subcategory,unit,price,cost_price,wholesale_price,sku,barcode,current_stock,min_stock,max_stock,description
+stall-azwad-1,Carrots,Fresh Produce,Vegetables,kg,2500,1500,2300,PROD-CAR-001,1111111111,100,20,200,Fresh orange carrots from local farms
+stall-azwad-1,Potatoes,Fresh Produce,Vegetables,kg,1800,1000,1700,PROD-POT-001,2222222222,150,30,300,Quality potatoes suitable for cooking
+stall-azwad-1,Cabbage,Fresh Produce,Vegetables,kg,1200,700,1100,PROD-CAB-001,3333333333,80,15,150,Green cabbage perfect for salads
+stall-azwad-1,Lettuce,Fresh Produce,Vegetables,bunch,800,400,700,PROD-LET-001,4444444444,80,10,100,Fresh green lettuce imported quality
+stall-azwad-1,Bell Peppers,Fresh Produce,Vegetables,kg,4500,2500,4200,PROD-BEL-001,5555555555,60,15,120,Colorful bell peppers red and yellow
+stall-azwad-1,Spinach,Fresh Produce,Vegetables,kg,3000,1800,2800,PROD-SPI-001,6666666666,45,8,90,Organic spinach rich in iron
