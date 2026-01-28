@@ -16,7 +16,7 @@ async function main() {
     } catch (e) {
       console.log('ℹ️  Note:', (e as any).message);
     }
-    
+
     try {
       await prisma.$executeRawUnsafe(`DELETE FROM user_roles`);
       await prisma.$executeRawUnsafe(`DELETE FROM user_profiles`);
