@@ -29,7 +29,7 @@ const prisma = new PrismaClient();
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, businessName } = req.body;
     // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -123,6 +123,8 @@ exports.register = async (req, res) => {
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
             metadata: {
               purpose: 'VERIFY_EMAIL',
+              targetRole: role || 'Guest',
+              businessName: businessName || name, // Fallback to user name if not provided
             },
           },
         });
@@ -263,6 +265,20 @@ exports.verifyEmail = async (req, res) => {
       });
     }
 
+    // Determine Target Role and Update
+    let targetRoleName = 'Guest';
+    let targetBusinessName = user.profile?.firstName || 'Business';
+
+    if (user.email.endsWith('@mms.ug')) {
+      targetRoleName = 'MarketMaster';
+    } else if (invitation.metadata?.targetRole) {
+      const requestedRole = invitation.metadata.targetRole;
+      if (['Vendor', 'Supplier'].includes(requestedRole)) {
+        targetRoleName = requestedRole;
+        targetBusinessName = invitation.metadata.businessName || user.email;
+      }
+    }
+
     // Update user and invitation in transaction
     await prisma.$transaction(
       async (tx) => {
@@ -275,7 +291,7 @@ exports.verifyEmail = async (req, res) => {
           },
         });
 
-        // Update invitation: set status = ACCEPTED with timestamp and user reference
+        // Update invitation: set status = ACCEPTED
         await tx.invitation.update({
           where: { id: invitation.id },
           data: {
@@ -284,14 +300,96 @@ exports.verifyEmail = async (req, res) => {
             acceptedByUserId: user.id,
           },
         });
+
+        // If target role is different from Guest, process role change
+        if (targetRoleName !== 'Guest') {
+          // Find or Create Role
+          let newRole = await tx.role.findUnique({ where: { name: targetRoleName } });
+
+          if (!newRole) {
+            let level = null;
+            if (targetRoleName === 'MarketMaster') level = 'MARKET_MASTER';
+
+            newRole = await tx.role.create({
+              data: {
+                name: targetRoleName,
+                description: `Auto-created ${targetRoleName} role`,
+                level,
+              }
+            });
+          }
+
+          // Remove existing Guest role
+          await tx.userRole.deleteMany({ where: { userId: user.id } });
+
+          // Assign new Role
+          await tx.userRole.create({
+            data: {
+              userId: user.id,
+              roleId: newRole.id,
+            }
+          });
+
+          // Create Specific Entities
+          if (targetRoleName === 'MarketMaster') {
+            const admin = await tx.admin.create({
+              data: {
+                userId: user.id,
+                adminLevel: 'MARKET_MASTER',
+                notes: 'Auto-promoted via email domain',
+              }
+            });
+            // MarketMaster record requires marketID, skipping for now as per plan constraints
+          } else if (targetRoleName === 'Vendor') {
+            const stakeholder = await tx.stakeholder.create({
+              data: {
+                userId: user.id,
+                stakeholderType: 'VENDOR',
+                kycStatus: 'NOT_SUBMITTED',
+              }
+            });
+            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+            await tx.vendor.create({
+              data: {
+                stakeholderId: stakeholder.id,
+                vendorCode: `VND-${uniqueSuffix}`,
+                businessName: targetBusinessName,
+                vatRegistered: false,
+              }
+            });
+          } else if (targetRoleName === 'Supplier') {
+            const stakeholder = await tx.stakeholder.create({
+              data: {
+                userId: user.id,
+                stakeholderType: 'SUPPLIER',
+                kycStatus: 'NOT_SUBMITTED',
+              }
+            });
+            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+            await tx.supplier.create({
+              data: {
+                stakeholderId: stakeholder.id,
+                supplierCode: `SUP-${uniqueSuffix}`,
+                businessName: targetBusinessName,
+                supplierType: 'WHOLESALER',
+              }
+            });
+          }
+        }
       },
       {
-        timeout: 10000,
+        timeout: 20000,
       }
     );
 
-    // Generate Access Token (short-lived) to auto-login the user
-    const userRole = user.userRoles[0];
+    // Fetch updated user with new roles
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: { userRoles: { include: { role: true } } }
+    });
+
+    // Fallback if no roles, though unlikely
+    const userRole = updatedUser.userRoles[0];
     const roleName = userRole?.role?.name || 'Guest';
     const roleLevel = userRole?.role?.level || null;
 
@@ -306,7 +404,7 @@ exports.verifyEmail = async (req, res) => {
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
     );
 
-    // Generate Refresh Token (long-lived)
+    // Generate Refresh Token
     const refreshToken = jwt.sign(
       {
         userId: user.id,
@@ -317,16 +415,13 @@ exports.verifyEmail = async (req, res) => {
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
     );
 
-    // Calculate refresh token expiration time
     const refreshTokenExpiryDays = process.env.REFRESH_TOKEN_EXPIRY?.includes('d')
       ? parseInt(process.env.REFRESH_TOKEN_EXPIRY)
       : 7;
     const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiryDays * 24 * 60 * 60 * 1000);
 
-    // Hash the refresh token for database storage
     const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
 
-    // Create UserSession (for multi-device support)
     const sessionToken = crypto.randomBytes(32).toString('hex');
     await prisma.userSession.create({
       data: {
@@ -338,7 +433,6 @@ exports.verifyEmail = async (req, res) => {
       },
     });
 
-    // Set refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -347,7 +441,6 @@ exports.verifyEmail = async (req, res) => {
       path: '/',
     });
 
-    // Respond with success and access token for auto-login
     return res.status(200).json({
       success: true,
       message: 'Email verified successfully. Logging you in...',
