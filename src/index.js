@@ -7,6 +7,7 @@ const fileUpload = require('express-fileupload');
 const authRoutes = require('./routes/auth.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
 const productRoutes = require('./routes/product.routes');
+const vendorRoutes = require('./routes/vendor.routes');
 
 const app = express();
 
@@ -34,6 +35,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/vendors', productRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/superadmin/vendors', vendorRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;
