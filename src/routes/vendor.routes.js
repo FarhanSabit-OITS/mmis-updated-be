@@ -26,4 +26,16 @@ router.use(superAdminMiddleware);
  */
 router.get('/', vendorController.getAllVendors);
 
+/**
+ * Create a new vendor
+ * POST /api/superadmin/vendors
+ */
+router.post('/', vendorController.createVendor);
+
+/**
+ * Delete (deactivate) a vendor
+ * DELETE /api/superadmin/vendors/:id
+ */
+router.delete('/:id', vendorController.deleteVendor);
+
 module.exports = router;
