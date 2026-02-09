@@ -44,6 +44,10 @@ npx prisma generate
 ```bash
 npx prisma migrate dev --name init_user
 ```
+optional
+```bash
+npx prisma db seed
+```
 
 4 Start the development server
 
