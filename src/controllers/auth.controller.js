@@ -11,7 +11,7 @@ const {
 } = require('../utils/validation');
 
 
-const prisma = new PrismaClient();
+const prisma = require('../prisma');
 
 /**
  * POST /api/auth/register
@@ -29,7 +29,7 @@ const prisma = new PrismaClient();
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, businessName } = req.body;
+    const { name, email, password, role, businessName, marketId } = req.body;
     // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -37,6 +37,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields: name, email, password',
+      });
+    }
+
+    // Role-specific validation for markets
+    if (['Vendor', 'Supplier'].includes(role) && !marketId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Market selection is mandatory for Vendors and Suppliers',
       });
     }
 
@@ -125,6 +133,8 @@ exports.register = async (req, res) => {
               purpose: 'VERIFY_EMAIL',
               targetRole: role || 'Guest',
               businessName: businessName || name, // Fallback to user name if not provided
+              marketId: marketId,
+              name: normalizedName
             },
           },
         });
@@ -268,6 +278,7 @@ exports.verifyEmail = async (req, res) => {
     // Determine Target Role and Update
     let targetRoleName = 'Guest';
     let targetBusinessName = user.profile?.firstName || 'Business';
+    let marketId = invitation.metadata?.marketId;
 
     if (user.email.endsWith('@mms.ug')) {
       targetRoleName = 'MarketMaster';
@@ -301,79 +312,117 @@ exports.verifyEmail = async (req, res) => {
           },
         });
 
-        // If target role is different from Guest, process role change
+        // If target role is different from Guest, process registration intent
         if (targetRoleName !== 'Guest') {
-          // Find or Create Role
-          let newRole = await tx.role.findUnique({ where: { name: targetRoleName } });
-
-          if (!newRole) {
-            let level = null;
-            if (targetRoleName === 'MarketMaster') level = 'MARKET_MASTER';
-
-            newRole = await tx.role.create({
-              data: {
-                name: targetRoleName,
-                description: `Auto-created ${targetRoleName} role`,
-                level,
-              }
+          // Create Specific Entities but DO NOT upgrade role yet
+          if (targetRoleName === 'Vendor') {
+            // Check for existing stakeholder
+            let stakeholder = await tx.stakeholder.findUnique({
+              where: { userId: user.id }
             });
+
+            if (!stakeholder) {
+              stakeholder = await tx.stakeholder.create({
+                data: {
+                  userId: user.id,
+                  stakeholderType: 'VENDOR',
+                  kycStatus: 'UNDER_REVIEW',
+                }
+              });
+            } else {
+              // Update status if it exists
+              stakeholder = await tx.stakeholder.update({
+                where: { id: stakeholder.id },
+                data: { kycStatus: 'UNDER_REVIEW' }
+              });
+            }
+
+            // Check for existing vendor record
+            const existingVendor = await tx.vendor.findUnique({
+              where: { stakeholderId: stakeholder.id }
+            });
+
+            if (!existingVendor) {
+              const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+              await tx.vendor.create({
+                data: {
+                  stakeholderId: stakeholder.id,
+                  vendorCode: `VND-${uniqueSuffix}`,
+                  businessName: targetBusinessName,
+                  vatRegistered: false,
+                  primaryMarketId: marketId
+                }
+              });
+            }
+          } else if (targetRoleName === 'Supplier') {
+            // Check for existing stakeholder
+            let stakeholder = await tx.stakeholder.findUnique({
+              where: { userId: user.id }
+            });
+
+            if (!stakeholder) {
+              stakeholder = await tx.stakeholder.create({
+                data: {
+                  userId: user.id,
+                  stakeholderType: 'SUPPLIER',
+                  kycStatus: 'UNDER_REVIEW',
+                  metadata: {
+                    associatedMarkets: marketId ? [marketId] : []
+                  }
+                }
+              });
+            } else {
+              // Update status
+              stakeholder = await tx.stakeholder.update({
+                where: { id: stakeholder.id },
+                data: {
+                  kycStatus: 'UNDER_REVIEW'
+                }
+              });
+            }
+
+            // Check for existing supplier record
+            const existingSupplier = await tx.supplier.findUnique({
+              where: { stakeholderId: stakeholder.id }
+            });
+
+            if (!existingSupplier) {
+              const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+              await tx.supplier.create({
+                data: {
+                  stakeholderId: stakeholder.id,
+                  supplierCode: `SUP-${uniqueSuffix}`,
+                  businessName: targetBusinessName,
+                  supplierType: 'WHOLESALER',
+                }
+              });
+            }
           }
 
-          // Remove existing Guest role
-          await tx.userRole.deleteMany({ where: { userId: user.id } });
+          // SEND NOTIFICATION TO MARKET ADMIN
+          if (marketId && ['Vendor', 'Supplier'].includes(targetRoleName)) {
+            const marketMaster = await tx.marketMaster.findFirst({
+              where: { marketId: marketId },
+              include: { admin: true }
+            });
 
-          // Assign new Role
-          await tx.userRole.create({
-            data: {
-              userId: user.id,
-              roleId: newRole.id,
+            if (marketMaster && marketMaster.admin) {
+              await tx.notification.create({
+                data: {
+                  userId: marketMaster.admin.userId,
+                  type: 'REGISTRATION_APPROVAL',
+                  title: `Approval Needed: New ${targetRoleName}`,
+                  message: `${invitation.metadata?.name || user.email} has registered for your market and is awaiting your approval.`,
+                  priority: 'HIGH',
+                  data: {
+                    registrantId: user.id,
+                    registrantRole: targetRoleName,
+                    marketId: marketId,
+                    action: 'REVIEW_REGISTRATION'
+                  }
+                }
+              });
             }
-          });
-
-          // Create Specific Entities
-          if (targetRoleName === 'MarketMaster') {
-            const admin = await tx.admin.create({
-              data: {
-                userId: user.id,
-                adminLevel: 'MARKET_MASTER',
-                notes: 'Auto-promoted via email domain',
-              }
-            });
-            // MarketMaster record requires marketID, skipping for now as per plan constraints
-          } else if (targetRoleName === 'Vendor') {
-            const stakeholder = await tx.stakeholder.create({
-              data: {
-                userId: user.id,
-                stakeholderType: 'VENDOR',
-                kycStatus: 'NOT_SUBMITTED',
-              }
-            });
-            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-            await tx.vendor.create({
-              data: {
-                stakeholderId: stakeholder.id,
-                vendorCode: `VND-${uniqueSuffix}`,
-                businessName: targetBusinessName,
-                vatRegistered: false,
-              }
-            });
-          } else if (targetRoleName === 'Supplier') {
-            const stakeholder = await tx.stakeholder.create({
-              data: {
-                userId: user.id,
-                stakeholderType: 'SUPPLIER',
-                kycStatus: 'NOT_SUBMITTED',
-              }
-            });
-            const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
-            await tx.supplier.create({
-              data: {
-                stakeholderId: stakeholder.id,
-                supplierCode: `SUP-${uniqueSuffix}`,
-                businessName: targetBusinessName,
-                supplierType: 'WHOLESALER',
-              }
-            });
           }
         }
       },
@@ -382,10 +431,23 @@ exports.verifyEmail = async (req, res) => {
       }
     );
 
-    // Fetch updated user with new roles
+    // Fetch updated user with new roles and stakeholder info
     const updatedUser = await prisma.user.findUnique({
       where: { id: user.id },
-      include: { userRoles: { include: { role: true } } }
+      include: {
+        userRoles: { include: { role: true } },
+        stakeholder: {
+          include: {
+            vendor: true,
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: true
+          }
+        }
+      }
     });
 
     // Fallback if no roles, though unlikely
@@ -399,6 +461,7 @@ exports.verifyEmail = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
+        marketId: roleName === 'MarketMaster' ? updatedUser.admin?.marketMaster?.marketId : (updatedUser.stakeholder?.vendor?.primaryMarketId || null),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
@@ -451,6 +514,7 @@ exports.verifyEmail = async (req, res) => {
           email: user.email,
           role: roleName,
           status: 'ACTIVE',
+          kycStatus: updatedUser.stakeholder?.kycStatus || 'NOT_SUBMITTED'
         },
       },
     });
@@ -643,6 +707,17 @@ exports.login = async (req, res) => {
             role: true,
           },
         },
+        stakeholder: {
+          include: {
+            vendor: true,
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: true
+          }
+        }
       },
     });
 
@@ -691,6 +766,7 @@ exports.login = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
+        marketId: roleName === 'MarketMaster' ? user.admin?.marketMaster?.marketId : (user.stakeholder?.vendor?.primaryMarketId || null),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
@@ -756,7 +832,8 @@ exports.login = async (req, res) => {
           email: user.email,
           role: roleName,
           status: user.status,
-          emailVerified: user.emailVerified
+          emailVerified: user.emailVerified,
+          kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED'
         },
       },
     });
@@ -1088,6 +1165,32 @@ exports.generateGateToken = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+/**
+ * GET /api/auth/markets
+ * Fetch list of active markets
+ */
+exports.getMarkets = async (req, res) => {
+  try {
+    const markets = await prisma.market.findMany({
+      where: { status: 'ACTIVE' },
+      select: {
+        id: true,
+        name: true,
+        uniqueCode: true,
+      }
+    });
+    return res.status(200).json({
+      success: true,
+      data: markets
+    });
+  } catch (err) {
+    console.error('getMarkets error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
     });
   }
 };

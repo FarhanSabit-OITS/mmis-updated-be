@@ -208,8 +208,8 @@ async function main() {
     console.log('✅ User: superadmin@super.com [SuperAdmin]');
 
     const marketMasterPassword = await hash('market123', 10);
-    await prisma.user.upsert({
-      where: { email: 'manager@marketmaster.com' },
+    const m1User = await prisma.user.upsert({
+      where: { email: 'nakasero.manager@marketmaster.com' },
       update: {
         passwordHash: marketMasterPassword,
         status: 'ACTIVE',
@@ -222,7 +222,7 @@ async function main() {
         }
       },
       create: {
-        email: 'manager@marketmaster.com',
+        email: 'nakasero.manager@marketmaster.com',
         passwordHash: marketMasterPassword,
         status: 'ACTIVE',
         emailVerified: true,
@@ -233,7 +233,73 @@ async function main() {
         }
       },
     });
-    console.log('✅ User: manager@marketmaster.com [MarketMaster]');
+    console.log('✅ User: nakasero.manager@marketmaster.com [MarketMaster]');
+
+    // Create Admin and MarketMaster records for manager
+    const m1Admin = await prisma.admin.upsert({
+      where: { userId: m1User.id },
+      update: { adminLevel: 'MARKET_MASTER' },
+      create: {
+        userId: m1User.id,
+        adminLevel: 'MARKET_MASTER',
+      }
+    });
+
+    await prisma.marketMaster.upsert({
+      where: { adminId: m1Admin.id },
+      update: { marketId: 'm1' },
+      create: {
+        adminId: m1Admin.id,
+        marketId: 'm1',
+      }
+    });
+    console.log('✅ MarketMaster record for Nakasero Market linked to manager@marketmaster.com');
+
+    // Create a second manager for Owino
+    const m2User = await prisma.user.upsert({
+      where: { email: 'owino.manager@marketmaster.com' },
+      update: {
+        passwordHash: marketMasterPassword,
+        status: 'ACTIVE',
+        emailVerified: true,
+        userRoles: {
+          deleteMany: {},
+          create: {
+            roleId: marketMasterRole.id
+          }
+        }
+      },
+      create: {
+        email: 'owino.manager@marketmaster.com',
+        passwordHash: marketMasterPassword,
+        status: 'ACTIVE',
+        emailVerified: true,
+        userRoles: {
+          create: {
+            roleId: marketMasterRole.id
+          }
+        }
+      },
+    });
+
+    const m2Admin = await prisma.admin.upsert({
+      where: { userId: m2User.id },
+      update: { adminLevel: 'MARKET_MASTER' },
+      create: {
+        userId: m2User.id,
+        adminLevel: 'MARKET_MASTER',
+      }
+    });
+
+    await prisma.marketMaster.upsert({
+      where: { adminId: m2Admin.id },
+      update: { marketId: 'm2' },
+      create: {
+        adminId: m2Admin.id,
+        marketId: 'm2',
+      }
+    });
+    console.log('✅ User: owino.manager@marketmaster.com [MarketMaster] linked to Owino Market');
 
     const gateCounterPassword = await hash('gate123', 10);
     await prisma.user.upsert({
@@ -266,11 +332,11 @@ async function main() {
     console.log('\n✨ Database seeded successfully!');
     console.log('─'.repeat(50));
     console.log('Available test users:');
-    console.log('Available test users:');
     console.log('  1. superadmin@marketmaster.com / superadmin123 (SuperAdmin)');
     console.log('  2. superadmin@super.com / superadmin1234 (SuperAdmin)');
-    console.log('  3. manager@marketmaster.com / market123 (MarketMaster)');
-    console.log('  4. gate@marketmaster.com / gate123 (GateCounter)');
+    console.log('  3. nakasero.manager@marketmaster.com / market123 (Nakasero Market Master)');
+    console.log('  4. owino.manager@marketmaster.com / market123 (Owino Market Master)');
+    console.log('  5. gate@marketmaster.com / gate123 (GateCounter)');
     console.log('─'.repeat(50));
   } catch (error) {
     console.error('❌ Seeding error:', error);

@@ -5,10 +5,9 @@
  * Business logic for vendor-related operations
  */
 
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('../prisma');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const prisma = new PrismaClient();
 
 /**
  * Build Prisma where clause from query parameters
@@ -452,10 +451,120 @@ const deleteVendor = async (vendorId) => {
     });
 };
 
+/**
+ * Approve a pending registration
+ * @param {string} userId - ID of the user to approve
+ * @param {string} adminId - ID of the Admin performing the approval
+ * @returns {Promise<Object>} Updated user data
+ */
+const approveRegistration = async (userId, adminId) => {
+    return await prisma.$transaction(async (tx) => {
+        // 1. Get user with stakeholder info
+        const user = await tx.user.findUnique({
+            where: { id: userId },
+            include: {
+                stakeholder: {
+                    include: {
+                        vendor: true,
+                        supplier: true
+                    }
+                }
+            }
+        });
+
+        if (!user) throw new Error('User not found');
+        if (!user.stakeholder) throw new Error('Stakeholder record not found');
+        if (user.stakeholder.kycStatus !== 'UNDER_REVIEW' && user.stakeholder.kycStatus !== 'PENDING') {
+            // Allow PENDING too just in case it wasn't marked UNDER_REVIEW properly
+            console.log(`Current status: ${user.stakeholder.kycStatus}`);
+        }
+
+        // Determine target role (Vendor or Supplier)
+        let targetRoleName = user.stakeholder.stakeholderType === 'VENDOR' ? 'Vendor' : 'Supplier';
+
+        // 2. Find the role
+        const role = await tx.role.findUnique({ where: { name: targetRoleName } });
+        if (!role) throw new Error(`${targetRoleName} role not found`);
+
+        // 3. Update User Role (promote from Guest)
+        // Find Guest role ID first to be safe
+        const guestRole = await tx.role.findUnique({ where: { name: 'Guest' } });
+        if (guestRole) {
+            await tx.userRole.deleteMany({
+                where: {
+                    userId: user.id,
+                    roleId: guestRole.id
+                }
+            });
+        }
+
+        // Check if user already has the target role to avoid unique constraint error
+        const existingTargetRole = await tx.userRole.findUnique({
+            where: {
+                userId_roleId: {
+                    userId: user.id,
+                    roleId: role.id
+                }
+            }
+        });
+
+        if (!existingTargetRole) {
+            await tx.userRole.create({
+                data: {
+                    userId: user.id,
+                    roleId: role.id
+                }
+            });
+        }
+
+        // 4. Update Stakeholder status
+        await tx.stakeholder.update({
+            where: { id: user.stakeholder.id },
+            data: {
+                kycStatus: 'VERIFIED',
+                kycVerifiedAt: new Date(),
+                kycVerifiedByAdminId: adminId
+            }
+        });
+
+        // 5. Update Vendor approval link if applicable
+        if (targetRoleName === 'Vendor' && user.stakeholder.vendor) {
+            const marketMaster = await tx.marketMaster.findUnique({
+                where: { adminId: adminId }
+            });
+
+            if (marketMaster) {
+                await tx.vendor.update({
+                    where: { id: user.stakeholder.vendor.id },
+                    data: { marketMasterApprovalId: marketMaster.id }
+                });
+            }
+        }
+
+        // 6. Notify user
+        await tx.notification.create({
+            data: {
+                userId: user.id,
+                type: 'REGISTRATION_APPROVED',
+                title: 'Welcome: Registration Approved!',
+                message: `Congratulations! Your registration as a ${targetRoleName} has been approved by the Market Administrator. You now have full access to your respective portal.`,
+                priority: 'HIGH',
+                actionLabel: 'Go to Dashboard',
+                actionUrl: '/dashboard'
+            }
+        });
+
+        return user;
+    }, {
+        timeout: 30000 // 30 seconds
+    });
+};
+
 module.exports = {
     getAllVendorsWithDetails,
     createVendor,
     deleteVendor,
+    approveRegistration,
     buildVendorFilters,
     buildSortClause
 };
