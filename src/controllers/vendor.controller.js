@@ -6,6 +6,7 @@
  */
 
 const vendorService = require('../services/vendor.service');
+const prisma = require('../prisma');
 
 /**
  * GET /api/superadmin/vendors
@@ -55,7 +56,7 @@ exports.getAllVendors = async (req, res) => {
         const filters = {
             search,
             kycStatus,
-            marketId,
+            marketId: req.user.roleName === 'MarketMaster' ? req.user.marketId : marketId,
             vatRegistered,
             sortBy,
             order
@@ -179,3 +180,41 @@ exports.deleteVendor = async (req, res) => {
         });
     }
 };
+
+/**
+ * POST /api/superadmin/vendors/:id/approve
+ * Approve a pending vendor/supplier registration
+ */
+exports.approveVendor = async (req, res) => {
+    try {
+        const { id } = req.params; // This is the user ID to approve
+
+        // Get admin ID from the authenticated user
+        const admin = await prisma.admin.findUnique({
+            where: { userId: req.user.userId }
+        });
+
+        if (!admin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden. You are not registered as an administrator.'
+            });
+        }
+
+        const result = await vendorService.approveRegistration(id, admin.id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Registration approved successfully',
+            data: result
+        });
+    } catch (err) {
+        console.error('Approve vendor error:', err);
+        return res.status(500).json({
+            success: false,
+            message: err.message || 'Internal server error',
+        });
+    }
+};
+
+

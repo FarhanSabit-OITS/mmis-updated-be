@@ -11,9 +11,9 @@ const authMiddleware = require('../middleware/auth.middleware');
 const superAdminMiddleware = require('../middleware/superadmin.middleware');
 const vendorController = require('../controllers/vendor.controller');
 
-// Middleware: All vendor routes require authentication and SuperAdmin role
+const adminMiddleware = require('../middleware/admin.middleware');
+
 router.use(authMiddleware);
-router.use(superAdminMiddleware);
 
 // =====================
 // Vendor Management
@@ -21,21 +21,23 @@ router.use(superAdminMiddleware);
 
 /**
  * Get all vendors with comprehensive data
- * GET /api/superadmin/vendors
- * Query params: page, limit, search, kycStatus, marketId, vatRegistered, sortBy, order
  */
-router.get('/', vendorController.getAllVendors);
+router.get('/', adminMiddleware, vendorController.getAllVendors);
+
+/**
+ * Approve a pending vendor/supplier registration
+ * POST /api/superadmin/vendors/:id/approve
+ */
+router.post('/:id/approve', adminMiddleware, vendorController.approveVendor);
 
 /**
  * Create a new vendor
- * POST /api/superadmin/vendors
  */
-router.post('/', vendorController.createVendor);
+router.post('/', superAdminMiddleware, vendorController.createVendor);
 
 /**
  * Delete (deactivate) a vendor
- * DELETE /api/superadmin/vendors/:id
  */
-router.delete('/:id', vendorController.deleteVendor);
+router.delete('/:id', superAdminMiddleware, vendorController.deleteVendor);
 
 module.exports = router;
