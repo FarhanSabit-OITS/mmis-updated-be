@@ -6,6 +6,8 @@
  */
 
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const prisma = new PrismaClient();
 
 /**
@@ -49,6 +51,15 @@ const buildVendorFilters = (queryParams) => {
     if (queryParams.vatRegistered !== undefined) {
         where.vatRegistered = queryParams.vatRegistered === 'true';
     }
+
+    // Exclude soft-deleted vendors (where user status is DELETED)
+    where.stakeholder = {
+        ...where.stakeholder,
+        user: {
+            ...where.stakeholder?.user,
+            status: { not: 'DELETED' }
+        }
+    };
 
     return where;
 };
@@ -293,8 +304,158 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
     };
 };
 
+/**
+ * Create a new vendor with associated user and stakeholder
+ * @param {Object} vendorData - Data for the new vendor
+ * @returns {Promise<Object>} Created vendor data
+ */
+const createVendor = async (vendorData) => {
+    const {
+        email,
+        password = 'Vendor@123', // Default password
+        firstName,
+        lastName,
+        businessName,
+        businessType,
+        primaryMarketId,
+        vatRegistered = false,
+        vatNumber,
+        phone
+    } = vendorData;
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Pre-check for unique constraints
+    if (phone) {
+        const existingPhone = await prisma.user.findUnique({
+            where: { phone }
+        });
+        if (existingPhone) {
+            throw new Error(`Phone number ${phone} is already registered to another user.`);
+        }
+    }
+
+    const existingEmail = await prisma.user.findUnique({
+        where: { email: normalizedEmail }
+    });
+    if (existingEmail) {
+        throw new Error(`Email ${normalizedEmail} is already registered.`);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+        // 1. Find the Vendor role
+        const vendorRole = await tx.role.findUnique({
+            where: { name: 'Vendor' }
+        });
+
+        if (!vendorRole) {
+            throw new Error('Vendor role not found in database');
+        }
+
+        // 2. Create User
+        const user = await tx.user.create({
+            data: {
+                email: normalizedEmail,
+                passwordHash,
+                phone: phone || null,
+                status: 'ACTIVE',
+                emailVerified: true,
+                userRoles: {
+                    create: {
+                        roleId: vendorRole.id
+                    }
+                },
+                profile: {
+                    create: {
+                        firstName,
+                        lastName,
+                        primaryPhone: phone || '',
+                        primaryEmail: normalizedEmail
+                    }
+                }
+            }
+        });
+
+        // 3. Create Stakeholder
+        const stakeholder = await tx.stakeholder.create({
+            data: {
+                userId: user.id,
+                stakeholderType: 'VENDOR',
+                kycStatus: 'NOT_SUBMITTED'
+            }
+        });
+
+        // 4. Generate Vendor Code
+        const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+        const vendorCode = `VND-${uniqueSuffix}`;
+
+        // 5. Create Vendor
+        const vendor = await tx.vendor.create({
+            data: {
+                stakeholderId: stakeholder.id,
+                vendorCode,
+                businessName,
+                businessType,
+                primaryMarketId,
+                vatRegistered,
+                vatNumber
+            },
+            include: {
+                stakeholder: {
+                    include: {
+                        user: {
+                            include: {
+                                profile: true
+                            }
+                        }
+                    }
+                },
+                primaryMarket: true
+            }
+        });
+
+        return vendor;
+    }, {
+        timeout: 30000 // 30 seconds
+    });
+};
+
+/**
+ * Delete a vendor (Soft delete by updating user status)
+ * @param {string} vendorId - ID of the vendor to delete
+ * @returns {Promise<Object>} Updated vendor or user data
+ */
+const deleteVendor = async (vendorId) => {
+    const vendor = await prisma.vendor.findUnique({
+        where: { id: vendorId },
+        include: {
+            stakeholder: {
+                include: {
+                    user: true
+                }
+            }
+        }
+    });
+
+    if (!vendor) {
+        throw new Error('Vendor not found');
+    }
+
+    // Soft delete by updating the user status
+    return await prisma.user.update({
+        where: { id: vendor.stakeholder.userId },
+        data: {
+            status: 'DELETED',
+            deletedAt: new Date()
+        }
+    });
+};
+
 module.exports = {
     getAllVendorsWithDetails,
+    createVendor,
+    deleteVendor,
     buildVendorFilters,
     buildSortClause
 };
