@@ -171,3 +171,4 @@ VENDOR_API_REFERENCE.md
 analyze_excel.py
 convert_excel_to_json.py
 prisma/prompt.txt
+inspect_excel.py
