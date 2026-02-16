@@ -172,3 +172,24 @@ analyze_excel.py
 convert_excel_to_json.py
 prisma/prompt.txt
 inspect_excel.py
+
+
+check-counts.js
+check-data.js
+check-detailed-data.js
+check-payments.js
+check-users.js
+create-sample-payments.js
+
+
+# Kabale venodrs related scripts
+phase1-setup.js
+phase2-vendor-import-v2.js
+phase2-vendor-import.js
+phase4-shop-assignment.js
+test-payment-api.js
+
+scripts/phase5-debug-errors.js
+scripts/phase5-generate-shops-v2.js
+scripts/phase5-generate-shops.js
+scripts/run-phase5.sh
