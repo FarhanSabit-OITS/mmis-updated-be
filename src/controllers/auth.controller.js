@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const { sendVerificationEmail } = require('../services/email.service');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/email.service');
 const {
   validateEmail,
   validatePassword,
@@ -366,9 +366,6 @@ exports.verifyEmail = async (req, res) => {
                   userId: user.id,
                   stakeholderType: 'SUPPLIER',
                   kycStatus: 'UNDER_REVIEW',
-                  metadata: {
-                    associatedMarkets: marketId ? [marketId] : []
-                  }
                 }
               });
             } else {
@@ -401,27 +398,29 @@ exports.verifyEmail = async (req, res) => {
 
           // SEND NOTIFICATION TO MARKET ADMIN
           if (marketId && ['Vendor', 'Supplier'].includes(targetRoleName)) {
-            const marketMaster = await tx.marketMaster.findFirst({
+            const marketMasters = await tx.marketMaster.findMany({
               where: { marketId: marketId },
               include: { admin: true }
             });
 
-            if (marketMaster && marketMaster.admin) {
-              await tx.notification.create({
-                data: {
-                  userId: marketMaster.admin.userId,
-                  type: 'REGISTRATION_APPROVAL',
-                  title: `Approval Needed: New ${targetRoleName}`,
-                  message: `${invitation.metadata?.name || user.email} has registered for your market and is awaiting your approval.`,
-                  priority: 'HIGH',
+            for (const mm of marketMasters) {
+              if (mm.admin) {
+                await tx.notification.create({
                   data: {
-                    registrantId: user.id,
-                    registrantRole: targetRoleName,
-                    marketId: marketId,
-                    action: 'REVIEW_REGISTRATION'
+                    userId: mm.admin.userId,
+                    type: 'REGISTRATION_APPROVAL',
+                    title: `Approval Needed: New ${targetRoleName}`,
+                    message: `${invitation.metadata?.name || user.email} has registered for your market and is awaiting your approval.`,
+                    priority: 'HIGH',
+                    data: {
+                      registrantId: user.id,
+                      registrantRole: targetRoleName,
+                      marketId: marketId,
+                      action: 'REVIEW_REGISTRATION'
+                    }
                   }
-                }
-              });
+                });
+              }
             }
           }
         }
@@ -1191,6 +1190,170 @@ exports.getMarkets = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/forgot-password
+ * Request a password reset link
+ */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid email is required',
+      });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    // Security: Always return success even if user not found to prevent enumeration
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, a reset link has been sent.',
+      });
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Save token in transaction: Invalidate old ones and create new one
+    await prisma.$transaction([
+      prisma.verificationToken.updateMany({
+        where: {
+          userId: user.id,
+          tokenType: 'PASSWORD_RESET',
+          isUsed: false,
+        },
+        data: { isUsed: true },
+      }),
+      prisma.verificationToken.create({
+        data: {
+          token,
+          tokenType: 'PASSWORD_RESET',
+          userId: user.id,
+          email: normalizedEmail,
+          expiresAt,
+        },
+      }),
+    ]);
+
+    // Send email
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendBase}/reset-password?token=${encodeURIComponent(token)}`;
+
+    try {
+      await sendPasswordResetEmail(normalizedEmail, resetUrl);
+    } catch (mailErr) {
+      console.error('Password reset email failed:', mailErr);
+      // We still return success to the user
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists with this email, a reset link has been sent.',
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/reset-password
+ * Reset password using token
+ */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and new password are required',
+      });
+    }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be between 8 and 64 characters',
+      });
+    }
+
+    // Verify token
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (
+      !verificationToken ||
+      verificationToken.tokenType !== 'PASSWORD_RESET' ||
+      verificationToken.isUsed ||
+      verificationToken.expiresAt < new Date()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset link',
+      });
+    }
+
+    const userId = verificationToken.userId;
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Update in transaction: Set password, mark token used, revoke sessions
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          lastPasswordChange: new Date(),
+        },
+      }),
+      prisma.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: {
+          isUsed: true,
+          usedAt: new Date(),
+        },
+      }),
+      // Session Revocation: Kick out from all devices
+      prisma.userSession.updateMany({
+        where: { userId, isActive: true },
+        data: {
+          isActive: false,
+          logoutReason: 'PASSWORD_RESET',
+          loggedOutAt: new Date(),
+        },
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully. Please log in with your new password.',
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
     });
   }
 };

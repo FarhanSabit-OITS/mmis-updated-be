@@ -108,96 +108,109 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
     const safePage = Math.max(1, parseInt(page));
     const skip = (safePage - 1) * safeLimit;
 
-    const where = buildVendorFilters(filters);
-    const orderBy = buildSortClause(filters.sortBy, filters.order);
+    // Build Stakeholder Where Clause
+    const where = {};
 
-    // Execute queries in parallel
-    const [vendors, totalCount] = await Promise.all([
-        prisma.vendor.findMany({
+    // 1. Search
+    if (filters.search) {
+        const searchTerm = filters.search.trim();
+        where.OR = [
+            { vendor: { vendorCode: { contains: searchTerm, mode: 'insensitive' } } },
+            { vendor: { businessName: { contains: searchTerm, mode: 'insensitive' } } },
+            { supplier: { supplierCode: { contains: searchTerm, mode: 'insensitive' } } },
+            { supplier: { businessName: { contains: searchTerm, mode: 'insensitive' } } },
+            { user: { email: { contains: searchTerm, mode: 'insensitive' } } }
+        ];
+    }
+
+    // 2. KYC Status
+    if (filters.kycStatus) {
+        where.kycStatus = filters.kycStatus;
+    }
+
+    // 3. Market Filter (Complex: Vendor.primaryMarketId OR Supplier.invitation.metadata.marketId)
+    if (filters.marketId) {
+        const marketFilter = [
+            { vendor: { primaryMarketId: filters.marketId } },
+            {
+                stakeholderType: 'SUPPLIER',
+                user: {
+                    acceptedInvitations: {
+                        some: {
+                            metadata: {
+                                path: ['marketId'],
+                                equals: filters.marketId
+                            }
+                        }
+                    }
+                }
+            }
+        ];
+
+        if (where.OR) {
+            // Combine existing search OR with market OR using AND
+            where.AND = [
+                { OR: where.OR },
+                { OR: marketFilter }
+            ];
+            delete where.OR;
+        } else {
+            where.OR = marketFilter;
+        }
+    } else {
+        // If no market filter, maybe just show all Vendors/Suppliers?
+        // But usually we only want Vendors/Suppliers, not Members/MarketAuthorities
+        if (!where.OR && !where.AND) {
+            where.stakeholderType = { in: ['VENDOR', 'SUPPLIER'] };
+        } else {
+            where.AND = [
+                ...(where.AND || []),
+                { stakeholderType: { in: ['VENDOR', 'SUPPLIER'] } }
+            ];
+        }
+    }
+
+    // 4. VAT and Soft Delete
+    if (filters.vatRegistered !== undefined) {
+        // Only applies to Vendors really, but we can filter
+        where.vendor = { vatRegistered: filters.vatRegistered === 'true' };
+    }
+
+    // User status check
+    where.user = {
+        ...where.user,
+        status: { not: 'DELETED' }
+    };
+
+    // Sort
+    let orderBy = {};
+    if (filters.sortBy === 'createdAt' || filters.sortBy === 'updatedAt') {
+        orderBy[filters.sortBy] = filters.order || 'desc';
+    } else {
+        orderBy.createdAt = 'desc';
+    }
+
+    // Execute Query
+    const [stakeholders, totalCount] = await Promise.all([
+        prisma.stakeholder.findMany({
             where,
             include: {
-                stakeholder: {
+                user: {
                     include: {
-                        user: {
-                            include: {
-                                profile: {
-                                    select: {
-                                        firstName: true,
-                                        lastName: true,
-                                        nationalId: true,
-                                        primaryPhone: true,
-                                        city: true,
-                                        district: true,
-                                        profilePictureUrl: true
-                                    }
-                                }
-                            }
-                        }
+                        profile: true,
+                        acceptedInvitations: true // verify metadata
                     }
                 },
-                primaryMarket: {
-                    select: {
-                        id: true,
-                        name: true,
-                        uniqueCode: true,
-                        address: true,
-                        city: {
-                            select: {
-                                name: true,
-                                district: {
-                                    select: {
-                                        name: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                stalls: {
+                vendor: {
                     include: {
-                        shop: {
-                            select: {
-                                shopNumber: true,
-                                shopName: true,
-                                uniqueCode: true
-                            }
-                        },
-                        market: {
-                            select: {
-                                name: true,
-                                uniqueCode: true
-                            }
-                        }
-                    },
-                    where: {
-                        status: { not: 'DELETED' }
+                        primaryMarket: { include: { city: { include: { district: true } } } },
+                        stalls: { include: { shop: true, market: true }, where: { status: { not: 'DELETED' } } },
+                        approvedByMarketMaster: { include: { admin: { include: { user: { include: { profile: true } } } } } },
+                        _count: { select: { stalls: true, gateEntries: true, taxPayments: true, rentContracts: true, marketTokens: true, invitations: true } }
                     }
                 },
-                approvedByMarketMaster: {
+                supplier: {
                     include: {
-                        admin: {
-                            include: {
-                                user: {
-                                    include: {
-                                        profile: {
-                                            select: {
-                                                firstName: true,
-                                                lastName: true
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                _count: {
-                    select: {
-                        stalls: true,
-                        gateEntries: true,
-                        taxPayments: true,
-                        rentContracts: true,
-                        marketTokens: true,
                         invitations: true
                     }
                 }
@@ -206,92 +219,66 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
             skip,
             take: safeLimit
         }),
-        prisma.vendor.count({ where })
+        prisma.stakeholder.count({ where })
     ]);
 
-    // Get last gate entry for each vendor
-    const vendorsWithStats = await Promise.all(
-        vendors.map(async (vendor) => {
-            const lastGateEntry = await prisma.gateEntry.findFirst({
-                where: { vendorId: vendor.id },
-                orderBy: { createdAt: 'desc' },
-                select: { createdAt: true }
-            });
+    // Map to unified structure
+    const mappedResults = await Promise.all(stakeholders.map(async (sh) => {
+        // Prepare base object
+        const base = {
+            id: sh.vendor?.id || sh.supplier?.id || sh.id, // Prefer specific ID
+            vendorCode: sh.vendor?.vendorCode || sh.supplier?.supplierCode,
+            businessName: sh.vendor?.businessName || sh.supplier?.businessName,
+            businessType: sh.vendor?.businessType || sh.supplier?.supplierType,
+            primaryMarketId: sh.vendor?.primaryMarketId || null,
 
-            // Count active stalls
-            const activeStallsCount = vendor.stalls.filter(
-                stall => stall.status === 'ACTIVE'
-            ).length;
+            // Reconstruct the nested structure frontend expects
+            stakeholder: {
+                id: sh.id,
+                kycStatus: sh.kycStatus,
+                user: {
+                    id: sh.user.id,
+                    email: sh.user.email,
+                    phone: sh.user.phone,
+                    status: sh.user.status,
+                    emailVerified: sh.user.emailVerified,
+                    profile: sh.user.profile
+                }
+            },
 
-            return {
-                id: vendor.id,
-                vendorCode: vendor.vendorCode,
-                businessName: vendor.businessName,
-                businessType: vendor.businessType,
-                businessLicenseNumber: vendor.businessLicenseNumber,
-                taxIdNumber: vendor.taxIdNumber,
-                vatRegistered: vendor.vatRegistered,
-                vatNumber: vendor.vatNumber,
-                yearsInBusiness: vendor.yearsInBusiness,
-                preferredMarkets: vendor.preferredMarkets,
-                primaryMarket: vendor.primaryMarket,
-                stakeholder: {
-                    id: vendor.stakeholder.id,
-                    kycStatus: vendor.stakeholder.kycStatus,
-                    kycVerifiedAt: vendor.stakeholder.kycVerifiedAt,
-                    businessRating: vendor.stakeholder.businessRating,
-                    taxComplianceStatus: vendor.stakeholder.taxComplianceStatus,
-                    user: {
-                        id: vendor.stakeholder.user.id,
-                        email: vendor.stakeholder.user.email,
-                        phone: vendor.stakeholder.user.phone,
-                        status: vendor.stakeholder.user.status,
-                        emailVerified: vendor.stakeholder.user.emailVerified,
-                        phoneVerified: vendor.stakeholder.user.phoneVerified,
-                        lastLogin: vendor.stakeholder.user.lastLogin,
-                        profile: vendor.stakeholder.user.profile
-                    }
-                },
-                stalls: vendor.stalls.map(stall => ({
-                    id: stall.id,
-                    stallNumber: stall.stallNumber,
-                    uniqueCode: stall.uniqueCode,
-                    displayName: stall.displayName,
-                    category: stall.category,
-                    stallType: stall.stallType,
-                    status: stall.status,
-                    operationalStatus: stall.operationalStatus,
-                    dailyRate: stall.dailyRate,
-                    monthlyRate: stall.monthlyRate,
-                    contractStartDate: stall.contractStartDate,
-                    contractEndDate: stall.contractEndDate,
-                    shop: stall.shop,
-                    market: stall.market
-                })),
-                stats: {
-                    totalStalls: vendor._count.stalls,
-                    activeStalls: activeStallsCount,
-                    totalGateEntries: vendor._count.gateEntries,
-                    totalTaxPayments: vendor._count.taxPayments,
-                    totalRentContracts: vendor._count.rentContracts,
-                    totalMarketTokens: vendor._count.marketTokens,
-                    totalInvitations: vendor._count.invitations,
-                    lastGateEntry: lastGateEntry?.createdAt || null
-                },
-                approvedBy: vendor.approvedByMarketMaster ? {
-                    adminId: vendor.approvedByMarketMaster.admin.id,
-                    marketMasterName: `${vendor.approvedByMarketMaster.admin.user.profile?.firstName || ''} ${vendor.approvedByMarketMaster.admin.user.profile?.lastName || ''}`.trim() || vendor.approvedByMarketMaster.admin.user.email
-                } : null,
-                createdAt: vendor.stakeholder.createdAt,
-                updatedAt: vendor.stakeholder.updatedAt
-            };
-        })
-    );
+            // Vendor specific
+            stalls: sh.vendor?.stalls || [],
+            stats: sh.vendor ? {
+                totalStalls: sh.vendor._count.stalls,
+                activeStalls: sh.vendor.stalls.filter(s => s.status === 'ACTIVE').length,
+                totalGateEntries: sh.vendor._count.gateEntries
+            } : {},
+
+            approvedBy: sh.vendor?.approvedByMarketMaster ? {
+                adminId: sh.vendor.approvedByMarketMaster.admin.id,
+                marketMasterName: sh.vendor.approvedByMarketMaster.admin.user.profile?.firstName
+            } : null,
+
+            createdAt: sh.createdAt,
+            updatedAt: sh.updatedAt
+        };
+
+        // If Supplier, try to find market from invitation for display (optional)
+        if (sh.supplier && !base.primaryMarketId) {
+            const marketInv = sh.user.acceptedInvitations.find(i => i.metadata?.marketId);
+            if (marketInv && marketInv.metadata?.marketId) {
+                // We could fetch market name here if crucial, but frontend just displays ID or "Pending"
+                base.primaryMarketId = marketInv.metadata.marketId; // Hint for frontend
+            }
+        }
+
+        return base;
+    }));
 
     const totalPages = Math.ceil(totalCount / safeLimit);
 
     return {
-        vendors: vendorsWithStats,
+        vendors: mappedResults, // Keep key 'vendors' for frontend compatibility
         pagination: {
             currentPage: safePage,
             totalPages,
