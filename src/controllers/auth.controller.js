@@ -1357,3 +1357,189 @@ exports.resetPassword = async (req, res) => {
     });
   }
 };
+
+/**
+ * GET /api/auth/me
+ * Get current user profile details
+ */
+exports.getMe = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+        stakeholder: {
+          include: {
+            vendor: { include: { primaryMarket: true, stalls: true } },
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: { include: { market: true } }
+          }
+        },
+        userRoles: {
+          include: { role: true }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Determine name
+    const profile = user.profile;
+    const fullName = profile
+      ? `${profile.firstName} ${profile.lastName}`.trim()
+      : user.email.split('@')[0];
+
+    // Get primary market name
+    let marketName = null;
+    let businessId = null;
+    let secondaryLabel = 'User';
+
+    if (user.stakeholder?.vendor) {
+      marketName = user.stakeholder.vendor.primaryMarket?.name || 'N/A';
+      businessId = user.stakeholder.vendor.vendorCode;
+      secondaryLabel = `Vendor ID: ${businessId}`;
+    } else if (user.admin?.marketMaster) {
+      marketName = user.admin.marketMaster.market?.name || 'N/A';
+      businessId = user.admin.id;
+      secondaryLabel = `Master ID: ${user.admin.adminCode || businessId}`;
+    } else if (user.stakeholder?.supplier) {
+      businessId = user.stakeholder.supplier.supplierCode;
+      secondaryLabel = `Supplier ID: ${businessId}`;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone || profile?.primaryPhone || 'No phone set',
+        name: fullName,
+        role: user.userRoles[0]?.role?.name || 'Guest',
+        kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
+        businessId,
+        marketName,
+        secondaryLabel,
+        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null
+      }
+    });
+  } catch (err) {
+    console.error('getMe error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+/**
+ * POST /api/auth/update-profile
+ * Update user's name
+ */
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { name } = req.body;
+
+    if (!name || name.trim().split(' ').length < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid name'
+      });
+    }
+
+    const parts = name.trim().split(' ');
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(' ') || ' ';
+
+    await prisma.userProfile.upsert({
+      where: { userId },
+      update: { firstName, lastName },
+      create: {
+        userId,
+        firstName,
+        lastName,
+        primaryPhone: '',
+        primaryEmail: req.user.email
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully'
+    });
+  } catch (err) {
+    console.error('updateProfile error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+/**
+ * POST /api/auth/change-password
+ * Change password for logged in user
+ */
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current and new passwords are required'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password does not meet requirements (8-64 characters)'
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        lastPasswordChange: new Date()
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (err) {
+    console.error('changePassword error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
