@@ -10,6 +10,8 @@ const productRoutes = require('./routes/product.routes');
 const vendorRoutes = require('./routes/vendor.routes');
 const notificationRoutes = require('./routes/notification.routes');
 const paymentRoutes = require('./routes/payment.routes');
+const staffRoutes = require('./routes/staff.routes');
+const tokenRoutes = require('./routes/token.routes');
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/vendors', productRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/superadmin/vendors', vendorRoutes);
+app.use('/api/market/staff', staffRoutes);
+app.use('/api/market/tokens', tokenRoutes);
 app.use('/api', paymentRoutes);
 
 
