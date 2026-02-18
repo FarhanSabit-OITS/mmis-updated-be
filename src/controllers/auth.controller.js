@@ -443,7 +443,8 @@ exports.verifyEmail = async (req, res) => {
         },
         admin: {
           include: {
-            marketMaster: true
+            marketMaster: true,
+            pseudoMarketAdmin: true
           }
         }
       }
@@ -460,7 +461,11 @@ exports.verifyEmail = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
-        marketId: roleName === 'MarketMaster' ? updatedUser.admin?.marketMaster?.marketId : (updatedUser.stakeholder?.vendor?.primaryMarketId || null),
+        marketId: roleName === 'MarketMaster'
+          ? updatedUser.admin?.marketMaster?.marketId
+          : (roleName === 'GateCounter'
+            ? updatedUser.admin?.pseudoMarketAdmin?.marketId
+            : (updatedUser.stakeholder?.vendor?.primaryMarketId || null)),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
@@ -714,7 +719,8 @@ exports.login = async (req, res) => {
         },
         admin: {
           include: {
-            marketMaster: true
+            marketMaster: true,
+            pseudoMarketAdmin: true
           }
         }
       },
@@ -765,7 +771,11 @@ exports.login = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
-        marketId: roleName === 'MarketMaster' ? user.admin?.marketMaster?.marketId : (user.stakeholder?.vendor?.primaryMarketId || null),
+        marketId: roleName === 'MarketMaster'
+          ? user.admin?.marketMaster?.marketId
+          : (roleName === 'GateCounter'
+            ? user.admin?.pseudoMarketAdmin?.marketId
+            : (user.stakeholder?.vendor?.primaryMarketId || null)),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
