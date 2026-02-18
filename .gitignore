@@ -193,3 +193,7 @@ scripts/phase5-debug-errors.js
 scripts/phase5-generate-shops-v2.js
 scripts/phase5-generate-shops.js
 scripts/run-phase5.sh
+
+FORGOT_PASSWORD_PLAN.md
+FORGOT_PASSWORD_THEORY.md
+prisma/query_to_create_a_market_master.sql
