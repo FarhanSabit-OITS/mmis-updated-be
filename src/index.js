@@ -37,7 +37,8 @@ app.use(fileUpload({
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/vendors', productRoutes);
+app.use('/api/vendors', vendorRoutes); // Added for setup-shop
+app.use('/api/vendors', productRoutes); // Keeps existing product routes
 app.use('/api/products', productRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/superadmin/vendors', vendorRoutes);
