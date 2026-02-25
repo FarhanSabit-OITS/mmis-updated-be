@@ -10,10 +10,22 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
 const superAdminMiddleware = require('../middleware/superadmin.middleware');
 const vendorController = require('../controllers/vendor.controller');
+const vendorOnboardingController = require('../controllers/vendor.onboarding.controller');
 
 const adminMiddleware = require('../middleware/admin.middleware');
 
 router.use(authMiddleware);
+
+// =====================
+// Vendor Self-Onboarding
+// =====================
+/**
+ * Setup Shop and Stall for new Vendor
+ * POST /api/vendors/setup-shop
+ */
+router.post('/setup-shop', vendorOnboardingController.setupShop);
+
+// router.use(adminMiddleware); // Removed to allow fallthrough for non-admin routes like products
 
 // =====================
 // Vendor Management

@@ -437,7 +437,7 @@ exports.verifyEmail = async (req, res) => {
         userRoles: { include: { role: true } },
         stakeholder: {
           include: {
-            vendor: true,
+            vendor: { include: { stalls: true } },
             supplier: true
           }
         },
@@ -518,7 +518,9 @@ exports.verifyEmail = async (req, res) => {
           email: user.email,
           role: roleName,
           status: 'ACTIVE',
-          kycStatus: updatedUser.stakeholder?.kycStatus || 'NOT_SUBMITTED'
+          kycStatus: updatedUser.stakeholder?.kycStatus || 'NOT_SUBMITTED',
+          vendorId: updatedUser.stakeholder?.vendor?.id || null,
+          stalls: updatedUser.stakeholder?.vendor?.stalls || []
         },
       },
     });
@@ -713,7 +715,7 @@ exports.login = async (req, res) => {
         },
         stakeholder: {
           include: {
-            vendor: true,
+            vendor: { include: { stalls: true } },
             supplier: true
           }
         },
@@ -842,7 +844,9 @@ exports.login = async (req, res) => {
           role: roleName,
           status: user.status,
           emailVerified: user.emailVerified,
-          kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED'
+          kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
+          vendorId: user.stakeholder?.vendor?.id || null,
+          stalls: user.stakeholder?.vendor?.stalls || []
         },
       },
     });
@@ -1438,9 +1442,11 @@ exports.getMe = async (req, res) => {
         role: user.userRoles[0]?.role?.name || 'Guest',
         kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
         businessId,
+        vendorId: user.stakeholder?.vendor?.id || null, // Actual UUID
         marketName,
         secondaryLabel,
-        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null
+        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null,
+        stalls: user.stakeholder?.vendor?.stalls || []
       }
     });
   } catch (err) {

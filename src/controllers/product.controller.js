@@ -39,6 +39,10 @@ exports.createProduct = async (req, res) => {
 
     // Auth check: Vendor can only create for themselves, Admin can create for any vendor
     const isAdmin = req.user.roleLevel && ['SUPER_ADMIN', 'NATIONAL_ADMIN', 'DISTRICT_ADMIN', 'CITY_ADMIN', 'MARKET_MASTER'].includes(req.user.roleLevel);
+
+    // Debug logging
+    console.log(`[CreateProduct] UserID: ${userId}, VendorOwnerID: ${vendor.stakeholder.user.id}, IsAdmin: ${isAdmin}`);
+
     if (vendor.stakeholder.user.id !== userId && !isAdmin) {
       return res.status(403).json({
         success: false,
@@ -426,7 +430,7 @@ exports.bulkUpload = async (req, res) => {
     // Parse CSV
     const { parse } = require('csv-parse/sync');
     const fs = require('fs');
-    
+
     // Read file from temp path since useTempFiles: true is set in middleware
     let fileContent;
     if (file.tempFilePath) {
@@ -434,16 +438,16 @@ exports.bulkUpload = async (req, res) => {
     } else {
       fileContent = file.data.toString('utf8');
     }
-    
+
     console.log('Raw file content length:', fileContent.length);
     console.log('First 200 chars:', fileContent.substring(0, 200));
-    
+
     // Remove empty lines and trim
     fileContent = fileContent.split('\n').filter(line => line.trim()).join('\n');
-    
+
     console.log('After filtering, content length:', fileContent.length);
     console.log('After filtering, first 200 chars:', fileContent.substring(0, 200));
-    
+
     let rows;
 
     try {
