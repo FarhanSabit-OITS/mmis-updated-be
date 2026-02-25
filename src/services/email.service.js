@@ -57,6 +57,41 @@ async function sendVerificationEmail(to, verifyUrl) {
   return info;
 }
 
+async function sendPasswordResetEmail(to, resetUrl) {
+  const html = `
+    <div style="font-family:system-ui,Segoe UI,Arial,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 12px;">
+      <h2 style="color: #1e293b; margin-bottom: 16px;">Reset your password</h2>
+      <p style="color: #475569; font-size: 16px; line-height: 1.5; margin-bottom: 24px;">
+        We received a request to reset the password for your account. If you didn't make this request, you can safely ignore this email.
+      </p>
+      <p style="margin-bottom: 32px;">
+        <a href="${resetUrl}"
+           style="background:#4f46e5;color:#fff;padding: 12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight: bold;font-size: 14px;">
+           Reset Password
+        </a>
+      </p>
+      <p style="color: #64748b; font-size: 14px; margin-bottom: 8px;">If the button doesn't work, copy and paste this URL into your browser:</p>
+      <p style="word-break:break-all; color: #4f46e5; font-size: 12px;">${resetUrl}</p>
+      <p style="margin-top:32px;font-size:12px;color:#94a3b8;border-top: 1px solid #f1f5f9; padding-top: 16px;">
+        This link is valid for 1 hour. For your security, please do not share this link with anyone.
+      </p>
+    </div>
+  `;
+
+  const text = `Reset your password: ${resetUrl}`;
+
+  const info = await getTransporter().sendMail({
+    from: SMTP_FROM || SMTP_USER,
+    to,
+    subject: 'Reset your password',
+    text,
+    html,
+  });
+
+  return info;
+}
+
 module.exports = {
   sendVerificationEmail,
+  sendPasswordResetEmail,
 };

@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const { sendVerificationEmail } = require('../services/email.service');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/email.service');
 const {
   validateEmail,
   validatePassword,
@@ -11,7 +11,7 @@ const {
 } = require('../utils/validation');
 
 
-const prisma = new PrismaClient();
+const prisma = require('../prisma');
 
 /**
  * POST /api/auth/register
@@ -29,7 +29,7 @@ const prisma = new PrismaClient();
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, businessName, marketId } = req.body;
     // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -37,6 +37,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields: name, email, password',
+      });
+    }
+
+    // Role-specific validation for markets
+    if (['Vendor', 'Supplier'].includes(role) && !marketId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Market selection is mandatory for Vendors and Suppliers',
       });
     }
 
@@ -123,6 +131,10 @@ exports.register = async (req, res) => {
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
             metadata: {
               purpose: 'VERIFY_EMAIL',
+              targetRole: role || 'Guest',
+              businessName: businessName || name, // Fallback to user name if not provided
+              marketId: marketId,
+              name: normalizedName
             },
           },
         });
@@ -190,7 +202,7 @@ exports.register = async (req, res) => {
  */
 exports.verifyEmail = async (req, res) => {
   try {
-    const { token } = req.query;
+    const token = req.query.token || req.body.token;
 
     // Check token is provided
     if (!token) {
@@ -263,6 +275,21 @@ exports.verifyEmail = async (req, res) => {
       });
     }
 
+    // Determine Target Role and Update
+    let targetRoleName = 'Guest';
+    let targetBusinessName = user.profile?.firstName || 'Business';
+    let marketId = invitation.metadata?.marketId;
+
+    if (user.email.endsWith('@mms.ug')) {
+      targetRoleName = 'MarketMaster';
+    } else if (invitation.metadata?.targetRole) {
+      const requestedRole = invitation.metadata.targetRole;
+      if (['Vendor', 'Supplier'].includes(requestedRole)) {
+        targetRoleName = requestedRole;
+        targetBusinessName = invitation.metadata.businessName || user.email;
+      }
+    }
+
     // Update user and invitation in transaction
     await prisma.$transaction(
       async (tx) => {
@@ -275,7 +302,7 @@ exports.verifyEmail = async (req, res) => {
           },
         });
 
-        // Update invitation: set status = ACCEPTED with timestamp and user reference
+        // Update invitation: set status = ACCEPTED
         await tx.invitation.update({
           where: { id: invitation.id },
           data: {
@@ -284,14 +311,147 @@ exports.verifyEmail = async (req, res) => {
             acceptedByUserId: user.id,
           },
         });
+
+        // If target role is different from Guest, process registration intent
+        if (targetRoleName !== 'Guest') {
+          // Create Specific Entities but DO NOT upgrade role yet
+          if (targetRoleName === 'Vendor') {
+            // Check for existing stakeholder
+            let stakeholder = await tx.stakeholder.findUnique({
+              where: { userId: user.id }
+            });
+
+            if (!stakeholder) {
+              stakeholder = await tx.stakeholder.create({
+                data: {
+                  userId: user.id,
+                  stakeholderType: 'VENDOR',
+                  kycStatus: 'UNDER_REVIEW',
+                }
+              });
+            } else {
+              // Update status if it exists
+              stakeholder = await tx.stakeholder.update({
+                where: { id: stakeholder.id },
+                data: { kycStatus: 'UNDER_REVIEW' }
+              });
+            }
+
+            // Check for existing vendor record
+            const existingVendor = await tx.vendor.findUnique({
+              where: { stakeholderId: stakeholder.id }
+            });
+
+            if (!existingVendor) {
+              const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+              await tx.vendor.create({
+                data: {
+                  stakeholderId: stakeholder.id,
+                  vendorCode: `VND-${uniqueSuffix}`,
+                  businessName: targetBusinessName,
+                  vatRegistered: false,
+                  primaryMarketId: marketId
+                }
+              });
+            }
+          } else if (targetRoleName === 'Supplier') {
+            // Check for existing stakeholder
+            let stakeholder = await tx.stakeholder.findUnique({
+              where: { userId: user.id }
+            });
+
+            if (!stakeholder) {
+              stakeholder = await tx.stakeholder.create({
+                data: {
+                  userId: user.id,
+                  stakeholderType: 'SUPPLIER',
+                  kycStatus: 'UNDER_REVIEW',
+                }
+              });
+            } else {
+              // Update status
+              stakeholder = await tx.stakeholder.update({
+                where: { id: stakeholder.id },
+                data: {
+                  kycStatus: 'UNDER_REVIEW'
+                }
+              });
+            }
+
+            // Check for existing supplier record
+            const existingSupplier = await tx.supplier.findUnique({
+              where: { stakeholderId: stakeholder.id }
+            });
+
+            if (!existingSupplier) {
+              const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+              await tx.supplier.create({
+                data: {
+                  stakeholderId: stakeholder.id,
+                  supplierCode: `SUP-${uniqueSuffix}`,
+                  businessName: targetBusinessName,
+                  supplierType: 'WHOLESALER',
+                }
+              });
+            }
+          }
+
+          // SEND NOTIFICATION TO MARKET ADMIN
+          if (marketId && ['Vendor', 'Supplier'].includes(targetRoleName)) {
+            const marketMasters = await tx.marketMaster.findMany({
+              where: { marketId: marketId },
+              include: { admin: true }
+            });
+
+            for (const mm of marketMasters) {
+              if (mm.admin) {
+                await tx.notification.create({
+                  data: {
+                    userId: mm.admin.userId,
+                    type: 'REGISTRATION_APPROVAL',
+                    title: `Approval Needed: New ${targetRoleName}`,
+                    message: `${invitation.metadata?.name || user.email} has registered for your market and is awaiting your approval.`,
+                    priority: 'HIGH',
+                    data: {
+                      registrantId: user.id,
+                      registrantRole: targetRoleName,
+                      marketId: marketId,
+                      action: 'REVIEW_REGISTRATION'
+                    }
+                  }
+                });
+              }
+            }
+          }
+        }
       },
       {
-        timeout: 10000,
+        timeout: 20000,
       }
     );
 
-    // Generate Access Token (short-lived) to auto-login the user
-    const userRole = user.userRoles[0];
+    // Fetch updated user with new roles and stakeholder info
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        userRoles: { include: { role: true } },
+        stakeholder: {
+          include: {
+            vendor: true,
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: true,
+            pseudoMarketAdmin: true
+          }
+        }
+      }
+    });
+
+    // Fallback if no roles, though unlikely
+    const userRole = updatedUser.userRoles[0];
     const roleName = userRole?.role?.name || 'Guest';
     const roleLevel = userRole?.role?.level || null;
 
@@ -301,12 +461,17 @@ exports.verifyEmail = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
+        marketId: roleName === 'MarketMaster'
+          ? updatedUser.admin?.marketMaster?.marketId
+          : (roleName === 'GateCounter'
+            ? updatedUser.admin?.pseudoMarketAdmin?.marketId
+            : (updatedUser.stakeholder?.vendor?.primaryMarketId || null)),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
     );
 
-    // Generate Refresh Token (long-lived)
+    // Generate Refresh Token
     const refreshToken = jwt.sign(
       {
         userId: user.id,
@@ -317,16 +482,13 @@ exports.verifyEmail = async (req, res) => {
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
     );
 
-    // Calculate refresh token expiration time
     const refreshTokenExpiryDays = process.env.REFRESH_TOKEN_EXPIRY?.includes('d')
       ? parseInt(process.env.REFRESH_TOKEN_EXPIRY)
       : 7;
     const refreshTokenExpiresAt = new Date(Date.now() + refreshTokenExpiryDays * 24 * 60 * 60 * 1000);
 
-    // Hash the refresh token for database storage
     const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
 
-    // Create UserSession (for multi-device support)
     const sessionToken = crypto.randomBytes(32).toString('hex');
     await prisma.userSession.create({
       data: {
@@ -338,7 +500,6 @@ exports.verifyEmail = async (req, res) => {
       },
     });
 
-    // Set refresh token as HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -347,7 +508,6 @@ exports.verifyEmail = async (req, res) => {
       path: '/',
     });
 
-    // Respond with success and access token for auto-login
     return res.status(200).json({
       success: true,
       message: 'Email verified successfully. Logging you in...',
@@ -358,6 +518,7 @@ exports.verifyEmail = async (req, res) => {
           email: user.email,
           role: roleName,
           status: 'ACTIVE',
+          kycStatus: updatedUser.stakeholder?.kycStatus || 'NOT_SUBMITTED'
         },
       },
     });
@@ -550,6 +711,18 @@ exports.login = async (req, res) => {
             role: true,
           },
         },
+        stakeholder: {
+          include: {
+            vendor: true,
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: true,
+            pseudoMarketAdmin: true
+          }
+        }
       },
     });
 
@@ -598,6 +771,11 @@ exports.login = async (req, res) => {
         email: user.email,
         roleName,
         roleLevel,
+        marketId: roleName === 'MarketMaster'
+          ? user.admin?.marketMaster?.marketId
+          : (roleName === 'GateCounter'
+            ? user.admin?.pseudoMarketAdmin?.marketId
+            : (user.stakeholder?.vendor?.primaryMarketId || null)),
       },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
@@ -663,7 +841,8 @@ exports.login = async (req, res) => {
           email: user.email,
           role: roleName,
           status: user.status,
-          emailVerified: user.emailVerified
+          emailVerified: user.emailVerified,
+          kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED'
         },
       },
     });
@@ -995,6 +1174,382 @@ exports.generateGateToken = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+/**
+ * GET /api/auth/markets
+ * Fetch list of active markets
+ */
+exports.getMarkets = async (req, res) => {
+  try {
+    const markets = await prisma.market.findMany({
+      where: { status: 'ACTIVE' },
+      select: {
+        id: true,
+        name: true,
+        uniqueCode: true,
+      }
+    });
+    return res.status(200).json({
+      success: true,
+      data: markets
+    });
+  } catch (err) {
+    console.error('getMarkets error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/forgot-password
+ * Request a password reset link
+ */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !validateEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid email is required',
+      });
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    // Security: Always return success even if user not found to prevent enumeration
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, a reset link has been sent.',
+      });
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Save token in transaction: Invalidate old ones and create new one
+    await prisma.$transaction([
+      prisma.verificationToken.updateMany({
+        where: {
+          userId: user.id,
+          tokenType: 'PASSWORD_RESET',
+          isUsed: false,
+        },
+        data: { isUsed: true },
+      }),
+      prisma.verificationToken.create({
+        data: {
+          token,
+          tokenType: 'PASSWORD_RESET',
+          userId: user.id,
+          email: normalizedEmail,
+          expiresAt,
+        },
+      }),
+    ]);
+
+    // Send email
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendBase}/reset-password?token=${encodeURIComponent(token)}`;
+
+    try {
+      await sendPasswordResetEmail(normalizedEmail, resetUrl);
+    } catch (mailErr) {
+      console.error('Password reset email failed:', mailErr);
+      // We still return success to the user
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists with this email, a reset link has been sent.',
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/reset-password
+ * Reset password using token
+ */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and new password are required',
+      });
+    }
+
+    if (!validatePassword(password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be between 8 and 64 characters',
+      });
+    }
+
+    // Verify token
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (
+      !verificationToken ||
+      verificationToken.tokenType !== 'PASSWORD_RESET' ||
+      verificationToken.isUsed ||
+      verificationToken.expiresAt < new Date()
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset link',
+      });
+    }
+
+    const userId = verificationToken.userId;
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Update in transaction: Set password, mark token used, revoke sessions
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          lastPasswordChange: new Date(),
+        },
+      }),
+      prisma.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: {
+          isUsed: true,
+          usedAt: new Date(),
+        },
+      }),
+      // Session Revocation: Kick out from all devices
+      prisma.userSession.updateMany({
+        where: { userId, isActive: true },
+        data: {
+          isActive: false,
+          logoutReason: 'PASSWORD_RESET',
+          loggedOutAt: new Date(),
+        },
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully. Please log in with your new password.',
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+    });
+  }
+};
+
+/**
+ * GET /api/auth/me
+ * Get current user profile details
+ */
+exports.getMe = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+        stakeholder: {
+          include: {
+            vendor: { include: { primaryMarket: true, stalls: true } },
+            supplier: true
+          }
+        },
+        admin: {
+          include: {
+            marketMaster: { include: { market: true } }
+          }
+        },
+        userRoles: {
+          include: { role: true }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Determine name
+    const profile = user.profile;
+    const fullName = profile
+      ? `${profile.firstName} ${profile.lastName}`.trim()
+      : user.email.split('@')[0];
+
+    // Get primary market name
+    let marketName = null;
+    let businessId = null;
+    let secondaryLabel = 'User';
+
+    if (user.stakeholder?.vendor) {
+      marketName = user.stakeholder.vendor.primaryMarket?.name || 'N/A';
+      businessId = user.stakeholder.vendor.vendorCode;
+      secondaryLabel = `Vendor ID: ${businessId}`;
+    } else if (user.admin?.marketMaster) {
+      marketName = user.admin.marketMaster.market?.name || 'N/A';
+      businessId = user.admin.id;
+      secondaryLabel = `Master ID: ${user.admin.adminCode || businessId}`;
+    } else if (user.stakeholder?.supplier) {
+      businessId = user.stakeholder.supplier.supplierCode;
+      secondaryLabel = `Supplier ID: ${businessId}`;
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        phone: user.phone || profile?.primaryPhone || 'No phone set',
+        name: fullName,
+        role: user.userRoles[0]?.role?.name || 'Guest',
+        kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
+        businessId,
+        marketName,
+        secondaryLabel,
+        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null
+      }
+    });
+  } catch (err) {
+    console.error('getMe error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+/**
+ * POST /api/auth/update-profile
+ * Update user's name
+ */
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { name } = req.body;
+
+    if (!name || name.trim().split(' ').length < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid name'
+      });
+    }
+
+    const parts = name.trim().split(' ');
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(' ') || ' ';
+
+    await prisma.userProfile.upsert({
+      where: { userId },
+      update: { firstName, lastName },
+      create: {
+        userId,
+        firstName,
+        lastName,
+        primaryPhone: '',
+        primaryEmail: req.user.email
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully'
+    });
+  } catch (err) {
+    console.error('updateProfile error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+/**
+ * POST /api/auth/change-password
+ * Change password for logged in user
+ */
+exports.changePassword = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current and new passwords are required'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || !(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    if (!validatePassword(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password does not meet requirements (8-64 characters)'
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        lastPasswordChange: new Date()
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (err) {
+    console.error('changePassword error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
     });
   }
 };
