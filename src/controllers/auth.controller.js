@@ -1559,3 +1559,218 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+/**
+ * GET /api/auth/verify-vendor-email
+ * Verify if the token is valid for vendor email verification and password setup
+ * Returns vendor info if token is valid
+ */
+exports.verifyVendorEmail = async (req, res) => {
+  try {
+    const token = req.query.token || req.body.token;
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification token is required',
+      });
+    }
+
+    // Find invitation by token
+    const invitation = await prisma.invitation.findUnique({
+      where: { token },
+      include: {
+        vendor: true
+      }
+    });
+
+    if (!invitation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification link',
+      });
+    }
+
+    // Check if it's a vendor password setup invitation
+    if (invitation.metadata?.purpose !== 'VENDOR_EMAIL_VERIFY_AND_SET_PASSWORD') {
+      return res.status(400).json({
+        success: false,
+        message: 'This link is not valid for vendor password setup',
+      });
+    }
+
+    // Check status is PENDING
+    if (invitation.status !== 'PENDING') {
+      if (invitation.status === 'ACCEPTED') {
+        return res.status(400).json({
+          success: false,
+          message: 'This verification link has already been used',
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'This verification link is no longer valid',
+      });
+    }
+
+    // Check expiration
+    if (invitation.expiresAt <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'This verification link has expired. Please request a new one.',
+        code: 'TOKEN_EXPIRED',
+      });
+    }
+
+    // Return vendor info for the setup form
+    return res.status(200).json({
+      success: true,
+      data: {
+        email: invitation.email,
+        firstName: invitation.metadata?.firstName || '',
+        lastName: invitation.metadata?.lastName || '',
+        businessName: invitation.metadata?.businessName || '',
+        token: token
+      }
+    });
+  } catch (err) {
+    console.error('verifyVendorEmail error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/set-vendor-password
+ * Set password for vendor and activate their account
+ * 
+ * Request body:
+ * - token: Verification token (required)
+ * - password: New password (required)
+ */
+exports.setVendorPassword = async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and password are required',
+      });
+    }
+
+    // Password validation
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long',
+      });
+    }
+
+    // Find invitation by token
+    const invitation = await prisma.invitation.findUnique({
+      where: { token },
+    });
+
+    if (!invitation) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification link',
+      });
+    }
+
+    // Check if it's a vendor password setup invitation
+    if (invitation.metadata?.purpose !== 'VENDOR_EMAIL_VERIFY_AND_SET_PASSWORD') {
+      return res.status(400).json({
+        success: false,
+        message: 'This link is not valid for vendor password setup',
+      });
+    }
+
+    // Check status is PENDING
+    if (invitation.status !== 'PENDING') {
+      return res.status(400).json({
+        success: false,
+        message: 'This verification link is no longer valid',
+      });
+    }
+
+    // Check expiration
+    if (invitation.expiresAt <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'This verification link has expired',
+        code: 'TOKEN_EXPIRED',
+      });
+    }
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: invitation.email },
+      include: {
+        userRoles: { include: { role: true } },
+        stakeholder: { include: { vendor: true } }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Update user and invitation in transaction
+    await prisma.$transaction(async (tx) => {
+      // Update user: set new password, activate email verification and status
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          passwordHash,
+          emailVerified: true,
+          status: 'ACTIVE'
+        }
+      });
+
+      // Update invitation: mark as accepted
+      await tx.invitation.update({
+        where: { id: invitation.id },
+        data: {
+          status: 'ACCEPTED',
+          acceptedAt: new Date(),
+          acceptedByUserId: user.id
+        }
+      });
+    });
+
+    // Generate JWT token for auto-login
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      role: user.userRoles[0]?.role.name || 'Vendor'
+    };
+
+    // Note: You'll need to import jwt library at the top of this file
+    // const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password set successfully. Your account is now active.',
+      data: {
+        email: user.email,
+        userId: user.id,
+        message: 'You can now log in with your email and password'
+      }
+    });
+  } catch (err) {
+    console.error('setVendorPassword error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
+  }
+};

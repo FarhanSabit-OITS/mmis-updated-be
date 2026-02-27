@@ -298,7 +298,6 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
 const createVendor = async (vendorData) => {
     const {
         email,
-        password = 'Vendor@123', // Default password
         firstName,
         lastName,
         businessName,
@@ -310,7 +309,9 @@ const createVendor = async (vendorData) => {
     } = vendorData;
 
     const normalizedEmail = email.toLowerCase().trim();
-    const passwordHash = await bcrypt.hash(password, 10);
+    // Generate a temporary random password for the account pending email verification
+    const tempPassword = crypto.randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
 
     // Pre-check for unique constraints
     if (phone) {
@@ -339,14 +340,14 @@ const createVendor = async (vendorData) => {
             throw new Error('Vendor role not found in database');
         }
 
-        // 2. Create User
+        // 2. Create User with PENDING status and email NOT verified
         const user = await tx.user.create({
             data: {
                 email: normalizedEmail,
                 passwordHash,
                 phone: phone || null,
-                status: 'ACTIVE',
-                emailVerified: true,
+                status: 'PENDING', // Status is PENDING until email is verified
+                emailVerified: false, // Not verified yet
                 userRoles: {
                     create: {
                         roleId: vendorRole.id
@@ -401,7 +402,35 @@ const createVendor = async (vendorData) => {
             }
         });
 
-        return vendor;
+        // 6. Create Invitation token for email verification
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 1); // Expires in 24 hours
+
+        const invitation = await tx.invitation.create({
+            data: {
+                email: normalizedEmail,
+                token: verificationToken,
+                invitationType: 'VENDOR_REGISTRATION',
+                status: 'PENDING',
+                expiresAt,
+                metadata: {
+                    purpose: 'VENDOR_EMAIL_VERIFY_AND_SET_PASSWORD',
+                    firstName,
+                    lastName,
+                    businessName,
+                    vendorId: vendor.id,
+                    stakeholderId: stakeholder.id
+                }
+            }
+        });
+
+        // Return vendor with invitation token info for email sending
+        return {
+            vendor,
+            verificationToken: invitation.token,
+            verificationEmail: normalizedEmail
+        };
     }, {
         timeout: 30000 // 30 seconds
     });
