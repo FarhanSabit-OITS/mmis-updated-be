@@ -6,6 +6,8 @@ const authMiddleware = require('../middleware/auth.middleware');
 router.post('/register', authController.register);
 router.get('/verify-email', authController.verifyEmail);
 router.post('/verify-email', authController.verifyEmail);
+router.get('/verify-vendor-email', authController.verifyVendorEmail);
+router.post('/set-vendor-password', authController.setVendorPassword);
 router.post('/login', authController.login);
 router.get('/markets', authController.getMarkets);
 router.post('/refresh', authController.refresh);
