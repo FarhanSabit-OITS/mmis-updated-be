@@ -34,16 +34,16 @@ jobs:
           cd /home/ubuntu/marketmaster/api
           npm ci --omit=dev
 
-      - name: Load env and run migrations
-        run: |
-          cd /home/ubuntu/marketmaster/api
-          set -a
-          source /home/ubuntu/marketmaster/.env
-          set +a
+      # - name: Load env and run migrations
+      #   run: |
+      #     cd /home/ubuntu/marketmaster/api
+      #     set -a
+      #     source /home/ubuntu/marketmaster/.env
+      #     set +a
 
-          if [ -d "prisma" ]; then
-            npx prisma migrate deploy
-          fi
+      #     if [ -d "prisma" ]; then
+      #       npx prisma migrate deploy
+      #     fi
 
       - name: Restart backend
         run: |
