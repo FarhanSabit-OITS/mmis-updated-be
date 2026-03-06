@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy-backend:
-    runs-on: [self-hosted, api-runner]
+    runs-on: [self-hosted, Linux, X64]
 
     steps:
       - name: Checkout backend repo
