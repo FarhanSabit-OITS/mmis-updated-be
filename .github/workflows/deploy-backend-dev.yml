@@ -1,0 +1,63 @@
+name: Deploy Backend Dev
+
+on:
+  push:
+    branches: ["dev"]
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    runs-on: [self-hosted, api-runner]
+
+    steps:
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Sync backend files
+        run: |
+          mkdir -p /home/ubuntu/marketmaster/api
+          rsync -a --delete src/ /home/ubuntu/marketmaster/api/src/
+          if [ -d "prisma" ]; then
+            rsync -a --delete prisma/ /home/ubuntu/marketmaster/api/prisma/
+          fi
+          rsync -a package*.json /home/ubuntu/marketmaster/api/ || true
+
+      - name: Install backend dependencies
+        run: |
+          cd /home/ubuntu/marketmaster/api
+          npm ci --omit=dev
+
+      - name: Load env and run migrations
+        run: |
+          cd /home/ubuntu/marketmaster/api
+          set -a
+          source /home/ubuntu/marketmaster/.env
+          set +a
+
+          if [ -d "prisma" ]; then
+            npx prisma migrate deploy
+          fi
+
+      - name: Restart backend
+        run: |
+          cd /home/ubuntu/marketmaster/api
+          set -a
+          source /home/ubuntu/marketmaster/.env
+          set +a
+
+          pm2 describe marketmaster-api >/dev/null 2>&1 \
+            && pm2 restart marketmaster-api --update-env \
+            || pm2 start src/index.js --name marketmaster-api --time --update-env
+
+          pm2 save
+
+      - name: Smoke test backend
+        run: |
+          curl -sSf http://127.0.0.1:5000/api/health || true
