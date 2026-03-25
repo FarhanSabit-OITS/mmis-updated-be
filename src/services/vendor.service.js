@@ -473,7 +473,7 @@ const deleteVendor = async (vendorId) => {
  * @param {string} adminId - ID of the Admin performing the approval
  * @returns {Promise<Object>} Updated user data
  */
-const approveRegistration = async (userId, adminId) => {
+const approveRegistration = async (userId, adminId, approverRoleName = 'MarketMaster') => {
     return await prisma.$transaction(async (tx) => {
         // 1. Get user with stakeholder info
         const user = await tx.user.findUnique({
@@ -534,17 +534,22 @@ const approveRegistration = async (userId, adminId) => {
         }
 
         // 4. Update Stakeholder status
+        const stakeholderUpdateData = {
+            kycStatus: 'VERIFIED',
+            kycVerifiedAt: new Date()
+        };
+
+        if (adminId) {
+            stakeholderUpdateData.kycVerifiedByAdminId = adminId;
+        }
+
         await tx.stakeholder.update({
             where: { id: user.stakeholder.id },
-            data: {
-                kycStatus: 'VERIFIED',
-                kycVerifiedAt: new Date(),
-                kycVerifiedByAdminId: adminId
-            }
+            data: stakeholderUpdateData
         });
 
         // 5. Update Vendor approval link if applicable
-        if (targetRoleName === 'Vendor' && user.stakeholder.vendor) {
+        if (targetRoleName === 'Vendor' && user.stakeholder.vendor && adminId) {
             const marketMaster = await tx.marketMaster.findUnique({
                 where: { adminId: adminId }
             });
@@ -563,7 +568,7 @@ const approveRegistration = async (userId, adminId) => {
                 userId: user.id,
                 type: 'REGISTRATION_APPROVED',
                 title: 'Welcome: Registration Approved!',
-                message: `Congratulations! Your registration as a ${targetRoleName} has been approved by the Market Administrator. You now have full access to your respective portal.`,
+                message: `Congratulations! Your registration as a ${targetRoleName} has been approved by the ${approverRoleName === 'SuperAdmin' ? 'Super Admin' : 'Market Administrator'}. You now have full access to your respective portal.`,
                 priority: 'HIGH',
                 actionLabel: 'Go to Dashboard',
                 actionUrl: '/dashboard'
@@ -576,11 +581,67 @@ const approveRegistration = async (userId, adminId) => {
     });
 };
 
+/**
+ * Reject a pending registration
+ * @param {string} userId - ID of the user to reject
+ * @param {string|null} adminId - ID of the Admin performing the rejection
+ * @param {string} approverRoleName - Role name of the approver
+ * @returns {Promise<Object>} Updated user data
+ */
+const rejectRegistration = async (userId, adminId, approverRoleName = 'MarketMaster') => {
+    return await prisma.$transaction(async (tx) => {
+        const user = await tx.user.findUnique({
+            where: { id: userId },
+            include: {
+                stakeholder: {
+                    include: {
+                        vendor: true,
+                        supplier: true
+                    }
+                }
+            }
+        });
+
+        if (!user) throw new Error('User not found');
+        if (!user.stakeholder) throw new Error('Stakeholder record not found');
+
+        const stakeholderUpdateData = {
+            kycStatus: 'REJECTED'
+        };
+
+        if (adminId) {
+            stakeholderUpdateData.kycVerifiedByAdminId = adminId;
+        }
+
+        await tx.stakeholder.update({
+            where: { id: user.stakeholder.id },
+            data: stakeholderUpdateData
+        });
+
+        await tx.notification.create({
+            data: {
+                userId: user.id,
+                type: 'REGISTRATION_REJECTED',
+                title: 'Registration Rejected',
+                message: `Your registration has been rejected by the ${approverRoleName === 'SuperAdmin' ? 'Super Admin' : 'Market Administrator'}. Please contact support for next steps.`,
+                priority: 'HIGH',
+                actionLabel: 'Contact Support',
+                actionUrl: '/support'
+            }
+        });
+
+        return user;
+    }, {
+        timeout: 30000
+    });
+};
+
 module.exports = {
     getAllVendorsWithDetails,
     createVendor,
     deleteVendor,
     approveRegistration,
+    rejectRegistration,
     buildVendorFilters,
     buildSortClause
 };

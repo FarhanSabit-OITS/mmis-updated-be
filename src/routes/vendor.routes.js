@@ -43,6 +43,12 @@ router.get('/', adminMiddleware, vendorController.getAllVendors);
 router.post('/:id/approve', adminMiddleware, vendorController.approveVendor);
 
 /**
+ * Reject a pending vendor/supplier registration
+ * POST /api/superadmin/vendors/:id/reject
+ */
+router.post('/:id/reject', adminMiddleware, vendorController.rejectVendor);
+
+/**
  * Create a new vendor
  */
 router.post('/', superAdminMiddleware, vendorController.createVendor);
