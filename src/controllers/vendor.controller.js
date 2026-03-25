@@ -231,19 +231,29 @@ exports.approveVendor = async (req, res) => {
     try {
         const { id } = req.params; // This is the user ID to approve
 
-        // Get admin ID from the authenticated user
-        const admin = await prisma.admin.findUnique({
-            where: { userId: req.user.userId }
-        });
+        let adminId = null;
 
-        if (!admin) {
+        if (req.user.roleName === 'MarketMaster') {
+            const admin = await prisma.admin.findUnique({
+                where: { userId: req.user.userId }
+            });
+
+            if (!admin) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Forbidden. You are not registered as an administrator.'
+                });
+            }
+
+            adminId = admin.id;
+        } else if (req.user.roleName !== 'SuperAdmin') {
             return res.status(403).json({
                 success: false,
-                message: 'Forbidden. You are not registered as an administrator.'
+                message: 'Forbidden. Admin privileges required.'
             });
         }
 
-        const result = await vendorService.approveRegistration(id, admin.id);
+        const result = await vendorService.approveRegistration(id, adminId, req.user.roleName);
 
         return res.status(200).json({
             success: true,
@@ -252,6 +262,52 @@ exports.approveVendor = async (req, res) => {
         });
     } catch (err) {
         console.error('Approve vendor error:', err);
+        return res.status(500).json({
+            success: false,
+            message: err.message || 'Internal server error',
+        });
+    }
+};
+
+/**
+ * POST /api/superadmin/vendors/:id/reject
+ * Reject a pending vendor/supplier registration
+ */
+exports.rejectVendor = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        let adminId = null;
+
+        if (req.user.roleName === 'MarketMaster') {
+            const admin = await prisma.admin.findUnique({
+                where: { userId: req.user.userId }
+            });
+
+            if (!admin) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Forbidden. You are not registered as an administrator.'
+                });
+            }
+
+            adminId = admin.id;
+        } else if (req.user.roleName !== 'SuperAdmin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Forbidden. Admin privileges required.'
+            });
+        }
+
+        const result = await vendorService.rejectRegistration(id, adminId, req.user.roleName);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Registration rejected successfully',
+            data: result
+        });
+    } catch (err) {
+        console.error('Reject vendor error:', err);
         return res.status(500).json({
             success: false,
             message: err.message || 'Internal server error',
