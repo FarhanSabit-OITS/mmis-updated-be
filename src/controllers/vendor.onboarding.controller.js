@@ -15,12 +15,20 @@ const generateUniqueCode = (prefix) => {
 exports.setupShop = async (req, res) => {
     try {
         const userId = req.user.userId || req.user.id;
-        const { marketId, shopName, stallNumber } = req.body;
+        const { marketId, shopName, stallNumber, monthlyRent } = req.body;
+        const parsedMonthlyRent = Number(monthlyRent);
 
         if (!marketId || !shopName) {
             return res.status(400).json({
                 success: false,
                 message: 'Market selection and Shop Name are required'
+            });
+        }
+
+        if (!Number.isFinite(parsedMonthlyRent) || parsedMonthlyRent <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'A valid monthly rent amount is required'
             });
         }
 
@@ -104,7 +112,7 @@ exports.setupShop = async (req, res) => {
                     occupationStatus: 'OCCUPIED',
                     contractStartDate: new Date(),
                     contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                    monthlyRent: "0.00",
+                    monthlyRent: parsedMonthlyRent.toFixed(2),
                     maintenanceFee: "0.00"
                 }
             });
@@ -126,6 +134,7 @@ exports.setupShop = async (req, res) => {
                     status: 'ACTIVE',
                     category: 'Retail',
                     dailyRate: "0.00", // Decimal as string is safer
+                    monthlyRate: parsedMonthlyRent.toFixed(2),
                     contractStartDate: new Date(),
                     contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
                 }

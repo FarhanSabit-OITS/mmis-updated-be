@@ -207,7 +207,7 @@ exports.deleteVendor = async (req, res) => {
             });
         }
 
-        await vendorService.deleteVendor(id);
+        await vendorService.deleteVendor(id, req.user.userId);
 
         return res.status(200).json({
             success: true,
