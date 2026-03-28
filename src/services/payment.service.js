@@ -225,6 +225,7 @@ class PaymentService {
         stakeholder: { include: { user: true } },
         rentContracts: {
           where: {
+            isActive: true,
             ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {}),
           },
           include: {
@@ -239,7 +240,8 @@ class PaymentService {
       throw new Error('Vendor not found');
     }
 
-    const obligations = await this.enrichRentPayments(vendor.rentContracts.flatMap((contract) => contract.payments));
+    const rentLedger = await this.calculateOutstandingRent(vendorId, marketScopeId);
+    const obligations = rentLedger.payments;
     const paymentHistory = await this.getRecentPayments(vendorId, 25, marketScopeId);
     const totalOutstanding = obligations.reduce((sum, item) => sum + item.outstandingAmount, 0);
     const totalOverdue = obligations.filter((item) => item.status === 'OVERDUE').reduce((sum, item) => sum + item.outstandingAmount, 0);
@@ -417,9 +419,13 @@ class PaymentService {
 
     const contract = contractId
       ? vendor.rentContracts.find((item) => item.id === contractId)
-      : vendor.rentContracts[0];
+      : null;
 
-    if (!contract) {
+    if (contractId && !contract) {
+      throw new Error('Requested rent contract was not found for this vendor');
+    }
+
+    if (!vendor.rentContracts.length) {
       throw new Error('Active rent contract not found for this vendor');
     }
 
@@ -429,21 +435,58 @@ class PaymentService {
     }
     const targetMonthKey = monthKeyFromDate(targetMonth);
 
-    let paymentRow = rentPaymentId
-      ? await prisma.rentPayment.findUnique({
-          where: { id: rentPaymentId },
-          include: { contract: { include: { shop: true, tenant: true } } }
-        })
-      : contract.payments.find((item) => monthKeyFromDate(item.periodStart) === targetMonthKey);
+    const allCandidatePayments = vendor.rentContracts.flatMap((item) =>
+      item.payments.map((payment) => ({
+        ...payment,
+        contract: {
+          id: item.id,
+          shop: item.shop,
+          tenant: { id: vendor.id, businessName: vendor.businessName }
+        }
+      }))
+    );
+
+    let paymentRow = null;
+    if (rentPaymentId) {
+      paymentRow = await prisma.rentPayment.findUnique({
+        where: { id: rentPaymentId },
+        include: { contract: { include: { shop: true, tenant: true } } }
+      });
+    } else {
+      const sameMonthCandidates = allCandidatePayments
+        .filter((item) => monthKeyFromDate(item.periodStart) === targetMonthKey)
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+      if (sameMonthCandidates.length === 1) {
+        paymentRow = sameMonthCandidates[0];
+      } else if (sameMonthCandidates.length > 1) {
+        const enrichedCandidates = await this.enrichRentPayments(sameMonthCandidates);
+        const unpaidCandidate = enrichedCandidates
+          .filter((item) => item.outstandingAmount > 0)
+          .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))[0];
+        paymentRow = sameMonthCandidates.find((item) => item.id === unpaidCandidate?.id) || sameMonthCandidates[0];
+      }
+    }
+
+    const resolvedContract = paymentRow
+      ? vendor.rentContracts.find((item) => item.id === paymentRow.contractId) || contract
+      : contract || (() => {
+          const sortedContracts = [...vendor.rentContracts].sort((a, b) => {
+            const aDue = a.payments.map((p) => new Date(p.dueDate).getTime()).sort()[0] || Number.MAX_SAFE_INTEGER;
+            const bDue = b.payments.map((p) => new Date(p.dueDate).getTime()).sort()[0] || Number.MAX_SAFE_INTEGER;
+            return aDue - bDue;
+          });
+          return sortedContracts[0];
+        })();
 
     if (!paymentRow) {
       paymentRow = await prisma.rentPayment.create({
         data: {
-          contractId: contract.id,
-          amount: contract.monthlyRent,
+          contractId: resolvedContract.id,
+          amount: resolvedContract.monthlyRent,
           periodStart: targetMonth,
           periodEnd: endOfMonthUtc(targetMonth),
-          dueDate: new Date(Date.UTC(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth(), contract.paymentDay || 1)),
+          dueDate: new Date(Date.UTC(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth(), resolvedContract.paymentDay || 1)),
           paymentMethod: paymentMethod || 'CASH',
           status: 'PENDING',
           notes: notes || null,
@@ -469,13 +512,13 @@ class PaymentService {
         metadata: {
           vendorId,
           vendorName: vendor.businessName,
-          contractId: contract.id,
+          contractId: paymentRow.contractId,
           rentPaymentId: paymentRow.id,
-          marketId: contract.shop.marketId,
-          shopNumber: contract.shop.shopNumber,
+          marketId: paymentRow.contract.shop.marketId,
+          shopNumber: paymentRow.contract.shop.shopNumber,
           periodLabel: `${targetMonth.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
           documentId,
-          description: `Rent payment for ${contract.shop.shopNumber}`,
+          description: `Rent payment for ${paymentRow.contract.shop.shopNumber}`,
           notes: notes || null,
           enteredByUserId: actorUserId,
         }
@@ -483,7 +526,7 @@ class PaymentService {
     });
 
     const obligation = (await this.enrichRentPayments([paymentRow]))[0];
-    const currentPaid = obligation.paidAmount + toNumber(amount);
+    const currentPaid = obligation.paidAmount;
     const outstandingAmount = Math.max(obligation.amount - currentPaid, 0);
     const nextStatus = outstandingAmount <= 0 ? 'PAID' : (new Date(paymentRow.dueDate) < new Date() ? 'OVERDUE' : 'PENDING');
 
