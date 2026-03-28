@@ -13,17 +13,13 @@ router.get('/vendors/:vendorId/payments/tax', paymentController.getVendorTaxPaym
 router.get('/vendors/:vendorId/payments/history', paymentController.getVendorPaymentHistory);
 
 // Payment processing routes
-router.post('/payments/rent/pay', paymentController.processRentPayment);
-router.post('/payments/tax/pay', paymentController.processTaxPayment);
-router.post('/payments/generate-invoice', paymentController.generateInvoice);
+router.post('/payments/evidence', paymentController.uploadPaymentEvidence);
+router.post('/payments/rent/record', paymentController.recordRentPayment);
 
 // Admin payment routes
 router.get('/admin/payments/collections', paymentController.getAdminPaymentCollections);
 router.get('/admin/payments/outstanding', paymentController.getOutstandingPayments);
+router.get('/admin/payments/vendors', paymentController.getScopedVendorsWithPayments);
 router.post('/admin/payments/send-reminder', paymentController.sendPaymentReminder);
-
-// Webhook routes (may not need authentication for external services)
-router.post('/webhooks/payment-confirmation', paymentController.handlePaymentWebhook);
-router.post('/webhooks/ura-callback', paymentController.handleURACallback);
 
 module.exports = router;
