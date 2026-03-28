@@ -1,421 +1,589 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../prisma');
+
+const toNumber = (value) => Number(value || 0);
+const startOfMonthUtc = (input) => {
+  const date = input ? new Date(input) : new Date();
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
+};
+const endOfMonthUtc = (input) => {
+  const date = input ? new Date(input) : new Date();
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+};
+const monthKeyFromDate = (date) => {
+  const d = new Date(date);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+};
+const normalizePeriodMonth = (input) => {
+  if (!input) return null;
+  if (input instanceof Date) return startOfMonthUtc(input);
+  if (/^\d{4}-\d{2}$/.test(input)) return startOfMonthUtc(`${input}-01`);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return startOfMonthUtc(input);
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(input)) {
+    const [y, m, d] = input.split('/');
+    return startOfMonthUtc(`${y}-${m}-${d}`);
+  }
+  const parsed = new Date(input);
+  return Number.isNaN(parsed.getTime()) ? null : startOfMonthUtc(parsed);
+};
 
 class PaymentService {
-  // Get vendor payment summary
-  async getVendorPaymentSummary(vendorId) {
-    try {
-      // Get vendor details
-      const vendor = await prisma.vendor.findUnique({
-        where: { id: vendorId },
+  async getAdminPaymentCollections(marketId, dateRange = null) {
+    const txWhere = {
+      type: 'RENT_PAYMENT',
+      status: 'COMPLETED',
+      ...(marketId ? { metadata: { path: ['marketId'], equals: marketId } } : {})
+    };
+
+    if (dateRange?.start && dateRange?.end) {
+      txWhere.createdAt = {
+        gte: new Date(dateRange.start),
+        lte: new Date(dateRange.end),
+      };
+    }
+
+    const [transactions, duePayments, paidThisMonth] = await Promise.all([
+      prisma.transaction.findMany({
+        where: txWhere,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          stakeholder: { include: { user: true, vendor: true } }
+        }
+      }),
+      prisma.rentPayment.findMany({
+        where: {
+          contract: {
+            ...(marketId ? { shop: { marketId } } : {})
+          }
+        },
+        include: {
+          contract: {
+            include: {
+              tenant: true,
+              shop: { include: { market: true } }
+            }
+          }
+        }
+      }),
+      prisma.transaction.findMany({
+        where: {
+          type: 'RENT_PAYMENT',
+          status: 'COMPLETED',
+          createdAt: {
+            gte: startOfMonthUtc(),
+            lte: endOfMonthUtc(),
+          },
+          ...(marketId ? { metadata: { path: ['marketId'], equals: marketId } } : {})
+        }
+      })
+    ]);
+
+    const obligations = await this.enrichRentPayments(duePayments);
+    const totalRevenue = transactions.reduce((sum, tx) => sum + toNumber(tx.amount), 0);
+    const monthlyRevenue = paidThisMonth.reduce((sum, tx) => sum + toNumber(tx.amount), 0);
+    const pendingPayments = obligations.filter((item) => item.status === 'PENDING').reduce((sum, item) => sum + item.outstandingAmount, 0);
+    const overduePayments = obligations.filter((item) => item.status === 'OVERDUE').reduce((sum, item) => sum + item.outstandingAmount, 0);
+    const expectedPayments = obligations.reduce((sum, item) => sum + item.amount, 0);
+    const vendorTotals = new Map();
+
+    for (const tx of transactions) {
+      const vendorId = tx.metadata?.vendorId || tx.stakeholder?.vendor?.id || tx.stakeholderId;
+      const vendorName = tx.metadata?.vendorName || tx.stakeholder?.vendor?.businessName || tx.stakeholder?.user?.email || 'Unknown Vendor';
+      const current = vendorTotals.get(vendorId) || { vendorId, vendorName, totalPaid: 0 };
+      current.totalPaid += toNumber(tx.amount);
+      vendorTotals.set(vendorId, current);
+    }
+
+    const recentPayments = transactions.slice(0, 10).map((tx) => ({
+      id: tx.id,
+      type: 'RENT',
+      amount: toNumber(tx.amount),
+      paymentDate: tx.createdAt,
+      status: 'PAID',
+      method: tx.paymentMethod || 'CASH',
+      transactionId: tx.externalReference || tx.referenceId || tx.id,
+      description: tx.metadata?.description || `Rent payment for ${tx.metadata?.periodLabel || 'scheduled period'}`,
+      reference: tx.externalReference || tx.referenceId || tx.id,
+    }));
+
+    return {
+      totalRevenue,
+      monthlyRevenue,
+      pendingPayments,
+      overduePayments,
+      collectionRate: expectedPayments > 0 ? (totalRevenue / expectedPayments) * 100 : 100,
+      topPayingVendors: Array.from(vendorTotals.values()).sort((a, b) => b.totalPaid - a.totalPaid).slice(0, 5),
+      recentPayments,
+    };
+  }
+
+  async getOutstandingPayments(marketId) {
+    const duePayments = await prisma.rentPayment.findMany({
+      where: {
+        contract: {
+          ...(marketId ? { shop: { marketId } } : {})
+        }
+      },
+      include: {
+        contract: {
+          include: {
+            tenant: true,
+            shop: true
+          }
+        }
+      },
+      orderBy: { dueDate: 'asc' }
+    });
+
+    const obligations = await this.enrichRentPayments(duePayments);
+    return obligations
+      .filter((item) => item.outstandingAmount > 0)
+      .map((item) => ({
+        vendorId: item.vendorId,
+        vendorName: item.vendorName,
+        shopNumber: item.shopNumber,
+        amountDue: item.outstandingAmount,
+        dueDate: item.dueDate,
+        daysOverdue: item.daysOverdue,
+        paymentType: 'RENT',
+        status: item.status,
+        periodLabel: item.periodLabel,
+      }));
+  }
+
+  async getScopedVendorsWithPayments(marketId = null, pagination = {}) {
+    const page = Math.max(Number(pagination.page || 1), 1);
+    const limit = Math.min(Math.max(Number(pagination.limit || 20), 1), 100);
+    const search = pagination.search?.trim();
+    const vendorWhere = {
+      ...(marketId ? { primaryMarketId: marketId } : {}),
+      ...(search ? {
+        OR: [
+          { businessName: { contains: search, mode: 'insensitive' } },
+          { vendorCode: { contains: search, mode: 'insensitive' } },
+          { stakeholder: { user: { email: { contains: search, mode: 'insensitive' } } } }
+        ]
+      } : {})
+    };
+
+    const [vendors, totalCount] = await Promise.all([
+      prisma.vendor.findMany({
+        where: vendorWhere,
         include: {
           primaryMarket: true,
-          stakeholder: {
-            include: {
-              user: true
-            }
-          },
+          stakeholder: { include: { user: true } },
           rentContracts: {
             where: { isActive: true },
             include: {
-              shop: true,
-              payments: {
-                where: {
-                  status: { in: ['PENDING', 'OVERDUE'] }
-                },
-                orderBy: { dueDate: 'asc' }
-              }
-            }
-          }
-        }
-      });
-
-      if (!vendor) {
-        throw new Error('Vendor not found');
-      }
-
-      // Get outstanding rent payments
-      const outstandingRent = await this.calculateOutstandingRent(vendorId);
-
-      // Get outstanding tax payments
-      const outstandingTax = await this.calculateOutstandingTax(vendorId);
-
-      // Get recent payment history
-      const recentPayments = await this.getRecentPayments(vendorId);
-
-      return {
-        vendor: {
-          id: vendor.id,
-          name: vendor.businessName || vendor.stakeholder.user.name,
-          market: vendor.primaryMarket?.name || 'Unknown Market',
-          phone: vendor.stakeholder.user.phone || 'N/A'
-        },
-        outstandingRent,
-        outstandingTax,
-        totalOutstanding: outstandingRent.total + outstandingTax.total,
-        recentPayments,
-        nextDueDate: this.getNextDueDate(outstandingRent.payments, outstandingTax.payments)
-      };
-    } catch (error) {
-      console.error('Error getting vendor payment summary:', error);
-      throw error;
-    }
-  }
-
-  // Calculate outstanding rent payments
-  async calculateOutstandingRent(vendorId) {
-    try {
-      const rentPayments = await prisma.rentPayment.findMany({
-        where: {
-          contract: {
-            tenantId: vendorId,
-            status: 'ACTIVE'
-          },
-          status: { in: ['PENDING', 'OVERDUE'] }
-        },
-        include: {
-          contract: {
-            include: {
-              shop: true
+              shop: { include: { market: true } },
+              payments: true
             }
           }
         },
-        orderBy: { dueDate: 'asc' }
-      });
-
-      const total = rentPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
-
-      return {
-        payments: rentPayments,
-        total: total,
-        count: rentPayments.length
-      };
-    } catch (error) {
-      console.error('Error calculating outstanding rent:', error);
-      throw error;
-    }
-  }
-
-  // Calculate outstanding tax payments
-  async calculateOutstandingTax(vendorId) {
-    try {
-      const taxPayments = await prisma.taxPayment.findMany({
-        where: {
-          vendorId: vendorId,
-          status: { in: ['PENDING', 'OVERDUE'] }
-        },
-        include: {
-          market: true
-        },
-        orderBy: { dueDate: 'asc' }
-      });
-
-      const total = taxPayments.reduce((sum, payment) => sum + parseFloat(payment.amount), 0);
-
-      return {
-        payments: taxPayments,
-        total: total,
-        count: taxPayments.length
-      };
-    } catch (error) {
-      console.error('Error calculating outstanding tax:', error);
-      throw error;
-    }
-  }
-
-  // Get recent payment history
-  async getRecentPayments(vendorId, limit = 10) {
-    try {
-      const rentPayments = await prisma.rentPayment.findMany({
-        where: {
-          contract: {
-            tenantId: vendorId
-          },
-          status: 'PAID'
-        },
-        include: {
-          contract: {
-            include: {
-              shop: true
-            }
-          }
-        },
-        orderBy: { paymentDate: 'desc' },
+        orderBy: { businessName: 'asc' },
+        skip: (page - 1) * limit,
         take: limit
-      });
+      }),
+      prisma.vendor.count({ where: vendorWhere })
+    ]);
 
-      const taxPayments = await prisma.taxPayment.findMany({
-        where: {
-          vendorId: vendorId,
-          status: 'PAID'
-        },
-        include: {
-          market: true
-        },
-        orderBy: { paymentDate: 'desc' },
-        take: limit
-      });
-
-      // Combine and sort by payment date
-      const allPayments = [...rentPayments, ...taxPayments]
-        .map(payment => ({
-          id: payment.id,
-          type: payment.contract ? 'RENT' : 'TAX',
-          amount: parseFloat(payment.amount),
-          paymentDate: payment.paymentDate,
-          paymentMethod: payment.paymentMethod,
-          receiptNumber: payment.receiptNumber,
-          shop: payment.contract?.shop?.shopNumber || null,
-          taxType: payment.taxType || null,
-          market: payment.market?.name || payment.contract?.shop?.market?.name
-        }))
-        .sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))
-        .slice(0, limit);
-
-      return allPayments;
-    } catch (error) {
-      console.error('Error getting recent payments:', error);
-      throw error;
-    }
-  }
-
-  // Get next due date from outstanding payments
-  getNextDueDate(rentPayments, taxPayments) {
-    const allPayments = [...rentPayments, ...taxPayments];
-    if (allPayments.length === 0) return null;
-
-    const nextDue = allPayments
-      .map(p => new Date(p.dueDate))
-      .sort((a, b) => a - b)[0];
-
-    return nextDue;
-  }
-
-  // Process rent payment
-  async processRentPayment(paymentData) {
-    try {
-      const { contractId, amount, paymentMethod, transactionId, notes } = paymentData;
-
-      // Get the contract and check if payment is valid
-      const contract = await prisma.rentContract.findUnique({
-        where: { id: contractId },
-        include: {
-          rentPayments: {
-            where: { status: 'PENDING' },
-            orderBy: { dueDate: 'asc' },
-            take: 1
-          }
-        }
-      });
-
-      if (!contract) {
-        throw new Error('Rent contract not found');
-      }
-
-      if (contract.status !== 'ACTIVE') {
-        throw new Error('Contract is not active');
-      }
-
-      const pendingPayment = contract.rentPayments[0];
-      if (!pendingPayment) {
-        throw new Error('No pending rent payment found for this contract');
-      }
-
-      // Check if amount matches
-      if (parseFloat(amount) !== parseFloat(pendingPayment.amount)) {
-        throw new Error('Payment amount does not match the due amount');
-      }
-
-      // Update payment status
-      const updatedPayment = await prisma.rentPayment.update({
-        where: { id: pendingPayment.id },
-        data: {
-          status: 'PAID',
-          paymentDate: new Date(),
-          paymentMethod: paymentMethod,
-          transactionId: transactionId,
-          notes: notes
-        }
-      });
-
+    const rows = await Promise.all(vendors.map(async (vendor) => {
+      const ledger = await this.getVendorPaymentSummary(vendor.id, marketId);
+      const firstContractMarket = vendor.rentContracts.find((contract) => contract.shop?.market)?.shop?.market;
       return {
-        success: true,
-        payment: updatedPayment,
-        receiptNumber: updatedPayment.receiptNumber
+        vendorId: vendor.id,
+        vendorCode: vendor.vendorCode,
+        vendorName: vendor.businessName,
+        marketId: vendor.primaryMarketId || firstContractMarket?.id || null,
+        marketName: vendor.primaryMarket?.name || firstContractMarket?.name || 'Unknown Market',
+        shopNumbers: vendor.rentContracts.map((contract) => contract.shop?.shopNumber).filter(Boolean),
+        totalOutstanding: ledger.totalOutstanding,
+        totalPaid: ledger.totalPaid,
+        overdueAmount: ledger.totalOverdue,
+        pendingAmount: ledger.totalPending,
+        paymentStatus: ledger.totalOutstanding > 0 ? (ledger.totalOverdue > 0 ? 'OVERDUE' : 'PENDING') : 'PAID',
       };
-    } catch (error) {
-      console.error('Error processing rent payment:', error);
-      throw error;
-    }
+    }));
+
+    return {
+      rows,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.max(Math.ceil(totalCount / limit), 1),
+        totalCount,
+        limit,
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
+    };
   }
 
-  // Process tax payment
-  async processTaxPayment(paymentData) {
-    try {
-      const { taxPaymentId, amount, paymentMethod, transactionId, notes } = paymentData;
-
-      // Get the tax payment
-      const taxPayment = await prisma.taxPayment.findUnique({
-        where: { id: taxPaymentId }
-      });
-
-      if (!taxPayment) {
-        throw new Error('Tax payment not found');
-      }
-
-      if (taxPayment.status !== 'PENDING') {
-        throw new Error('Tax payment is not pending');
-      }
-
-      // Check if amount matches
-      if (parseFloat(amount) !== parseFloat(taxPayment.amount)) {
-        throw new Error('Payment amount does not match the due amount');
-      }
-
-      // Update payment status
-      const updatedPayment = await prisma.taxPayment.update({
-        where: { id: taxPaymentId },
-        data: {
-          status: 'PAID',
-          paymentDate: new Date(),
-          paymentMethod: paymentMethod,
-          transactionId: transactionId,
-          collectionNotes: notes
-        }
-      });
-
-      return {
-        success: true,
-        payment: updatedPayment,
-        receiptNumber: updatedPayment.receiptNumber
-      };
-    } catch (error) {
-      console.error('Error processing tax payment:', error);
-      throw error;
-    }
-  }
-
-  // Generate receipt number
-  generateReceiptNumber(type = 'PAY') {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `${type}-${timestamp}-${random}`;
-  }
-
-  // Get admin payment collections summary
-  async getAdminPaymentCollections(marketId, dateRange = null) {
-    try {
-      let dateFilter = {};
-      if (dateRange) {
-        dateFilter = {
-          paymentDate: {
-            gte: new Date(dateRange.start),
-            lte: new Date(dateRange.end)
-          }
-        };
-      }
-
-      // Get rent payments
-      const rentCollections = await prisma.rentPayment.findMany({
-        where: {
-          contract: {
-            shop: {
-              marketId: marketId
-            }
+  async getVendorPaymentSummary(vendorId, marketScopeId = null) {
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+      include: {
+        primaryMarket: true,
+        stakeholder: { include: { user: true } },
+        rentContracts: {
+          where: {
+            ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {}),
           },
-          status: 'PAID',
-          ...dateFilter
-        },
-        include: {
-          contract: {
-            include: {
-              tenant: true,
-              shop: true
-            }
+          include: {
+            shop: true,
+            payments: { orderBy: { dueDate: 'asc' } }
           }
         }
-      });
+      }
+    });
 
-      // Get tax payments
-      const taxCollections = await prisma.taxPayment.findMany({
-        where: {
-          marketId: marketId,
-          status: 'PAID',
-          ...dateFilter
-        },
-        include: {
-          vendor: true
-        }
-      });
-
-      const totalRent = rentCollections.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-      const totalTax = taxCollections.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-
-      return {
-        rentCollections,
-        taxCollections,
-        totalRent,
-        totalTax,
-        totalCollections: totalRent + totalTax,
-        period: dateRange || 'All time'
-      };
-    } catch (error) {
-      console.error('Error getting admin payment collections:', error);
-      throw error;
+    if (!vendor) {
+      throw new Error('Vendor not found');
     }
+
+    const obligations = await this.enrichRentPayments(vendor.rentContracts.flatMap((contract) => contract.payments));
+    const paymentHistory = await this.getRecentPayments(vendorId, 25, marketScopeId);
+    const totalOutstanding = obligations.reduce((sum, item) => sum + item.outstandingAmount, 0);
+    const totalOverdue = obligations.filter((item) => item.status === 'OVERDUE').reduce((sum, item) => sum + item.outstandingAmount, 0);
+    const totalPending = obligations.filter((item) => item.status === 'PENDING').reduce((sum, item) => sum + item.outstandingAmount, 0);
+    const paidThisMonth = paymentHistory
+      .filter((item) => new Date(item.paymentDate) >= startOfMonthUtc())
+      .reduce((sum, item) => sum + item.amount, 0);
+    const nextPayment = obligations.find((item) => item.outstandingAmount > 0);
+
+    return {
+      vendor: {
+        id: vendor.id,
+        name: vendor.businessName || vendor.stakeholder.user.email,
+        market: vendor.primaryMarket?.name || 'Unknown Market',
+        phone: vendor.stakeholder.user.phone || 'N/A',
+      },
+      totalRentDue: totalOutstanding,
+      totalTaxDue: 0,
+      totalPaidThisMonth: paidThisMonth,
+      totalOverdue,
+      totalPending,
+      totalOutstanding,
+      totalPaid: paymentHistory.reduce((sum, item) => sum + item.amount, 0),
+      nextPaymentDue: nextPayment?.dueDate || null,
+      obligations,
+      recentPayments: paymentHistory,
+    };
   }
 
-  // Get outstanding payments for admin
-  async getOutstandingPayments(marketId) {
-    try {
-      // Get outstanding rent payments
-      const outstandingRent = await prisma.rentPayment.findMany({
-        where: {
-          contract: {
-            shop: {
-              marketId: marketId
-            },
-            status: 'ACTIVE'
-          },
-          status: { in: ['PENDING', 'OVERDUE'] }
-        },
-        include: {
-          contract: {
-            include: {
-              tenant: true,
-              shop: true
-            }
+  async calculateOutstandingRent(vendorId, marketScopeId = null) {
+    const payments = await prisma.rentPayment.findMany({
+      where: {
+        contract: {
+          tenantId: vendorId,
+          ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+        }
+      },
+      include: {
+        contract: { include: { shop: true, tenant: true } }
+      },
+      orderBy: { dueDate: 'asc' }
+    });
+
+    const obligations = await this.enrichRentPayments(payments);
+    return {
+      payments: obligations,
+      total: obligations.reduce((sum, item) => sum + item.outstandingAmount, 0),
+      count: obligations.length
+    };
+  }
+
+  async calculateOutstandingTax() {
+    return { payments: [], total: 0, count: 0 };
+  }
+
+  async getRecentPayments(vendorId, limit = 10, marketScopeId = null) {
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+      include: { stakeholder: true }
+    });
+    if (!vendor?.stakeholderId) return [];
+
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        stakeholderId: vendor.stakeholderId,
+        type: 'RENT_PAYMENT',
+        status: 'COMPLETED',
+        ...(marketScopeId ? { metadata: { path: ['marketId'], equals: marketScopeId } } : {})
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit
+    });
+
+    const documentIds = Array.from(new Set(transactions.map((tx) => tx.metadata?.documentId).filter(Boolean)));
+    const docs = documentIds.length
+      ? await prisma.document.findMany({
+          where: {
+            id: { in: documentIds }
           }
-        },
-        orderBy: { dueDate: 'asc' }
-      });
+        })
+      : [];
+    const docMap = new Map(docs.map((doc) => [doc.id, doc]));
 
-      // Get outstanding tax payments
-      const outstandingTax = await prisma.taxPayment.findMany({
-        where: {
-          marketId: marketId,
-          status: { in: ['PENDING', 'OVERDUE'] }
-        },
-        include: {
-          vendor: true
-        },
-        orderBy: { dueDate: 'asc' }
-      });
+    return transactions.map((tx) => ({
+      id: tx.id,
+      type: 'RENT',
+      amount: toNumber(tx.amount),
+      paymentDate: tx.createdAt,
+      status: 'PAID',
+      method: tx.paymentMethod || 'CASH',
+      transactionId: tx.externalReference || tx.referenceId || tx.id,
+      description: tx.metadata?.description || 'Rent payment',
+      reference: tx.externalReference || tx.referenceId || tx.id,
+      periodLabel: tx.metadata?.periodLabel || null,
+      receiptDocument: tx.metadata?.documentId ? docMap.get(tx.metadata.documentId) || null : null,
+    }));
+  }
 
-      const totalRent = outstandingRent.reduce((sum, p) => sum + parseFloat(p.amount), 0);
-      const totalTax = outstandingTax.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  async uploadPaymentEvidence({ vendorId, uploadedById, file }) {
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+      include: { stakeholder: true }
+    });
+    if (!vendor?.stakeholderId) {
+      throw new Error('Vendor not found');
+    }
+
+    const path = require('path');
+    const fs = require('fs');
+    const uploadDir = path.join(process.cwd(), 'uploads', 'payment-receipts');
+    fs.mkdirSync(uploadDir, { recursive: true });
+
+    const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const fullPath = path.join(uploadDir, safeName);
+    await file.mv(fullPath);
+
+    const document = await prisma.document.create({
+      data: {
+        stakeholderId: vendor.stakeholderId,
+        documentType: 'OTHER',
+        fileName: file.name,
+        fileUrl: `/uploads/payment-receipts/${safeName}`,
+        fileSize: file.size,
+        mimeType: file.mimetype || 'application/octet-stream',
+        uploadedById,
+        metadata: {
+          vendorId,
+          purpose: 'PAYMENT_RECEIPT',
+          category: 'RENT_PAYMENT_EVIDENCE'
+        }
+      }
+    });
+
+    return document;
+  }
+
+  async createOrUpdateRentPaymentEntry({
+    vendorId,
+    actorUserId,
+    marketScopeId = null,
+    contractId,
+    rentPaymentId,
+    amount,
+    paymentDate,
+    paymentMethod,
+    transactionId,
+    notes,
+    documentId,
+    periodMonth
+  }) {
+    if (!documentId) {
+      throw new Error('Payment evidence document is required before recording rent');
+    }
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { id: vendorId },
+      include: {
+        stakeholder: true,
+        rentContracts: {
+          where: {
+            isActive: true,
+            ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+          },
+          include: {
+            shop: true,
+            payments: true
+          }
+        }
+      }
+    });
+
+    if (!vendor?.stakeholderId) {
+      throw new Error('Vendor not found');
+    }
+
+    const contract = contractId
+      ? vendor.rentContracts.find((item) => item.id === contractId)
+      : vendor.rentContracts[0];
+
+    if (!contract) {
+      throw new Error('Active rent contract not found for this vendor');
+    }
+
+    const targetMonth = normalizePeriodMonth(periodMonth || paymentDate || new Date());
+    if (!targetMonth) {
+      throw new Error('Invalid period month. Use YYYY-MM or YYYY-MM-01.');
+    }
+    const targetMonthKey = monthKeyFromDate(targetMonth);
+
+    let paymentRow = rentPaymentId
+      ? await prisma.rentPayment.findUnique({
+          where: { id: rentPaymentId },
+          include: { contract: { include: { shop: true, tenant: true } } }
+        })
+      : contract.payments.find((item) => monthKeyFromDate(item.periodStart) === targetMonthKey);
+
+    if (!paymentRow) {
+      paymentRow = await prisma.rentPayment.create({
+        data: {
+          contractId: contract.id,
+          amount: contract.monthlyRent,
+          periodStart: targetMonth,
+          periodEnd: endOfMonthUtc(targetMonth),
+          dueDate: new Date(Date.UTC(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth(), contract.paymentDay || 1)),
+          paymentMethod: paymentMethod || 'CASH',
+          status: 'PENDING',
+          notes: notes || null,
+        },
+        include: { contract: { include: { shop: true, tenant: true } } }
+      });
+    }
+
+    const document = await prisma.document.findUnique({ where: { id: documentId } });
+    if (!document) {
+      throw new Error('Uploaded receipt document not found');
+    }
+
+    const tx = await prisma.transaction.create({
+      data: {
+        stakeholderId: vendor.stakeholderId,
+        type: 'RENT_PAYMENT',
+        amount,
+        status: 'COMPLETED',
+        referenceId: `rent-${paymentRow.id}-${Date.now()}`,
+        externalReference: transactionId || null,
+        paymentMethod,
+        metadata: {
+          vendorId,
+          vendorName: vendor.businessName,
+          contractId: contract.id,
+          rentPaymentId: paymentRow.id,
+          marketId: contract.shop.marketId,
+          shopNumber: contract.shop.shopNumber,
+          periodLabel: `${targetMonth.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
+          documentId,
+          description: `Rent payment for ${contract.shop.shopNumber}`,
+          notes: notes || null,
+          enteredByUserId: actorUserId,
+        }
+      }
+    });
+
+    const obligation = (await this.enrichRentPayments([paymentRow]))[0];
+    const currentPaid = obligation.paidAmount + toNumber(amount);
+    const outstandingAmount = Math.max(obligation.amount - currentPaid, 0);
+    const nextStatus = outstandingAmount <= 0 ? 'PAID' : (new Date(paymentRow.dueDate) < new Date() ? 'OVERDUE' : 'PENDING');
+
+    const updatedPayment = await prisma.rentPayment.update({
+      where: { id: paymentRow.id },
+      data: {
+        status: nextStatus,
+        paymentDate: outstandingAmount <= 0 ? new Date(paymentDate || new Date()) : paymentRow.paymentDate,
+        paymentMethod: paymentMethod || paymentRow.paymentMethod,
+        transactionId: transactionId || paymentRow.transactionId,
+        receiptNumber: outstandingAmount <= 0 ? (paymentRow.receiptNumber || `RCPT-${Date.now()}`) : paymentRow.receiptNumber,
+        notes: notes || paymentRow.notes,
+      },
+      include: { contract: { include: { shop: true, tenant: true } } }
+    });
+
+    const refreshedObligation = (await this.enrichRentPayments([updatedPayment]))[0];
+    return {
+      transaction: tx,
+      payment: updatedPayment,
+      ledgerItem: refreshedObligation,
+      receiptDocument: document,
+    };
+  }
+
+  async enrichRentPayments(rentPayments) {
+    if (!rentPayments.length) return [];
+
+    const paymentIds = rentPayments.map((item) => item.id);
+    const vendorIds = Array.from(new Set(rentPayments.map((item) => item.contract?.tenantId).filter(Boolean)));
+
+    const vendors = await prisma.vendor.findMany({
+      where: { id: { in: vendorIds } },
+      include: { stakeholder: true }
+    });
+    const stakeholderByVendorId = new Map(vendors.map((vendor) => [vendor.id, vendor.stakeholderId]));
+
+    const stakeholderIds = Array.from(new Set(Array.from(stakeholderByVendorId.values()).filter(Boolean)));
+    const transactions = stakeholderIds.length
+      ? await prisma.transaction.findMany({
+          where: {
+            stakeholderId: { in: stakeholderIds },
+            type: 'RENT_PAYMENT',
+            status: 'COMPLETED',
+          },
+          orderBy: { createdAt: 'asc' }
+        })
+      : [];
+
+    const txByPaymentId = new Map();
+    for (const tx of transactions) {
+      const paymentId = tx.metadata?.rentPaymentId;
+      if (!paymentId || !paymentIds.includes(paymentId)) continue;
+      const list = txByPaymentId.get(paymentId) || [];
+      list.push(tx);
+      txByPaymentId.set(paymentId, list);
+    }
+
+    return rentPayments.map((payment) => {
+      const installments = (txByPaymentId.get(payment.id) || []).map((tx) => ({
+        id: tx.id,
+        amount: toNumber(tx.amount),
+        paymentDate: tx.createdAt,
+        method: tx.paymentMethod,
+        reference: tx.externalReference || tx.referenceId || tx.id,
+        documentId: tx.metadata?.documentId || null,
+      }));
+      const paidAmount = installments.reduce((sum, tx) => sum + tx.amount, 0);
+      const amount = toNumber(payment.amount);
+      const outstandingAmount = Math.max(amount - paidAmount, 0);
+      const now = new Date();
+      const status = outstandingAmount <= 0 ? 'PAID' : (new Date(payment.dueDate) < now ? 'OVERDUE' : 'PENDING');
+      const daysOverdue = status === 'OVERDUE' ? Math.max(0, Math.floor((now - new Date(payment.dueDate)) / 86400000)) : 0;
 
       return {
-        outstandingRent,
-        outstandingTax,
-        totalOutstanding: totalRent + totalTax,
-        rentCount: outstandingRent.length,
-        taxCount: outstandingTax.length
+        id: payment.id,
+        contractId: payment.contractId,
+        vendorId: payment.contract?.tenantId || null,
+        vendorName: payment.contract?.tenant?.businessName || 'Unknown Vendor',
+        amount,
+        paidAmount,
+        outstandingAmount,
+        periodStart: payment.periodStart,
+        periodEnd: payment.periodEnd,
+        periodLabel: new Date(payment.periodStart).toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+        dueDate: payment.dueDate,
+        paymentDate: payment.paymentDate,
+        status,
+        paymentMethod: payment.paymentMethod,
+        transactionId: payment.transactionId,
+        isLate: status === 'OVERDUE',
+        gracePeriodDays: payment.gracePeriodDays || 0,
+        lateFee: toNumber(payment.lateFee),
+        shopNumber: payment.contract?.shop?.shopNumber || 'N/A',
+        landlordName: 'Market Administration',
+        daysOverdue,
+        installments,
+        notes: payment.notes || null,
       };
-    } catch (error) {
-      console.error('Error getting outstanding payments:', error);
-      throw error;
-    }
+    });
   }
 }
 

@@ -1443,6 +1443,7 @@ exports.getMe = async (req, res) => {
         kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
         businessId,
         vendorId: user.stakeholder?.vendor?.id || null, // Actual UUID
+        marketId: user.admin?.marketMaster?.marketId || user.stakeholder?.vendor?.primaryMarketId || null,
         marketName,
         secondaryLabel,
         shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null,

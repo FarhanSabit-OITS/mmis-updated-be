@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
+const path = require('path');
 
 const authRoutes = require('./routes/auth.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
@@ -27,6 +28,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser()); // Parse cookies for refresh token
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // File upload middleware (for bulk CSV uploads)
 app.use(fileUpload({

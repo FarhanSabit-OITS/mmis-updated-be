@@ -1,372 +1,150 @@
+const prisma = require('../prisma');
 const paymentService = require('../services/payment.service');
 
+const isAdmin = (user) => user.roleName === 'SuperAdmin' || user.roleName === 'MarketMaster';
+
+async function resolveVendorScope(vendorId, user) {
+  if (user.roleName === 'SuperAdmin') return null;
+  if (user.roleName === 'MarketMaster') return user.marketId;
+  const vendor = await prisma.vendor.findFirst({
+    where: { stakeholder: { userId: user.userId } },
+    select: { id: true, primaryMarketId: true }
+  });
+  if (!vendor || vendor.id !== vendorId) {
+    throw new Error('Unauthorized to view this vendor payment information');
+  }
+  return vendor.primaryMarketId || null;
+}
+
 class PaymentController {
-  // Get vendor payment summary
   async getVendorPaymentSummary(req, res) {
     try {
       const { vendorId } = req.params;
-
-      // Check if user is authorized (vendor themselves or admin)
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      const isVendor = req.user.roleName === 'Vendor';
-      
-      if (!isAdmin && (!isVendor || req.user.userId !== vendorId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view this vendor\'s payment information'
-        });
-      }
-
-      const summary = await paymentService.getVendorPaymentSummary(vendorId);
-
-      res.json({
-        success: true,
-        data: summary
-      });
+      const marketScopeId = await resolveVendorScope(vendorId, req.user);
+      const summary = await paymentService.getVendorPaymentSummary(vendorId, marketScopeId);
+      res.json({ success: true, data: summary });
     } catch (error) {
-      console.error('Error in getVendorPaymentSummary:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get payment summary'
-      });
+      res.status(error.message.includes('Unauthorized') ? 403 : 500).json({ success: false, message: error.message });
     }
   }
 
-  // Get vendor rent payments
   async getVendorRentPayments(req, res) {
     try {
       const { vendorId } = req.params;
-
-      // Check authorization
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      const isVendor = req.user.roleName === 'Vendor';
-      
-      if (!isAdmin && (!isVendor || req.user.userId !== vendorId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view this vendor\'s rent payments'
-        });
-      }
-
-      const rentData = await paymentService.calculateOutstandingRent(vendorId);
-
-      res.json({
-        success: true,
-        data: rentData
-      });
+      const marketScopeId = await resolveVendorScope(vendorId, req.user);
+      const rentData = await paymentService.calculateOutstandingRent(vendorId, marketScopeId);
+      res.json({ success: true, data: rentData });
     } catch (error) {
-      console.error('Error in getVendorRentPayments:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get rent payments'
-      });
+      res.status(error.message.includes('Unauthorized') ? 403 : 500).json({ success: false, message: error.message });
     }
   }
 
-  // Get vendor tax payments
   async getVendorTaxPayments(req, res) {
     try {
       const { vendorId } = req.params;
-
-      // Check authorization
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      const isVendor = req.user.roleName === 'Vendor';
-      
-      if (!isAdmin && (!isVendor || req.user.userId !== vendorId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view this vendor\'s tax payments'
-        });
-      }
-
-      const taxData = await paymentService.calculateOutstandingTax(vendorId);
-
-      res.json({
-        success: true,
-        data: taxData
-      });
+      const marketScopeId = await resolveVendorScope(vendorId, req.user);
+      const taxData = await paymentService.calculateOutstandingTax(vendorId, marketScopeId);
+      res.json({ success: true, data: taxData });
     } catch (error) {
-      console.error('Error in getVendorTaxPayments:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get tax payments'
-      });
+      res.status(error.message.includes('Unauthorized') ? 403 : 500).json({ success: false, message: error.message });
     }
   }
 
-  // Get vendor payment history
   async getVendorPaymentHistory(req, res) {
     try {
       const { vendorId } = req.params;
       const { limit = 10 } = req.query;
-
-      // Check authorization
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      const isVendor = req.user.roleName === 'Vendor';
-      
-      if (!isAdmin && (!isVendor || req.user.userId !== vendorId)) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view this vendor\'s payment history'
-        });
-      }
-
-      const history = await paymentService.getRecentPayments(vendorId, parseInt(limit));
-
-      res.json({
-        success: true,
-        data: history
-      });
+      const marketScopeId = await resolveVendorScope(vendorId, req.user);
+      const history = await paymentService.getRecentPayments(vendorId, parseInt(limit, 10), marketScopeId);
+      res.json({ success: true, data: history });
     } catch (error) {
-      console.error('Error in getVendorPaymentHistory:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get payment history'
-      });
+      res.status(error.message.includes('Unauthorized') ? 403 : 500).json({ success: false, message: error.message });
     }
   }
 
-  // Process rent payment
-  async processRentPayment(req, res) {
+  async getScopedVendorsWithPayments(req, res) {
     try {
-      const { contractId, amount, paymentMethod, transactionId, notes } = req.body;
-
-      // Validate required fields
-      if (!contractId || !amount || !paymentMethod) {
-        return res.status(400).json({
-          success: false,
-          message: 'Contract ID, amount, and payment method are required'
-        });
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to view vendor payment list' });
       }
-
-      const result = await paymentService.processRentPayment({
-        contractId,
-        amount,
-        paymentMethod,
-        transactionId,
-        notes,
-        processedBy: req.user.id
+      const marketId = req.user.roleName === 'MarketMaster' ? req.user.marketId : (req.query.marketId || null);
+      const data = await paymentService.getScopedVendorsWithPayments(marketId, {
+        page: req.query.page,
+        limit: req.query.limit,
+        search: req.query.search,
       });
-
-      res.json({
-        success: true,
-        message: 'Rent payment processed successfully',
-        data: result
-      });
+      res.json({ success: true, data });
     } catch (error) {
-      console.error('Error in processRentPayment:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to process rent payment'
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to get vendor payment list' });
     }
   }
 
-  // Process tax payment
-  async processTaxPayment(req, res) {
+  async uploadPaymentEvidence(req, res) {
     try {
-      const { taxPaymentId, amount, paymentMethod, transactionId, notes } = req.body;
-
-      // Validate required fields
-      if (!taxPaymentId || !amount || !paymentMethod) {
-        return res.status(400).json({
-          success: false,
-          message: 'Tax payment ID, amount, and payment method are required'
-        });
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to upload payment evidence' });
       }
-
-      const result = await paymentService.processTaxPayment({
-        taxPaymentId,
-        amount,
-        paymentMethod,
-        transactionId,
-        notes,
-        collectedBy: req.user.id
+      const { vendorId } = req.body;
+      if (!vendorId || !req.files?.file) {
+        return res.status(400).json({ success: false, message: 'vendorId and file are required' });
+      }
+      const document = await paymentService.uploadPaymentEvidence({
+        vendorId,
+        uploadedById: req.user.userId,
+        file: req.files.file,
       });
-
-      res.json({
-        success: true,
-        message: 'Tax payment processed successfully',
-        data: result
-      });
+      res.status(201).json({ success: true, data: document });
     } catch (error) {
-      console.error('Error in processTaxPayment:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to process tax payment'
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to upload payment evidence' });
     }
   }
 
-  // Get admin payment collections
+  async recordRentPayment(req, res) {
+    try {
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to record rent payment' });
+      }
+      const result = await paymentService.createOrUpdateRentPaymentEntry({
+        ...req.body,
+        actorUserId: req.user.userId,
+        marketScopeId: req.user.roleName === 'MarketMaster' ? req.user.marketId : null,
+      });
+      res.status(201).json({ success: true, message: 'Rent payment recorded successfully', data: result });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message || 'Failed to record rent payment' });
+    }
+  }
+
   async getAdminPaymentCollections(req, res) {
     try {
-      // Check if user is admin
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view payment collections'
-        });
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to view payment collections' });
       }
-
-      const { marketId, startDate, endDate } = req.query;
-
-      if (!marketId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Market ID is required'
-        });
-      }
-
+      const marketId = req.user.roleName === 'MarketMaster' ? req.user.marketId : (req.query.marketId || null);
+      const { startDate, endDate } = req.query;
       const dateRange = startDate && endDate ? { start: startDate, end: endDate } : null;
       const collections = await paymentService.getAdminPaymentCollections(marketId, dateRange);
-
-      res.json({
-        success: true,
-        data: collections
-      });
+      res.json({ success: true, data: collections });
     } catch (error) {
-      console.error('Error in getAdminPaymentCollections:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get payment collections'
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to get payment collections' });
     }
   }
 
-  // Get outstanding payments for admin
   async getOutstandingPayments(req, res) {
     try {
-      // Check if user is admin
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to view outstanding payments'
-        });
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to view outstanding payments' });
       }
-
-      const { marketId } = req.query;
-
-      if (!marketId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Market ID is required'
-        });
-      }
-
+      const marketId = req.user.roleName === 'MarketMaster' ? req.user.marketId : (req.query.marketId || null);
       const outstanding = await paymentService.getOutstandingPayments(marketId);
-
-      res.json({
-        success: true,
-        data: outstanding
-      });
+      res.json({ success: true, data: outstanding });
     } catch (error) {
-      console.error('Error in getOutstandingPayments:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to get outstanding payments'
-      });
+      res.status(500).json({ success: false, message: error.message || 'Failed to get outstanding payments' });
     }
   }
 
-  // Generate invoice (placeholder for future implementation)
-  async generateInvoice(req, res) {
-    try {
-      const { paymentId, type } = req.body;
-
-      // This would integrate with a PDF generation service
-      res.json({
-        success: true,
-        message: 'Invoice generation not yet implemented',
-        data: { paymentId, type }
-      });
-    } catch (error) {
-      console.error('Error in generateInvoice:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to generate invoice'
-      });
-    }
-  }
-
-  // Send payment reminder (placeholder for future implementation)
   async sendPaymentReminder(req, res) {
-    try {
-      const { vendorId, paymentType, message } = req.body;
-
-      // Check if user is admin
-      const isAdmin = req.user.roleName === 'SuperAdmin' || req.user.roleName === 'MarketMaster';
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Unauthorized to send payment reminders'
-        });
-      }
-
-      // This would integrate with notification service
-      res.json({
-        success: true,
-        message: 'Payment reminder functionality not yet implemented',
-        data: { vendorId, paymentType }
-      });
-    } catch (error) {
-      console.error('Error in sendPaymentReminder:', error);
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Failed to send payment reminder'
-      });
-    }
-  }
-
-  // Webhook for payment confirmation (URA gateway)
-  async handlePaymentWebhook(req, res) {
-    try {
-      const webhookData = req.body;
-
-      // Log webhook data for debugging
-      console.log('Payment webhook received:', webhookData);
-
-      // Process webhook based on provider
-      // This would contain logic to verify webhook authenticity
-      // and update payment status accordingly
-
-      res.json({
-        success: true,
-        message: 'Webhook received and processed'
-      });
-    } catch (error) {
-      console.error('Error in handlePaymentWebhook:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to process payment webhook'
-      });
-    }
-  }
-
-  // URA callback handler
-  async handleURACallback(req, res) {
-    try {
-      const callbackData = req.body;
-
-      // Log callback data
-      console.log('URA callback received:', callbackData);
-
-      // Process URA payment confirmation
-      // This would update payment status based on URA response
-
-      res.json({
-        success: true,
-        message: 'URA callback processed successfully'
-      });
-    } catch (error) {
-      console.error('Error in handleURACallback:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to process URA callback'
-      });
-    }
+    res.json({ success: true, message: 'Reminder stub kept as-is for now' });
   }
 }
 
