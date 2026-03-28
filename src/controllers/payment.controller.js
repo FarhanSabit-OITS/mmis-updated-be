@@ -136,7 +136,11 @@ class PaymentController {
         return res.status(403).json({ success: false, message: 'Unauthorized to view outstanding payments' });
       }
       const marketId = req.user.roleName === 'MarketMaster' ? req.user.marketId : (req.query.marketId || null);
-      const outstanding = await paymentService.getOutstandingPayments(marketId);
+      const outstanding = await paymentService.getOutstandingPayments(marketId, {
+        page: req.query.page,
+        limit: req.query.limit,
+        search: req.query.search,
+      });
       res.json({ success: true, data: outstanding });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message || 'Failed to get outstanding payments' });

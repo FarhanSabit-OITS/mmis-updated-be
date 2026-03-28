@@ -27,6 +27,36 @@ const normalizePeriodMonth = (input) => {
 };
 
 class PaymentService {
+  buildScopedVendorRows(vendors, obligationsByVendorId, paymentsByVendorId) {
+    return vendors.map((vendor) => {
+      const obligations = obligationsByVendorId.get(vendor.id) || [];
+      const payments = paymentsByVendorId.get(vendor.id) || [];
+      const firstContractMarket = vendor.rentContracts.find((contract) => contract.shop?.market)?.shop?.market;
+      const totalOutstanding = obligations.reduce((sum, item) => sum + item.outstandingAmount, 0);
+      const totalOverdue = obligations
+        .filter((item) => item.status === 'OVERDUE')
+        .reduce((sum, item) => sum + item.outstandingAmount, 0);
+      const totalPending = obligations
+        .filter((item) => item.status === 'PENDING')
+        .reduce((sum, item) => sum + item.outstandingAmount, 0);
+      const totalPaid = payments.reduce((sum, item) => sum + item.amount, 0);
+
+      return {
+        vendorId: vendor.id,
+        vendorCode: vendor.vendorCode,
+        vendorName: vendor.businessName,
+        marketId: vendor.primaryMarketId || firstContractMarket?.id || null,
+        marketName: vendor.primaryMarket?.name || firstContractMarket?.name || 'Unknown Market',
+        shopNumbers: vendor.rentContracts.map((contract) => contract.shop?.shopNumber).filter(Boolean),
+        totalOutstanding,
+        totalPaid,
+        overdueAmount: totalOverdue,
+        pendingAmount: totalPending,
+        paymentStatus: totalOutstanding > 0 ? (totalOverdue > 0 ? 'OVERDUE' : 'PENDING') : 'PAID',
+      };
+    });
+  }
+
   async getAdminPaymentCollections(marketId, dateRange = null) {
     const txWhere = {
       type: 'RENT_PAYMENT',
@@ -116,7 +146,11 @@ class PaymentService {
     };
   }
 
-  async getOutstandingPayments(marketId) {
+  async getOutstandingPayments(marketId, pagination = {}) {
+    const page = Math.max(Number(pagination.page || 1), 1);
+    const limit = Math.min(Math.max(Number(pagination.limit || 10), 1), 100);
+    const search = pagination.search?.trim().toLowerCase();
+
     const duePayments = await prisma.rentPayment.findMany({
       where: {
         contract: {
@@ -135,8 +169,17 @@ class PaymentService {
     });
 
     const obligations = await this.enrichRentPayments(duePayments);
-    return obligations
+    const rows = obligations
       .filter((item) => item.outstandingAmount > 0)
+      .filter((item) => {
+        if (!search) return true;
+        return [
+          item.vendorName,
+          item.shopNumber,
+          item.periodLabel,
+        ].filter(Boolean).some((value) => value.toLowerCase().includes(search));
+      })
+      .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
       .map((item) => ({
         vendorId: item.vendorId,
         vendorName: item.vendorName,
@@ -148,11 +191,26 @@ class PaymentService {
         status: item.status,
         periodLabel: item.periodLabel,
       }));
+
+    const totalCount = rows.length;
+    const pagedRows = rows.slice((page - 1) * limit, page * limit);
+
+    return {
+      rows: pagedRows,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.max(Math.ceil(totalCount / limit), 1),
+        totalCount,
+        limit,
+        hasNext: page * limit < totalCount,
+        hasPrev: page > 1,
+      }
+    };
   }
 
   async getScopedVendorsWithPayments(marketId = null, pagination = {}) {
     const page = Math.max(Number(pagination.page || 1), 1);
-    const limit = Math.min(Math.max(Number(pagination.limit || 20), 1), 100);
+    const limit = Math.min(Math.max(Number(pagination.limit || 10), 1), 100);
     const search = pagination.search?.trim();
     const vendorWhere = {
       ...(marketId ? { primaryMarketId: marketId } : {}),
@@ -186,23 +244,54 @@ class PaymentService {
       prisma.vendor.count({ where: vendorWhere })
     ]);
 
-    const rows = await Promise.all(vendors.map(async (vendor) => {
-      const ledger = await this.getVendorPaymentSummary(vendor.id, marketId);
-      const firstContractMarket = vendor.rentContracts.find((contract) => contract.shop?.market)?.shop?.market;
-      return {
-        vendorId: vendor.id,
-        vendorCode: vendor.vendorCode,
-        vendorName: vendor.businessName,
-        marketId: vendor.primaryMarketId || firstContractMarket?.id || null,
-        marketName: vendor.primaryMarket?.name || firstContractMarket?.name || 'Unknown Market',
-        shopNumbers: vendor.rentContracts.map((contract) => contract.shop?.shopNumber).filter(Boolean),
-        totalOutstanding: ledger.totalOutstanding,
-        totalPaid: ledger.totalPaid,
-        overdueAmount: ledger.totalOverdue,
-        pendingAmount: ledger.totalPending,
-        paymentStatus: ledger.totalOutstanding > 0 ? (ledger.totalOverdue > 0 ? 'OVERDUE' : 'PENDING') : 'PAID',
-      };
-    }));
+    const scopedPayments = vendors.flatMap((vendor) =>
+      vendor.rentContracts.flatMap((contract) =>
+        contract.payments.map((payment) => ({
+          ...payment,
+          contract: {
+            id: contract.id,
+            tenantId: vendor.id,
+            tenant: { id: vendor.id, businessName: vendor.businessName },
+            shop: contract.shop,
+          }
+        }))
+      )
+    );
+
+    const enrichedPayments = await this.enrichRentPayments(scopedPayments);
+    const obligationsByVendorId = new Map();
+    for (const payment of enrichedPayments) {
+      const list = obligationsByVendorId.get(payment.vendorId) || [];
+      list.push(payment);
+      obligationsByVendorId.set(payment.vendorId, list);
+    }
+
+    const stakeholderIds = vendors.map((vendor) => vendor.stakeholderId).filter(Boolean);
+    const transactions = stakeholderIds.length
+      ? await prisma.transaction.findMany({
+          where: {
+            stakeholderId: { in: stakeholderIds },
+            type: 'RENT_PAYMENT',
+            status: 'COMPLETED',
+            ...(marketId ? { metadata: { path: ['marketId'], equals: marketId } } : {})
+          },
+          select: {
+            stakeholderId: true,
+            amount: true,
+          }
+        })
+      : [];
+    const vendorIdByStakeholderId = new Map(vendors.map((vendor) => [vendor.stakeholderId, vendor.id]));
+    const paymentsByVendorId = new Map();
+    for (const transaction of transactions) {
+      const vendorId = vendorIdByStakeholderId.get(transaction.stakeholderId);
+      if (!vendorId) continue;
+      const list = paymentsByVendorId.get(vendorId) || [];
+      list.push({ amount: toNumber(transaction.amount) });
+      paymentsByVendorId.set(vendorId, list);
+    }
+
+    const rows = this.buildScopedVendorRows(vendors, obligationsByVendorId, paymentsByVendorId);
 
     return {
       rows,
