@@ -12,6 +12,7 @@ const notificationRoutes = require('./routes/notification.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const staffRoutes = require('./routes/staff.routes');
 const tokenRoutes = require('./routes/token.routes');
+const errorHandler = require('./middleware/errorHandler.middleware');
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use('/api/market/tokens', tokenRoutes);
 app.use('/api', paymentRoutes);
 
 
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
