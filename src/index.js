@@ -4,15 +4,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 
-const authRoutes = require('./routes/auth.routes');
-const dashboardRoutes = require('./routes/dashboard.routes');
-const productRoutes = require('./routes/product.routes');
-const vendorRoutes = require('./routes/vendor.routes');
-const notificationRoutes = require('./routes/notification.routes');
-const paymentRoutes = require('./routes/payment.routes');
-const staffRoutes = require('./routes/staff.routes');
-const tokenRoutes = require('./routes/token.routes');
+
 const errorHandler = require('./middleware/errorHandler.middleware');
+const configureRouter = require('./routes');
 
 const app = express();
 
@@ -28,6 +22,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser()); // Parse cookies for refresh token
 app.use(express.json());
+configureRouter(app)
 
 // File upload middleware (for bulk CSV uploads)
 app.use(fileUpload({
@@ -36,16 +31,7 @@ app.use(fileUpload({
   tempFileDir: '/tmp/'
 }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/vendors', vendorRoutes); // Added for setup-shop
-app.use('/api/vendors', productRoutes); // Keeps existing product routes
-app.use('/api/products', productRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/superadmin/vendors', vendorRoutes);
-app.use('/api/market/staff', staffRoutes);
-app.use('/api/market/tokens', tokenRoutes);
-app.use('/api', paymentRoutes);
+
 
 
 app.use(errorHandler)
