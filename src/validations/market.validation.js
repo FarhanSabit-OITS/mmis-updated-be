@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { MarketStatusEnum, MarketTypeEnum } from "../constants/market.constant";
+const {z} = require('zod')
+const {MarketStatusEnum, MarketTypeEnum} = require('../constants/market.constant')
 
-export const createMarketSchema = z.object({
+const createMarketSchema = z.object({
   body: z.object({
     name: z.string().min(3),
     cityId: z.string(),
@@ -10,7 +10,7 @@ export const createMarketSchema = z.object({
   }),
 });
 
-export const updateGeneralSchema = z.object({
+const updateGeneralSchema = z.object({
   params: z.object({ marketId: z.uuid() }),         
   body: z.object({
     displayName: z.string().optional(),
@@ -23,7 +23,7 @@ export const updateGeneralSchema = z.object({
   }),
 });
 
-export const updateOperatingSchema = z.object({
+const updateOperatingSchema = z.object({
   params: z.object({ marketId: z.uuid() }),         
   body: z.object({
     openingTime: z.string().optional(),
@@ -34,7 +34,7 @@ export const updateOperatingSchema = z.object({
   }),
 });
 
-export const updateCapacitySchema = z.object({
+const updateCapacitySchema = z.object({
   params: z.object({ marketId: z.uuid() }),          
   body: z.object({
     totalLevels: z.number().int().optional(),
@@ -49,3 +49,10 @@ export const updateCapacitySchema = z.object({
     monthlyMaintenanceFee: z.number().optional(),
   }),
 });
+
+module.exports = {
+    createMarketSchema,
+    updateGeneralSchema,
+    updateOperatingSchema,
+    updateCapacitySchema
+}
