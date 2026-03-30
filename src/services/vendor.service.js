@@ -223,7 +223,7 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
     ]);
 
     // Map to unified structure
-    const mappedResults = await Promise.all(stakeholders.map(async (sh) => {
+    const mappedResults = (await Promise.all(stakeholders.map(async (sh) => {
         // Prepare base object
         const base = {
             id: sh.vendor?.id || sh.supplier?.id || sh.id, // Prefer specific ID
@@ -272,8 +272,8 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
             }
         }
 
-        return base;
-    }));
+        return sh.vendor ? base : null;
+    }))).filter(Boolean);
 
     const totalPages = Math.ceil(totalCount / safeLimit);
 
