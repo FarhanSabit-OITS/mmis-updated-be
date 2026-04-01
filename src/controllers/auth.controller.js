@@ -161,11 +161,10 @@ exports.register = async (req, res) => {
       await sendVerificationEmail(
         normalizedEmail,
         verifyUrl,
-        { name: normalizedName } // optional, if your service supports it
+        { name: normalizedName }
       );
     } catch (mailErr) {
       console.error('Verification email failed to send:', mailErr);
-
     }
 
 
@@ -1268,7 +1267,7 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `${frontendBase}/reset-password?token=${encodeURIComponent(token)}`;
 
     try {
-      await sendPasswordResetEmail(normalizedEmail, resetUrl);
+      await sendPasswordResetEmail(normalizedEmail, resetUrl, { name: user?.name || 'User' });
     } catch (mailErr) {
       console.error('Password reset email failed:', mailErr);
       // We still return success to the user

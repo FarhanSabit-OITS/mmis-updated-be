@@ -223,7 +223,7 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
     ]);
 
     // Map to unified structure
-    const mappedResults = await Promise.all(stakeholders.map(async (sh) => {
+    const mappedResults = (await Promise.all(stakeholders.map(async (sh) => {
         // Prepare base object
         const base = {
             id: sh.vendor?.id || sh.supplier?.id || sh.id, // Prefer specific ID
@@ -272,8 +272,8 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
             }
         }
 
-        return base;
-    }));
+        return sh.vendor ? base : null;
+    }))).filter(Boolean);
 
     const totalPages = Math.ceil(totalCount / safeLimit);
 
@@ -437,33 +437,178 @@ const createVendor = async (vendorData) => {
 };
 
 /**
- * Delete a vendor (Soft delete by updating user status)
+ * Delete a vendor and all vendor-owned data safely
  * @param {string} vendorId - ID of the vendor to delete
- * @returns {Promise<Object>} Updated vendor or user data
+ * @returns {Promise<Object>} Summary of deleted vendor
  */
-const deleteVendor = async (vendorId) => {
-    const vendor = await prisma.vendor.findUnique({
-        where: { id: vendorId },
-        include: {
-            stakeholder: {
-                include: {
-                    user: true
+const deleteVendor = async (vendorId, actorUserId) => {
+    return prisma.$transaction(async (tx) => {
+        const vendor = await tx.vendor.findUnique({
+            where: { id: vendorId },
+            include: {
+                stakeholder: {
+                    include: {
+                        user: true
+                    }
+                },
+                stalls: {
+                    select: { id: true }
+                },
+                marketTokens: {
+                    select: { id: true }
                 }
             }
-        }
-    });
+        });
 
-    if (!vendor) {
-        throw new Error('Vendor not found');
-    }
-
-    // Soft delete by updating the user status
-    return await prisma.user.update({
-        where: { id: vendor.stakeholder.userId },
-        data: {
-            status: 'DELETED',
-            deletedAt: new Date()
+        if (!vendor) {
+            throw new Error('Vendor not found');
         }
+
+        const userId = vendor.stakeholder.userId;
+        const stakeholderId = vendor.stakeholderId;
+        const stallIds = vendor.stalls.map((stall) => stall.id);
+        const directTokenIds = vendor.marketTokens.map((token) => token.id);
+
+        const userQrCodes = await tx.qrCode.findMany({
+            where: { userId },
+            select: { id: true }
+        });
+        const qrCodeIds = userQrCodes.map((code) => code.id);
+
+        const stallTokens = stallIds.length
+            ? await tx.marketToken.findMany({
+                where: { stallId: { in: stallIds } },
+                select: { id: true }
+            })
+            : [];
+        const tokenIds = Array.from(new Set([...directTokenIds, ...stallTokens.map((token) => token.id)]));
+
+        if (tokenIds.length) {
+            await tx.tokenUsageLog.deleteMany({
+                where: { tokenId: { in: tokenIds } }
+            });
+            await tx.gateOperation.deleteMany({
+                where: { tokenId: { in: tokenIds } }
+            });
+        }
+
+        if (qrCodeIds.length) {
+            await tx.gateOperation.deleteMany({
+                where: { qrCodeId: { in: qrCodeIds } }
+            });
+            await tx.qrCode.deleteMany({
+                where: { id: { in: qrCodeIds } }
+            });
+        }
+
+        await tx.qrScanLog.deleteMany({
+            where: { scannedByUserId: userId }
+        });
+
+        await tx.invitation.deleteMany({
+            where: {
+                OR: [
+                    { vendorId },
+                    { sentByUserId: userId },
+                    { acceptedByUserId: userId }
+                ]
+            }
+        });
+
+        await tx.auditLog.deleteMany({
+            where: {
+                OR: [
+                    { stakeholderId },
+                    { userId }
+                ]
+            }
+        });
+
+        await tx.digitalAsset.deleteMany({
+            where: { stakeholderId }
+        });
+
+        // Reassign required authorship references before removing the user row.
+        if (actorUserId && actorUserId !== userId) {
+            await tx.shop.updateMany({
+                where: { createdById: userId },
+                data: { createdById: actorUserId }
+            });
+
+            await tx.qrCode.updateMany({
+                where: { createdById: userId },
+                data: { createdById: actorUserId }
+            });
+        }
+
+        // Clear optional user references that should not block deletion.
+        await tx.qrScanLog.updateMany({
+            where: { scannedByUserId: userId },
+            data: { scannedByUserId: null }
+        });
+
+        await tx.gateOperation.updateMany({
+            where: {
+                OR: [
+                    { recordedById: userId },
+                    { validatedById: userId }
+                ]
+            },
+            data: {
+                recordedById: null,
+                validatedById: null
+            }
+        });
+
+        await tx.marketToken.deleteMany({
+            where: {
+                OR: [
+                    { vendorId },
+                    { userId },
+                    ...(stallIds.length ? [{ stallId: { in: stallIds } }] : [])
+                ]
+            }
+        });
+
+        await tx.gateEntry.deleteMany({
+            where: {
+                OR: [
+                    { vendorId },
+                    ...(stallIds.length ? [{ stallId: { in: stallIds } }] : [])
+                ]
+            }
+        });
+
+        await tx.healthInspection.deleteMany({
+            where: stallIds.length ? { stallId: { in: stallIds } } : { id: { in: [] } }
+        });
+
+        await tx.taxPayment.deleteMany({
+            where: { vendorId }
+        });
+
+        await tx.rentContract.deleteMany({
+            where: { tenantId: vendorId }
+        });
+
+        if (stallIds.length) {
+            await tx.stall.deleteMany({
+                where: { id: { in: stallIds } }
+            });
+        }
+
+        await tx.user.delete({
+            where: { id: userId }
+        });
+
+        return {
+            vendorId,
+            userId,
+            stakeholderId,
+            businessName: vendor.businessName
+        };
+    }, {
+        timeout: 30000
     });
 };
 
