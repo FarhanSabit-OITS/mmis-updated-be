@@ -6,5 +6,6 @@ const shopController = require("../controllers/shop.controller");
 
 router.get("/", validate(getShopsQuerySchema), shopController.getShops);
 router.get("/:id", shopController.getShopDetails);
+router.put("/:id", shopController.editShop);
 
 module.exports = router;

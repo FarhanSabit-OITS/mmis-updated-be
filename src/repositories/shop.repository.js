@@ -67,4 +67,29 @@ module.exports = {
 
     return shop;
   },
+
+  editShop: async (shopId, updateData) => {
+    const shop = await prisma.shop.update({
+      where: { id: shopId },
+      data: updateData,
+      include: {
+        market: {
+          select: { id: true, name: true, address: true, status: true }
+        },
+        member: {
+          include: {
+            stakeholder: {
+              include: {
+                user: {
+                  select: { id: true, email: true, phone: true }
+                }
+              }
+            }
+          }
+        },
+      },
+    });
+
+    return shop;
+  },
 };

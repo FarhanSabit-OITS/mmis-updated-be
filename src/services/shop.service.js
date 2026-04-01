@@ -8,4 +8,8 @@ module.exports = {
   getShopDetailsById: async (shopId) => {
     return await shopRepo.getShopDetailsById(shopId);
   },
+
+  editShop: async (shopId, updateData) => {
+    return await shopRepo.editShop(shopId, updateData);
+  },
 };

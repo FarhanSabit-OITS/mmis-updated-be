@@ -37,4 +37,25 @@ module.exports = {
       })
     );
   }),
+
+  editShop: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    const existingShop = await shopService.getShopDetailsById(id);
+    if (!existingShop) {
+      throw new NotFoundError("Shop not found");
+    }
+
+    const updatedShop = await shopService.editShop(id, updateData);
+
+    res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: updatedShop,
+        message: "Shop updated successfully"
+      })
+    );
+  }),
 };
