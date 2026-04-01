@@ -14,6 +14,8 @@ const paymentRoutes = require('./routes/payment.routes');
 const staffRoutes = require('./routes/staff.routes');
 const tokenRoutes = require('./routes/token.routes');
 const categoryRoutes = require('./routes/category.routes');
+const aiRoutes = require('./routes/ai.routes');
+const applicationRoutes = require('./routes/application.routes');
 
 const app = express();
 
@@ -40,14 +42,17 @@ app.use(fileUpload({
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/vendors', vendorRoutes); // Added for setup-shop
-app.use('/api/vendors', productRoutes); // Keeps existing product routes
+app.use('/api/vendors', vendorRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/superadmin/vendors', vendorRoutes);
 app.use('/api/market/staff', staffRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/api/market/tokens', tokenRoutes);
+app.use('/api/tokens', tokenRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/application', applicationRoutes);
 app.use('/api', paymentRoutes);
 
 
