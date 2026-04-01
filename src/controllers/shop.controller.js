@@ -1,26 +1,40 @@
+const { NotFoundError } = require("../errors/app.errors");
 const shopService = require("../services/shop.service");
 const { asyncHandler, ApiResponse } = require("../utils");
 
 
 module.exports = {
   getShops: asyncHandler(async (req, res) => {
-    const { shops, total } = await shopService.getShopList(req.query);
-    res.json({ data: shops, total });
-    
+    const result = await shopService.getShopList(req.query);
     res.status(200).json(
         new ApiResponse(
             {
+                statusCode: 200,
                 success: true,
-                data: shops,
-                pagination: {
-                    total,
-                    page: req.query.page,
-                    limit: req.query.limit
-                },
+                data: result.shops,
+                pagination: result.pagination,
                 message: "Shop list is fetced successfully"
             }
 
         )
     )
+  }),
+  
+  getShopDetails: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    console.log("Id ", id)
+    const result = await shopService.getShopDetailsById(id);
+    
+    if (!result) {
+        throw new NotFoundError("Shop not found")
+    }    
+    res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: result,
+        message: "Shop details fetched successfully"
+      })
+    );
   }),
 };

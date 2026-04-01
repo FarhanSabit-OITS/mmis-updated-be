@@ -1,4 +1,5 @@
-const prisma = require('../shared/prisma')
+const prisma = require('../shared/prisma');
+const { PaginationResponse } = require('../utils');
 
 module.exports = {
   createMarket: async (data) => {
@@ -47,7 +48,7 @@ module.exports = {
       prisma.market.count({ where }),
     ]);
 
-    return { markets, total };
+    return {markets, pagination: new PaginationResponse(total, page, limit)}
   },
   findMarketByName: async (name) =>
     await prisma.market.findUnique({ where: { name } })

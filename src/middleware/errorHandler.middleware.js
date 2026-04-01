@@ -3,6 +3,7 @@ const { Prisma } = require("@prisma/client");
 const { AppError } = require("../errors/app.errors");
 
 const errorHandler = (err, req, res, next) => {
+  console.log(err)
   if (err instanceof z.ZodError) {
     return res.status(400).json({
       success: false,
