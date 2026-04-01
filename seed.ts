@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { hash } from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -7,12 +7,10 @@ async function main() {
   console.log('🌱 Seeding started...\n');
 
   try {
-    // Use upsert for all data to avoid conflicts and unnecessary deletions
     console.log('🔄 Upserting seed data...');
 
-    // Create Basic Structure
+    // 1. Geolocation Structure
     console.log('\n🌍 Creating geolocation structure...');
-
     const geo = await prisma.geolocation.upsert({
       where: { code: 'UG' },
       update: {},
@@ -40,14 +38,90 @@ async function main() {
       create: {
         id: 'c1',
         districtId: district.id,
-        name: 'Kampala',
+        name: 'Kampala City',
         code: 'KLA'
       }
     });
 
-    console.log('\n🏪 Creating markets matching frontend constants...');
+    // 2. Universal Category Framework (UCF)
+    console.log('\n🌿 Creating Universal Category Framework (UCF)...');
 
-    await prisma.market.upsert({
+    // Level 1: Sectors
+    const agriculture = await prisma.category.upsert({
+      where: { slug: 'agriculture' },
+      update: {},
+      create: {
+        id: 'cat-agri',
+        name: 'Agriculture',
+        slug: 'agriculture',
+        type: 'PRODUCT',
+        description: 'Primary agricultural produce and raw materials'
+      }
+    });
+
+    const textiles = await prisma.category.upsert({
+      where: { slug: 'textiles-apparel' },
+      update: {},
+      create: {
+        id: 'cat-textile',
+        name: 'Textiles & Apparel',
+        slug: 'textiles-apparel',
+        type: 'PRODUCT',
+        description: 'Fabrics, traditional wear, and modern clothing'
+      }
+    });
+
+    // Level 2: Categories
+    const grains = await prisma.category.upsert({
+      where: { slug: 'grains-cereals' },
+      update: {},
+      create: {
+        id: 'cat-grains',
+        name: 'Grains & Cereals',
+        slug: 'grains-cereals',
+        type: 'PRODUCT',
+        parentId: agriculture.id
+      }
+    });
+
+    const fabrics = await prisma.category.upsert({
+      where: { slug: 'fabrics' },
+      update: {},
+      create: {
+        id: 'cat-fabrics',
+        name: 'Fabrics',
+        slug: 'fabrics',
+        type: 'PRODUCT',
+        parentId: textiles.id
+      }
+    });
+
+    // Level 3: Sub-categories
+    await prisma.category.upsert({
+      where: { slug: 'maize' },
+      update: {},
+      create: {
+        name: 'Maize',
+        slug: 'maize',
+        type: 'PRODUCT',
+        parentId: grains.id
+      }
+    });
+
+    await prisma.category.upsert({
+      where: { slug: 'kitenge' },
+      update: {},
+      create: {
+        name: 'Kitenge',
+        slug: 'kitenge',
+        type: 'PRODUCT',
+        parentId: fabrics.id
+      }
+    });
+
+    // 3. Markets & Hierarchy
+    console.log('\n🏪 Creating markets and internal structure...');
+    const m1 = await prisma.market.upsert({
       where: { uniqueCode: 'NAK-001' },
       update: {},
       create: {
@@ -56,299 +130,231 @@ async function main() {
         name: 'Nakasero Market',
         uniqueCode: 'NAK-001',
         address: 'Nakasero, Kampala',
-        marketType: 'PERMANENT'
+        marketType: 'PERMANENT',
+        description: 'Historic fresh food and produce market in Kampala'
       }
     });
 
-    await prisma.market.upsert({
-      where: { uniqueCode: 'OWI-001' },
-      update: {},
-      create: {
-        id: 'm2',
-        cityId: city.id,
-        name: 'Owino Market',
-        uniqueCode: 'OWI-001',
-        address: 'Downtown Kampala',
-        marketType: 'PERMANENT'
-      }
-    });
-
-    // Create Roles
-    console.log('\n🔐 Creating roles...');
-
-    // Create Roles
-    console.log('\n🔐 Ensuring roles exist...');
-
-    const guestRole = await prisma.role.upsert({
-      where: { name: 'Guest' },
-      update: {},
-      create: {
-        name: 'Guest',
-        description: 'New registered user',
-        level: null,
-      },
-    });
-    console.log(`✅ Role checked: Guest`);
-
-    const superAdminRole = await prisma.role.upsert({
-      where: { name: 'SuperAdmin' },
-      update: { level: 'SUPER_ADMIN' },
-      create: {
-        name: 'SuperAdmin',
-        description: 'System-wide administrator',
-        level: 'SUPER_ADMIN',
-      },
-    });
-    console.log(`✅ Role checked: SuperAdmin`);
-
-    const marketMasterRole = await prisma.role.upsert({
-      where: { name: 'MarketMaster' },
-      update: { level: 'MARKET_MASTER' },
-      create: {
-        name: 'MarketMaster',
-        description: 'Manages a specific market',
-        level: 'MARKET_MASTER',
-      },
-    });
-    console.log(`✅ Role checked: MarketMaster`);
-
-    const gateCounterRole = await prisma.role.upsert({
-      where: { name: 'GateCounter' },
-      update: { level: 'PSEUDO_MARKET_ADMIN' },
-      create: {
-        name: 'GateCounter',
-        description: 'Gate entry/exit management',
-        level: 'PSEUDO_MARKET_ADMIN',
-      },
-    });
-    console.log(`✅ Role checked: GateCounter`);
-
-    const vendorRole = await prisma.role.upsert({
-      where: { name: 'Vendor' },
-      update: {},
-      create: {
-        name: 'Vendor',
-        description: 'Market vendor / shop owner',
-        level: null,
-      },
-    });
-    console.log(`✅ Role checked: Vendor`);
-
-    const supplierRole = await prisma.role.upsert({
-      where: { name: 'Supplier' },
-      update: {},
-      create: {
-        name: 'Supplier',
-        description: 'Goods supplier',
-        level: null,
-      },
-    });
-    console.log(`✅ Role checked: Supplier`);
-
-    // Create Users
-    console.log('\n👤 Creating users...');
-
-    // Create Users
-    console.log('\n👤 Ensuring users exist and have correct roles...');
-
+    // Admin user for Nakasero (from existing)
     const superAdminPassword = await hash('superadmin123', 10);
-    await prisma.user.upsert({
+    const superAdminUser = await prisma.user.upsert({
       where: { email: 'superadmin@marketmaster.com' },
-      update: {
-        passwordHash: superAdminPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          deleteMany: {},
-          create: {
-            roleId: superAdminRole.id
-          }
-        }
-      },
+      update: {},
       create: {
+        id: 'u-super',
         email: 'superadmin@marketmaster.com',
         passwordHash: superAdminPassword,
         status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          create: {
-            roleId: superAdminRole.id
-          }
-        }
-      },
-    });
-    console.log('✅ User: superadmin@marketmaster.com [SuperAdmin]');
-
-    const legacySuperAdminPassword = await hash('superadmin1234', 10);
-    await prisma.user.upsert({
-      where: { email: 'superadmin@super.com' },
-      update: {
-        passwordHash: legacySuperAdminPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          deleteMany: {},
-          create: {
-            roleId: superAdminRole.id
-          }
-        }
-      },
-      create: {
-        email: 'superadmin@super.com',
-        passwordHash: legacySuperAdminPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          create: {
-            roleId: superAdminRole.id
-          }
-        }
-      },
-    });
-    console.log('✅ User: superadmin@super.com [SuperAdmin]');
-
-    const marketMasterPassword = await hash('market123', 10);
-    const m1User = await prisma.user.upsert({
-      where: { email: 'nakasero.manager@marketmaster.com' },
-      update: {
-        passwordHash: marketMasterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          deleteMany: {},
-          create: {
-            roleId: marketMasterRole.id
-          }
-        }
-      },
-      create: {
-        email: 'nakasero.manager@marketmaster.com',
-        passwordHash: marketMasterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          create: {
-            roleId: marketMasterRole.id
-          }
-        }
-      },
-    });
-    console.log('✅ User: nakasero.manager@marketmaster.com [MarketMaster]');
-
-    // Create Admin and MarketMaster records for manager
-    const m1Admin = await prisma.admin.upsert({
-      where: { userId: m1User.id },
-      update: { adminLevel: 'MARKET_MASTER' },
-      create: {
-        userId: m1User.id,
-        adminLevel: 'MARKET_MASTER',
+        emailVerified: true
       }
     });
 
-    await prisma.marketMaster.upsert({
-      where: { adminId: m1Admin.id },
-      update: { marketId: 'm1' },
+    // 4. Roles
+    console.log('\n🔐 Ensuring roles exist...');
+    const roles = [
+      { name: 'SuperAdmin', level: 'SUPER_ADMIN' },
+      { name: 'MarketMaster', level: 'MARKET_MASTER' },
+      { name: 'GateCounter', level: 'PSEUDO_MARKET_ADMIN' },
+      { name: 'Vendor', level: null },
+      { name: 'Supplier', level: null }
+    ];
+
+    const rolesMap: { [key: string]: any } = {};
+    for (const r of roles) {
+      rolesMap[r.name] = await prisma.role.upsert({
+        where: { name: r.name },
+        update: { level: r.level as any },
+        create: {
+          name: r.name,
+          description: `${r.name} role`,
+          level: r.level as any,
+        }
+      });
+    }
+
+    // Assign SuperAdmin role
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: superAdminUser.id, roleId: rolesMap['SuperAdmin'].id } },
+      update: {},
+      create: { userId: superAdminUser.id, roleId: rolesMap['SuperAdmin'].id }
+    });
+
+    // 5. Market Hierarchy Details (Nakasero)
+    console.log('\n🏗️ Building Nakasero internal hierarchy...');
+    const level1 = await prisma.marketLevel.upsert({
+      where: { uniqueCode: 'NAK-L1' },
+      update: {},
       create: {
-        adminId: m1Admin.id,
-        marketId: 'm1',
+        id: 'nak-l1',
+        marketId: m1.id,
+        levelNumber: 1,
+        uniqueCode: 'NAK-L1',
+        name: 'Ground Floor',
+        createdById: superAdminUser.id
       }
     });
-    console.log('✅ MarketMaster record for Nakasero Market linked to manager@marketmaster.com');
 
-    // Create a second manager for Owino
-    const m2User = await prisma.user.upsert({
-      where: { email: 'owino.manager@marketmaster.com' },
-      update: {
-        passwordHash: marketMasterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          deleteMany: {},
-          create: {
-            roleId: marketMasterRole.id
-          }
-        }
-      },
+    const sectionA = await prisma.marketSection.upsert({
+      where: { uniqueCode: 'NAK-S1-A' },
+      update: {},
       create: {
-        email: 'owino.manager@marketmaster.com',
-        passwordHash: marketMasterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          create: {
-            roleId: marketMasterRole.id
-          }
-        }
-      },
-    });
-
-    const m2Admin = await prisma.admin.upsert({
-      where: { userId: m2User.id },
-      update: { adminLevel: 'MARKET_MASTER' },
-      create: {
-        userId: m2User.id,
-        adminLevel: 'MARKET_MASTER',
+        id: 'nak-s1a',
+        marketId: m1.id,
+        levelId: level1.id,
+        uniqueCode: 'NAK-S1-A',
+        name: 'Fresh Produce Section',
+        sectionType: 'RETAIL',
+        createdById: superAdminUser.id
       }
     });
 
-    await prisma.marketMaster.upsert({
-      where: { adminId: m2Admin.id },
-      update: { marketId: 'm2' },
+    // 6. Stakeholders & Vendors
+    console.log('\n🤝 Creating test vendor...');
+    const vendorPassword = await hash('market123', 10);
+    const vUser = await prisma.user.upsert({
+      where: { email: 'vendor.test@marketmaster.com' },
+      update: {},
       create: {
-        adminId: m2Admin.id,
-        marketId: 'm2',
+        id: 'u-vendor-1',
+        email: 'vendor.test@marketmaster.com',
+        passwordHash: vendorPassword,
+        status: 'ACTIVE',
+        emailVerified: true
       }
     });
-    console.log('✅ User: owino.manager@marketmaster.com [MarketMaster] linked to Owino Market');
 
-    const gateCounterPassword = await hash('gate123', 10);
-    await prisma.user.upsert({
-      where: { email: 'gate@marketmaster.com' },
-      update: {
-        passwordHash: gateCounterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          deleteMany: {},
-          create: {
-            roleId: gateCounterRole.id
-          }
-        }
-      },
-      create: {
-        email: 'gate@marketmaster.com',
-        passwordHash: gateCounterPassword,
-        status: 'ACTIVE',
-        emailVerified: true,
-        userRoles: {
-          create: {
-            roleId: gateCounterRole.id
-          }
-        }
-      },
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: vUser.id, roleId: rolesMap['Vendor'].id } },
+      update: {},
+      create: { userId: vUser.id, roleId: rolesMap['Vendor'].id }
     });
-    console.log('✅ User: gate@marketmaster.com [GateCounter]');
 
-    console.log('\n✨ Database seeded successfully!');
+    const stakeholder = await prisma.stakeholder.upsert({
+      where: { userId: vUser.id },
+      update: {},
+      create: {
+        id: 'st-vendor-1',
+        userId: vUser.id,
+        stakeholderType: 'VENDOR',
+        kycStatus: 'VERIFIED'
+      }
+    });
+
+    const vendor = await prisma.vendor.upsert({
+      where: { stakeholderId: stakeholder.id },
+      update: {},
+      create: {
+        id: 'v-1',
+        stakeholderId: stakeholder.id,
+        vendorCode: 'V-NAK-001',
+        businessName: 'Buganda Road Fresh Produce',
+        primaryMarketId: m1.id
+      }
+    });
+
+    // 7. Stalls & Products
+    console.log('\n📦 Creating stall and products...');
+    
+    // We need a member to create a shop/stall (simplified for seed)
+    const memberStakeholder = await prisma.stakeholder.upsert({
+      where: { userId: superAdminUser.id },
+      update: {},
+      create: {
+        id: 'st-member-1',
+        userId: superAdminUser.id,
+        stakeholderType: 'MEMBER'
+      }
+    });
+
+    const member = await prisma.member.upsert({
+      where: { stakeholderId: memberStakeholder.id },
+      update: {},
+      create: {
+        id: 'mem-1',
+        stakeholderId: memberStakeholder.id,
+        membershipNumber: 'MEM-001',
+        businessName: 'Market Authority Leasing',
+        registrationNumber: 'REG-001'
+      }
+    });
+
+    const shop = await prisma.shop.upsert({
+      where: { uniqueCode: 'NAK-SH-001' },
+      update: {},
+      create: {
+        id: 'sh-1',
+        marketId: m1.id,
+        levelId: level1.id,
+        sectionId: sectionA.id,
+        memberId: member.id,
+        uniqueCode: 'NAK-SH-001',
+        shopNumber: 'SH-001',
+        shopName: 'Central Fresh Hub',
+        monthlyRent: new Prisma.Decimal(150000),
+        contractStartDate: new Date(),
+        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        createdById: superAdminUser.id
+      }
+    });
+
+    const stall = await prisma.stall.upsert({
+      where: { uniqueCode: 'NAK-ST-001' },
+      update: {},
+      create: {
+        id: 'stl-1',
+        shopId: shop.id,
+        vendorId: vendor.id,
+        sectionId: sectionA.id,
+        levelId: level1.id,
+        marketId: m1.id,
+        uniqueCode: 'NAK-ST-001',
+        stallNumber: 'STL-001',
+        category: 'Agriculture',
+        dailyRate: new Prisma.Decimal(5000),
+        contractStartDate: new Date(),
+        createdById: superAdminUser.id
+      }
+    });
+
+    const sampleProducts = [
+      { name: 'Super White Maize Flour', cat: 'Agriculture', sub: 'Maize', unit: '50kg Bag', price: 120000 },
+      { name: 'Organic Sanga Beef', cat: 'Food & Beverages', sub: 'Beef', unit: '1kg', price: 14000 },
+      { name: 'Genuine Kitenge Fabric', cat: 'Textiles & Apparel', sub: 'Kitenge', unit: '6 Yards', price: 45000 }
+    ];
+
+    for (let i = 0; i < sampleProducts.length; i++) {
+        const p = sampleProducts[i];
+        await prisma.product.upsert({
+            where: { sku: `SKU-00${i+1}` },
+            update: {},
+            create: {
+                stallId: stall.id,
+                name: p.name,
+                category: p.cat,
+                subCategory: p.sub,
+                unit: p.unit,
+                price: new Prisma.Decimal(p.price),
+                sku: `SKU-00${i+1}`,
+                isActive: true,
+                isApproved: true,
+                createdById: vUser.id
+            }
+        });
+    }
+
+    console.log('\n✨ Database seeded successfully with Ugandan MMIS datasets!');
     console.log('─'.repeat(50));
     console.log('Available test users:');
     console.log('  1. superadmin@marketmaster.com / superadmin123 (SuperAdmin)');
-    console.log('  2. superadmin@super.com / superadmin1234 (SuperAdmin)');
-    console.log('  3. nakasero.manager@marketmaster.com / market123 (Nakasero Market Master)');
-    console.log('  4. owino.manager@marketmaster.com / market123 (Owino Market Master)');
-    console.log('  5. gate@marketmaster.com / gate123 (GateCounter)');
+    console.log('  2. vendor.test@marketmaster.com / market123 (Test Vendor)');
     console.log('─'.repeat(50));
+
   } catch (error) {
     console.error('❌ Seeding error:', error);
     process.exit(1);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Fatal error:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main();
