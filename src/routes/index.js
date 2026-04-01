@@ -7,6 +7,7 @@ const paymentRoutes = require('./payment.routes');
 const staffRoutes = require('./staff.routes');
 const tokenRoutes = require('./token.routes');
 const marketRoutes = require('./market.route')
+const shopRoutes = require("./shop.routes")
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
@@ -19,7 +20,8 @@ const configureRouter = (app)=>{
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
     app.use('/api', paymentRoutes);
-    app.use('./api/market', marketRoutes)
+    app.use('/api/markets', marketRoutes)
+    app.use('/api/shops', shopRoutes)
 }
 
 module.exports = configureRouter

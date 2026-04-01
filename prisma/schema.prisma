@@ -574,7 +574,6 @@ model City {
 model Market {
   id     String @id @default(uuid())
   cityId String
-
   name        String  @db.VarChar(200)
   uniqueCode  String  @unique @db.VarChar(50)
   displayName String? @db.VarChar(200)

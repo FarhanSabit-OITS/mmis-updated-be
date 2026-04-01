@@ -1,54 +1,81 @@
 const marketService = require("../services/market.service");
-const { ApiResponse } = require("../utils");
+const { ApiResponse, asyncHandler } = require("../utils");
+
 
 module.exports = {
-  createMarket: async (req, res) => {
+  createMarket: asyncHandler(
+    async (req, res) => {
     const market = await marketService.createMarket(req.body);
-    return new ApiResponse({
+    return res.status(200).json(new ApiResponse({
         statusCode: 201,
         success: true,
         data: market,
         message: "Market is created successfully"
-    })
-  },
+    }))
+  }
+  ),
 
-  updateGeneralInfo: async (req, res) => {
+  updateGeneralInfo: asyncHandler(
+    async (req, res) => {
     const market = await marketService.updateGeneralInfo(req.params.marketId, req.body);
-    return new ApiResponse({
+    return res.status(200).json(new ApiResponse({
         statusCode: 200,
         success: true,
         data: market,
         message: "Market's general info is updated successfully"
-    })
-  },
+    }))
+  }
+  ),
 
-  updateOperatingInfo: async (req, res) => {
+  updateOperatingInfo: asyncHandler(
+    async (req, res) => {
     const market = await marketService.updateOperatingInfo(req.params.marketId, req.body);
-    return new ApiResponse({
+    return res.status(200).json(new ApiResponse({
         statusCode: 200,
         success: true,
         data: market,
         message: "Market's operating info is updated successfully"
-    })
-  },
+    }))
+  }
+  ),
 
-  updateCapacityInfo: async (req, res) => {
+  updateCapacityInfo: asyncHandler(
+    async (req, res) => {
     const market = await marketService.updateCapacityInfo(req.params.marketId, req.body);
-    return new ApiResponse({
+    return res.status(200).json(new ApiResponse({
         statusCode: 200,
         success: true,
         data: market,
         message: "Market's capacity info is updated successfully"
-    })
-  },
+    }))
+  }
+  ),
 
-  getMarket: async (req, res) => {
+  getMarket: asyncHandler(
+    async (req, res) => {
     const market = await marketService.getMarket(req.params.marketId);
-    return new ApiResponse({
+    return res.status(200).json(
+        new ApiResponse({
         statusCode: 201,
         success: true,
         data: market,
         message: "Market details is fetched successfully"
     })
-  },
+    )
+  }
+  ),
+  getMarketList: asyncHandler(
+    async (req, res) => {
+    const result = await marketService.getMarketList(req.query);
+    return res.status(200).json(
+    new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: result.data,
+        pagination: {page: result.page, limit: result.data.limit, total: result.total},
+        message: "Market list is fetched successfully"
+    })
+    );
+  }
+  ),
 };

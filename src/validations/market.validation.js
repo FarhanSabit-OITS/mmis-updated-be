@@ -49,10 +49,18 @@ const updateCapacitySchema = z.object({
     monthlyMaintenanceFee: z.number().optional(),
   }),
 });
-
+const getMarketListSchema = z.object({
+  query: z.object({
+    page: z.string().optional(),
+    limit: z.string().optional(),
+    search: z.string().optional(),
+    cityId: z.string().optional(),
+  }),
+});
 module.exports = {
     createMarketSchema,
     updateGeneralSchema,
     updateOperatingSchema,
-    updateCapacitySchema
+    updateCapacitySchema,
+    getMarketListSchema
 }

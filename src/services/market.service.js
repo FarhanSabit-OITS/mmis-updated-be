@@ -25,4 +25,18 @@ module.exports = {
   getMarket: async (marketId) => {
     return await marketRepository.getMarketById(marketId);
   },
+  getMarketList: async (query) => {
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 10;
+
+    const {markets, total} = await marketRepository.getMarketList({
+      page,
+      limit,
+      search: query.search,
+      cityId: query.cityId,
+    });
+    return {data: markets, page, limit, total}
+    
+  }
+  
 };

@@ -6,10 +6,16 @@ const {
     createMarketSchema, 
     updateGeneralSchema, 
     updateOperatingSchema, 
-    updateCapacitySchema 
-} = require("../validations");
+    updateCapacitySchema,
+    getMarketListSchema
+} = require("../validations/index.js");
 
 
+router.get(
+  "/",
+  validate(getMarketListSchema),
+  marketController.getMarketList
+);
 router.post("/", validate(createMarketSchema), marketController.createMarket);
 
 router.patch("/:marketId/general", validate(updateGeneralSchema), marketController.updateGeneralInfo);
