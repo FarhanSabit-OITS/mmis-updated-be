@@ -437,6 +437,146 @@ const createVendor = async (vendorData) => {
 };
 
 /**
+ * Bulk create vendors from an array of data
+ * @param {Array} vendorsData - Array of vendor objects
+ * @returns {Promise<Object>} Results of the bulk operation
+ */
+const bulkCreateVendors = async (vendorsData) => {
+    const results = {
+        success: [],
+        errors: []
+    };
+
+    // We use a single transaction for the whole batch for atomicity
+    // Adjust chunk size if dealing with thousands of rows
+    return await prisma.$transaction(async (tx) => {
+        const vendorRole = await tx.role.findUnique({
+            where: { name: 'Vendor' }
+        });
+
+        if (!vendorRole) {
+            throw new Error('Vendor role not found in database');
+        }
+
+        for (const data of vendorsData) {
+            try {
+                const {
+                    email,
+                    firstName,
+                    lastName,
+                    businessName,
+                    businessType,
+                    primaryMarketId,
+                    phone
+                } = data;
+
+                const normalizedEmail = email.toLowerCase().trim();
+                
+                // Basic validation pre-check within transaction
+                const existingUser = await tx.user.findFirst({
+                    where: { OR: [{ email: normalizedEmail }, { phone: phone || undefined }] }
+                });
+
+                if (existingUser) {
+                    results.errors.push({
+                        email: normalizedEmail,
+                        error: 'Email or phone already registered'
+                    });
+                    continue;
+                }
+
+                // Create User + Profile
+                const tempPassword = crypto.randomBytes(16).toString('hex');
+                const passwordHash = await bcrypt.hash(tempPassword, 10);
+
+                const user = await tx.user.create({
+                    data: {
+                        email: normalizedEmail,
+                        passwordHash,
+                        phone: phone || null,
+                        status: 'PENDING',
+                        emailVerified: false,
+                        userRoles: {
+                            create: { roleId: vendorRole.id }
+                        },
+                        profile: {
+                            create: {
+                                firstName,
+                                lastName,
+                                primaryPhone: phone || '',
+                                primaryEmail: normalizedEmail
+                            }
+                        }
+                    }
+                });
+
+                // Create Stakeholder
+                const stakeholder = await tx.stakeholder.create({
+                    data: {
+                        userId: user.id,
+                        stakeholderType: 'VENDOR',
+                        kycStatus: 'NOT_SUBMITTED'
+                    }
+                });
+
+                // Vendor
+                const uniqueSuffix = crypto.randomBytes(4).toString('hex').toUpperCase();
+                const vendorCode = `VND-${uniqueSuffix}`;
+
+                const vendor = await tx.vendor.create({
+                    data: {
+                        stakeholderId: stakeholder.id,
+                        vendorCode,
+                        businessName,
+                        businessType,
+                        primaryMarketId,
+                        vatRegistered: false
+                    }
+                });
+
+                // Invitation
+                const verificationToken = crypto.randomBytes(32).toString('hex');
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7); // Bulk upload invites last longer (7 days)
+
+                await tx.invitation.create({
+                    data: {
+                        email: normalizedEmail,
+                        token: verificationToken,
+                        invitationType: 'VENDOR_REGISTRATION',
+                        status: 'PENDING',
+                        expiresAt,
+                        metadata: {
+                            purpose: 'BULK_ONBOARDING_VERIFY_AND_PASS',
+                            firstName,
+                            lastName,
+                            businessName,
+                            vendorId: vendor.id
+                        }
+                    }
+                });
+
+                results.success.push({
+                    email: normalizedEmail,
+                    vendorCode,
+                    businessName
+                });
+
+            } catch (err) {
+                results.errors.push({
+                    email: data.email,
+                    error: err.message
+                });
+            }
+        }
+
+        return results;
+    }, {
+        timeout: 60000 // 1 minute for bulk transactions
+    });
+};
+
+/**
  * Delete a vendor and all vendor-owned data safely
  * @param {string} vendorId - ID of the vendor to delete
  * @returns {Promise<Object>} Summary of deleted vendor
@@ -784,6 +924,7 @@ const rejectRegistration = async (userId, adminId, approverRoleName = 'MarketMas
 module.exports = {
     getAllVendorsWithDetails,
     createVendor,
+    bulkCreateVendors,
     deleteVendor,
     approveRegistration,
     rejectRegistration,

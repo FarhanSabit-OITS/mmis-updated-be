@@ -8,6 +8,31 @@
 const vendorService = require('../services/vendor.service');
 const emailService = require('../services/email.service');
 const prisma = require('../prisma');
+const multer = require('multer');
+
+// In-memory CSV parser (no external libs needed)
+const parseVendorCsv = (csvText) => {
+    const lines = csvText.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) throw new Error('CSV must have a header row and at least one data row');
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+    const required = ['email', 'firstName', 'lastName', 'businessName', 'businessType', 'primaryMarketId'];
+    const missing = required.filter(r => !headers.includes(r));
+    if (missing.length) throw new Error(`Missing required CSV columns: ${missing.join(', ')}`);
+
+    return lines.slice(1).map((line, idx) => {
+        const values = line.split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
+        const row = {};
+        headers.forEach((h, i) => { row[h] = values[i] || ''; });
+        if (!row.email || !row.firstName || !row.businessName) {
+            throw new Error(`Row ${idx + 2}: email, firstName, and businessName are required`);
+        }
+        return row;
+    });
+};
+
+// Multer for memory storage
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 /**
  * GET /api/superadmin/vendors
@@ -315,4 +340,72 @@ exports.rejectVendor = async (req, res) => {
     }
 };
 
+/**
+ * POST /api/vendors/bulk-upload
+ * Bulk create vendors from a CSV file upload
+ * SuperAdmin only
+ */
+exports.bulkUploadVendors = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded. Please provide a CSV file in the "file" form field.'
+            });
+        }
+
+        const csvText = req.file.buffer.toString('utf-8');
+        let vendorsData;
+
+        try {
+            vendorsData = parseVendorCsv(csvText);
+        } catch (parseErr) {
+            return res.status(400).json({
+                success: false,
+                message: `CSV parse error: ${parseErr.message}`
+            });
+        }
+
+        if (vendorsData.length > 500) {
+            return res.status(400).json({
+                success: false,
+                message: 'Maximum 500 vendors per upload. Please split your file.'
+            });
+        }
+
+        const results = await vendorService.bulkCreateVendors(vendorsData);
+
+        // Fire-and-forget invite emails (don't block the response)
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        results.success.forEach(async (v) => {
+            try {
+                const inviteUrl = `${frontendUrl}/?tokenType=vendor-password-setup&email=${encodeURIComponent(v.email)}`;
+                await emailService.sendVerificationEmail(v.email, inviteUrl);
+            } catch (e) {
+                console.warn(`⚠️ Bulk upload: email failed for ${v.email}:`, e.message);
+            }
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: `Bulk upload complete. ${results.success.length} vendors created, ${results.errors.length} failed.`,
+            data: {
+                totalRows: vendorsData.length,
+                createdCount: results.success.length,
+                failedCount: results.errors.length,
+                created: results.success,
+                errors: results.errors
+            }
+        });
+    } catch (err) {
+        console.error('Bulk upload vendors error:', err);
+        return res.status(500).json({
+            success: false,
+            message: err.message || 'Internal server error during bulk upload'
+        });
+    }
+};
+
+// Export multer middleware for use in routes
+exports.uploadMiddleware = upload.single('file');
 

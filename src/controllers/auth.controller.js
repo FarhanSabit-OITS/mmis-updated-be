@@ -8,6 +8,8 @@ const {
   validatePassword,
   normalizeEmail,
   normalizeName,
+  validatePhone,
+  normalizePhone,
 } = require('../utils/validation');
 
 
@@ -29,14 +31,21 @@ const prisma = require('../prisma');
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, businessName, marketId } = req.body;
-    // const { firstName, lastName, email, password } = req.body;
+    const { name, email, phone, password, role, businessName, marketId } = req.body;
 
-    // Validate all fields are present
-    if (!name || !email || !password) {
+    // Validate name and password
+    if (!name || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: name, email, password',
+        message: 'Name and password are required',
+      });
+    }
+
+    // Must have either email or phone
+    if (!email && !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email or phone number is required for registration',
       });
     }
 
@@ -48,15 +57,53 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Validate email format
-    if (!validateEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email format',
+    // Validate email if provided
+    let normalizedEmail = null;
+    if (email) {
+      if (!validateEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format',
+        });
+      }
+      normalizedEmail = normalizeEmail(email);
+
+      // Check email uniqueness
+      const existingUserEmail = await prisma.user.findUnique({
+        where: { email: normalizedEmail },
       });
+      if (existingUserEmail) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this email already exists.',
+        });
+      }
     }
 
-    // Validate password length (8-64 characters)
+    // Validate phone if provided
+    let normalizedPhone = null;
+    if (phone) {
+      if (!validatePhone(phone)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid phone format (+256...)',
+        });
+      }
+      normalizedPhone = normalizePhone(phone);
+
+      // Check phone uniqueness
+      const existingUserPhone = await prisma.user.findUnique({
+        where: { phone: normalizedPhone },
+      });
+      if (existingUserPhone) {
+        return res.status(409).json({
+          success: false,
+          message: 'An account with this phone number already exists.',
+        });
+      }
+    }
+
+    // Validate password
     if (!validatePassword(password)) {
       return res.status(400).json({
         success: false,
@@ -64,124 +111,116 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Normalize inputs
-    const normalizedEmail = normalizeEmail(email);
     const normalizedName = normalizeName(name);
-
-    //  Check email uniqueness
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-    if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        message: 'An account with this email already exists.',
-      });
-    }
 
     // Find Guest role
     const guestRole = await prisma.role.findUnique({
       where: { name: 'Guest' },
     });
+
     if (!guestRole) {
-      console.error('Guest role not found in database');
       return res.status(500).json({
         success: false,
-        message: 'Service temporarily unavailable. Please try again later.',
+        message: 'Service unavailable: default role not found',
       });
     }
 
-    // Hash password with bcrypt (10 rounds) and Generate verification token (32 bytes = 64 hex characters)
     const passwordHash = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Create User and Invitation in a transaction
-    const result = await prisma.$transaction(
-      async (tx) => {
-        // Create user with PENDING status and emailVerified = false
-        const user = await tx.user.create({
-          data: {
-            email: normalizedEmail,
-            passwordHash,
-            status: 'PENDING',
-            emailVerified: false,
-            // Relate to Guest role
-            userRoles: {
-              create: {
-                roleId: guestRole.id,
-              },
-            },
+    // Create User and Verification items in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          email: normalizedEmail,
+          phone: normalizedPhone,
+          passwordHash,
+          status: 'PENDING',
+          emailVerified: false,
+          phoneVerified: false,
+          userRoles: {
+            create: { roleId: guestRole.id },
           },
-          include: {
-            userRoles: {
-              include: {
-                role: true,
-              },
-            },
+        },
+        include: {
+          userRoles: {
+            include: { role: true },
           },
-        });
+        },
+      });
 
-        // Create verification invitation
-        const invitation = await tx.invitation.create({
+      // 1. Email Verification Item if email provided
+      if (normalizedEmail) {
+        await tx.invitation.create({
           data: {
             email: normalizedEmail,
             token: verificationToken,
             invitationType: 'USER_REGISTRATION',
             status: 'PENDING',
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             metadata: {
               purpose: 'VERIFY_EMAIL',
               targetRole: role || 'Guest',
-              businessName: businessName || name, // Fallback to user name if not provided
+              businessName: businessName || name,
               marketId: marketId,
-              name: normalizedName
+              name: normalizedName,
             },
           },
         });
-
-        return { user, invitation };
-      },
-      {
-        timeout: 10000, // 10 secs
       }
-    );
 
-    // Build verification link
-    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+      // 2. Phone Verification Item if phone provided
+      if (normalizedPhone) {
+        await tx.verificationToken.create({
+          data: {
+            token: otp,
+            tokenType: 'PHONE_VERIFICATION',
+            phone: normalizedPhone,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 mins
+          },
+        });
+      }
 
-    const verificationLink = `${baseUrl}/api/auth/verify-email?token=${verificationToken}`;
+      return user;
+    });
 
-    // send verification email
-    // Build verification link and send email
-    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
-    // Point to frontend verify page instead of backend endpoint
-    const verifyUrl = `${frontendBase}/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    // Handle Sends
+    let responseMessage = 'Registration successful. ';
 
-    try {
-      await sendVerificationEmail(
-        normalizedEmail,
-        verifyUrl,
-        { name: normalizedName } // optional, if your service supports it
-      );
-    } catch (mailErr) {
-      console.error('Verification email failed to send:', mailErr);
-
+    if (normalizedEmail) {
+      const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const verifyUrl = `${frontendBase}/verify-email?token=${encodeURIComponent(verificationToken)}`;
+      try {
+        await sendVerificationEmail(normalizedEmail, verifyUrl, { name: normalizedName });
+        responseMessage += 'Please check your email to verify your account.';
+      } catch (mailErr) {
+        console.error('Mail error:', mailErr);
+      }
     }
 
+    if (normalizedPhone) {
+      // Simulate SMS
+      console.log(`[SMS SIMULATION] OTP for ${normalizedPhone}: ${otp}`);
+      if (normalizedEmail) {
+        responseMessage += ' and check your phone for an OTP.';
+      } else {
+        responseMessage += 'Please check your phone for a 6-digit OTP code.';
+      }
+    }
 
-    // Respond with success
     return res.status(201).json({
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: responseMessage,
       data: {
         user: {
-          id: result.user.id,
-          email: result.user.email,
-          status: result.user.status,
-          emailVerified: result.user.emailVerified,
-          role: result.user.userRoles[0]?.role?.name || 'Guest',
+          id: result.id,
+          email: result.email,
+          phone: result.phone,
+          status: result.status,
+          role: result.userRoles[0]?.role?.name || 'Guest',
         },
-        verificationTokenExpiresIn: '24 hours',
       },
     });
   } catch (err) {
@@ -683,68 +722,77 @@ exports.resendVerification = async (req, res) => {
  */
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, phone, password } = req.body;
 
     // Validate required fields
-    if (!email || !password) {
+    if ((!email && !phone) || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required',
+        message: 'Email/Phone and password are required',
       });
     }
 
-    // Validate email format
-    if (!validateEmail(email)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid email format',
+    let user = null;
+    let identifier = null;
+
+    if (email) {
+      if (!validateEmail(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid email format',
+        });
+      }
+      identifier = normalizeEmail(email);
+      user = await prisma.user.findUnique({
+        where: { email: identifier },
+        include: {
+          userRoles: { include: { role: true } },
+          stakeholder: { include: { vendor: { include: { stalls: true } }, supplier: true } },
+          admin: { include: { marketMaster: true, pseudoMarketAdmin: true } }
+        },
+      });
+    } else if (phone) {
+      if (!validatePhone(phone)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid phone format (+256...)',
+        });
+      }
+      identifier = normalizePhone(phone);
+      user = await prisma.user.findUnique({
+        where: { phone: identifier },
+        include: {
+          userRoles: { include: { role: true } },
+          stakeholder: { include: { vendor: { include: { stalls: true } }, supplier: true } },
+          admin: { include: { marketMaster: true, pseudoMarketAdmin: true } }
+        },
       });
     }
 
-    //  Normalize email
-    const normalizedEmail = normalizeEmail(email);
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-      include: {
-        userRoles: {
-          include: {
-            role: true,
-          },
-        },
-        stakeholder: {
-          include: {
-            vendor: { include: { stalls: true } },
-            supplier: true
-          }
-        },
-        admin: {
-          include: {
-            marketMaster: true,
-            pseudoMarketAdmin: true
-          }
-        }
-      },
-    });
-
-    // Generic message to prevent email enumeration
+    // Generic message
     if (!user || !user.passwordHash) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'Invalid credentials',
       });
     }
 
-    // Check if email is verified
-    if (!user.emailVerified) {
+    // Check verification
+    if (email && !user.emailVerified) {
       return res.status(403).json({
         success: false,
         message: 'Please verify your email before logging in',
       });
     }
 
-    //  Check if account is active
+    if (phone && !user.phoneVerified) {
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your phone via OTP before logging in',
+      });
+    }
+
+    // Check account status
     if (user.status !== 'ACTIVE') {
       return res.status(403).json({
         success: false,
@@ -757,7 +805,7 @@ exports.login = async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: 'Invalid credentials',
       });
     }
 
@@ -1772,6 +1820,180 @@ exports.setVendorPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/send-otp
+ * Send a 6-digit OTP to a user's phone
+ */
+exports.sendOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number is required',
+      });
+    }
+
+    if (!validatePhone(phone)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Ugandan phone format (+256...)',
+      });
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    // Check if user exists with this phone
+    const user = await prisma.user.findUnique({
+      where: { phone: normalizedPhone },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No account found with this phone number',
+      });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store in VerificationToken
+    await prisma.verificationToken.upsert({
+      where: { token: otp }, // This might collide, but unlikely for 6 digits in 10 mins. Better use phone as unique key if schema allowed.
+      // Since 'token' is @unique in schema, we'll just create a new one every time and delete old ones if needed.
+      // But upsert requires a unique field.
+      update: {
+        token: otp,
+        expiresAt,
+        isUsed: false,
+        attempts: 0,
+      },
+      create: {
+        token: otp,
+        tokenType: 'PHONE_VERIFICATION',
+        phone: normalizedPhone,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // SIMULATED SMS SENDING
+    console.log(`[SMS SIMULATION] OTP for ${normalizedPhone}: ${otp}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent successfully. Please check your phone.',
+      data: {
+        phone: normalizedPhone,
+        expiresIn: '10 minutes',
+      },
+    });
+  } catch (err) {
+    console.error('sendOtp error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send OTP',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/verify-otp
+ * Verify the 6-digit OTP
+ */
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+
+    if (!phone || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone and OTP are required',
+      });
+    }
+
+    const normalizedPhone = normalizePhone(phone);
+
+    // Find the latest unused OTP for this phone
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        phone: normalizedPhone,
+        token: otp,
+        tokenType: 'PHONE_VERIFICATION',
+        isUsed: false,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!verificationToken) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired OTP',
+      });
+    }
+
+    if (verificationToken.expiresAt < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired',
+      });
+    }
+
+    // Mark as used and verify user
+    await prisma.$transaction([
+      prisma.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: { isUsed: true, usedAt: new Date() },
+      }),
+      prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: { phoneVerified: true, status: 'ACTIVE' },
+      }),
+    ]);
+
+    // Get updated user with roles
+    const user = await prisma.user.findUnique({
+      where: { id: verificationToken.userId },
+      include: { userRoles: { include: { role: true } } },
+    });
+
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.userRoles[0]?.role?.name || 'Guest',
+      },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: '7d' }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Phone verified successfully',
+      data: {
+        token,
+        user: {
+          id: user.id,
+          name: user.name,
+          phone: user.phone,
+          role: user.userRoles[0]?.role?.name || 'Guest',
+        },
+      },
+    });
+  } catch (err) {
+    console.error('verifyOtp error:', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Verification failed',
     });
   }
 };

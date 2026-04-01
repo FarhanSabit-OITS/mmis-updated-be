@@ -54,6 +54,17 @@ router.post('/:id/reject', adminMiddleware, vendorController.rejectVendor);
 router.post('/', superAdminMiddleware, vendorController.createVendor);
 
 /**
+ * Bulk upload vendors from CSV
+ * POST /api/vendors/bulk-upload
+ */
+router.post(
+    '/bulk-upload',
+    superAdminMiddleware,
+    vendorController.uploadMiddleware,
+    vendorController.bulkUploadVendors
+);
+
+/**
  * Delete (deactivate) a vendor
  */
 router.delete('/:id', superAdminMiddleware, vendorController.deleteVendor);

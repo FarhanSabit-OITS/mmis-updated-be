@@ -46,6 +46,35 @@ const normalizeName = (name) => {
 };
 
 /**
+ * Validate phone number format (Basic international format)
+ * @param {string} phone - Phone number to validate
+ * @returns {boolean} - True if valid phone format
+ */
+const validatePhone = (phone) => {
+  if (!phone || typeof phone !== 'string') return false;
+  // Basic Regex for international phone numbers (e.g., +256...)
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+  return phoneRegex.test(phone.replace(/[\s-]/g, ''));
+};
+
+/**
+ * Normalize phone number (trim + remove spaces/dashes)
+ * @param {string} phone - Raw phone input
+ * @returns {string} - Normalized phone
+ */
+const normalizePhone = (phone) => {
+  if (typeof phone !== 'string') return '';
+  let cleaned = phone.trim().replace(/[\s-]/g, '');
+  if (cleaned.startsWith('0')) {
+    // Assuming Uganda defaulted if leading 0
+    cleaned = '+256' + cleaned.substring(1);
+  } else if (!cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+};
+
+/**
  * Validate firstName field
  * @param {string} firstName - First name to validate
  * @returns {object} - { isValid: boolean, error: string | null }
@@ -184,4 +213,6 @@ module.exports = {
   validateRegistrationRequest,
   validateVerificationRequest,
   validateLoginRequest,
+  validatePhone,
+  normalizePhone,
 };
