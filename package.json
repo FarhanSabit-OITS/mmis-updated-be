@@ -21,10 +21,12 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-fileupload": "^1.5.1",
+    "handlebars": "^4.7.9",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.11",
     "prisma": "^6.19.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -33,6 +35,6 @@
     "typescript": "^5.5.4"
   },
   "prisma": {
-    "seed": "ts-node seed.ts"
+    "seed": "ts-node prisma/seed.ts"
   }
 }

@@ -327,10 +327,6 @@ model User {
   @@index([email])
   @@index([phone])
   @@index([status])
-  @@index([emailVerified])
-  @@index([phoneVerified])
-  @@index([createdAt])
-  @@index([lastLogin])
   @@map("users")
 }
 
@@ -405,14 +401,7 @@ model UserProfile {
   user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   verifiedBy Admin? @relation("ProfileVerifier", fields: [verifiedByAdminId], references: [id])
 
-  @@index([nationalId])
-  @@index([passportNumber])
-  @@index([taxIdNumber])
-  @@index([gender])
-  @@index([dateOfBirth])
   @@index([verificationLevel])
-  @@index([personalQRCode])
-  @@index([country])
   @@map("user_profiles")
 }
 
@@ -447,12 +436,8 @@ model VerificationToken {
   user User? @relation(fields: [userId], references: [id])
 
   @@index([token])
-  @@index([tokenType])
   @@index([userId])
-  @@index([email])
-  @@index([phone])
   @@index([expiresAt])
-  @@index([isUsed])
   @@map("verification_tokens")
 }
 
@@ -488,8 +473,6 @@ model UserSession {
   @@index([userId])
   @@index([sessionToken])
   @@index([refreshToken])
-  @@index([deviceId])
-  @@index([isActive])
   @@index([expiresAt])
   @@map("user_sessions")
 }
@@ -514,8 +497,6 @@ model Geolocation {
   districts District[]
 
   @@index([code])
-  @@index([country])
-  @@index([regionType])
   @@map("geolocations")
 }
 
@@ -539,9 +520,7 @@ model District {
 
   invitations Invitation[] @relation("DistrictInvitations")
 
-  @@index([code])
   @@index([geolocationId])
-  @@index([districtType])
   @@map("districts")
 }
 
@@ -565,16 +544,13 @@ model City {
 
   invitations Invitation[] @relation("CityInvitations")
 
-  @@index([code])
   @@index([districtId])
-  @@index([cityType])
   @@map("cities")
 }
 
 model Market {
   id     String @id @default(uuid())
   cityId String
-
   name        String  @db.VarChar(200)
   uniqueCode  String  @unique @db.VarChar(50)
   displayName String? @db.VarChar(200)
@@ -645,11 +621,7 @@ model Market {
   invitations Invitation[] @relation("MarketInvitations")
 
   @@unique([cityId, name])
-  @@index([uniqueCode])
   @@index([cityId])
-  @@index([marketType])
-  @@index([status])
-  @@index([createdAt])
   @@map("markets")
 }
 
@@ -690,10 +662,7 @@ model MarketLevel {
   stalls   Stall[]         @relation("LevelStalls")
 
   @@unique([marketId, levelNumber])
-  @@index([uniqueCode])
   @@index([marketId])
-  @@index([levelNumber])
-  @@index([status])
   @@map("market_levels")
 }
 
@@ -748,11 +717,7 @@ model MarketSection {
   specialRequirements String? @db.VarChar(500)
 
   @@unique([marketId, levelId, name])
-  @@index([uniqueCode])
   @@index([marketId])
-  @@index([levelId])
-  @@index([sectionType])
-  @@index([supervisorId])
   @@map("market_sections")
 }
 
@@ -785,10 +750,7 @@ model MarketAisle {
   stalls Stall[] @relation("AisleStalls")
 
   @@unique([sectionId, aisleNumber])
-  @@index([uniqueCode])
   @@index([sectionId])
-  @@index([aisleNumber])
-  @@index([aisleType])
   @@map("market_aisles")
 }
 
@@ -830,9 +792,6 @@ model Stakeholder {
 
   auditLogs AuditLog[] @relation("StakeholderAuditLogs")
 
-  @@index([stakeholderType])
-  @@index([kycStatus])
-  @@index([createdAt])
   @@map("stakeholders")
 }
 
@@ -851,8 +810,6 @@ model MarketAuthority {
   marketRegulations MarketRegulation[]
   issuedLicenses    BusinessLicense[]
 
-  @@index([authorityName])
-  @@index([registrationNumber])
   @@map("market_authorities")
 }
 
@@ -875,9 +832,7 @@ model Member {
   shops         Shop[]
   rentContracts RentContract[] @relation("MemberAsLandlord")
 
-  @@index([membershipNumber])
   @@index([businessName])
-  @@index([registrationNumber])
   @@map("members")
 }
 
@@ -910,10 +865,7 @@ model Vendor {
 
   invitations Invitation[]
 
-  @@index([vendorCode])
   @@index([businessName])
-  @@index([businessLicenseNumber])
-  @@index([primaryMarketId])
   @@map("vendors")
 }
 
@@ -938,9 +890,7 @@ model Supplier {
 
   invitations Invitation[]
 
-  @@index([supplierCode])
   @@index([businessName])
-  @@index([supplierType])
   @@map("suppliers")
 }
 
@@ -965,9 +915,6 @@ model Customer {
   loyaltyTransactions LoyaltyTransaction[]
   marketTokens        MarketToken[]
 
-  @@index([customerCode])
-  @@index([customerType])
-  @@index([loyaltyPoints])
   @@map("customers")
 }
 
@@ -987,9 +934,6 @@ model Guest {
   guestEntries GuestEntry[]
   marketTokens MarketToken[] @relation("GuestMarketTokens")
 
-  @@index([guestCode])
-  @@index([expiryDate])
-  @@index([sponsorId])
   @@map("guests")
 }
 
@@ -1058,12 +1002,8 @@ model Shop {
   shopAssets    ShopAsset[]
 
   @@unique([marketId, shopNumber])
-  @@index([uniqueCode])
   @@index([marketId])
   @@index([memberId])
-  @@index([shopType])
-  @@index([status])
-  @@index([occupationStatus])
   @@map("shops")
 }
 
@@ -1136,12 +1076,8 @@ model Stall {
   healthInspections HealthInspection[]
 
   @@unique([shopId, stallNumber])
-  @@index([uniqueCode])
   @@index([shopId])
   @@index([vendorId])
-  @@index([category])
-  @@index([stallType])
-  @@index([status])
   @@map("stalls")
 }
 
