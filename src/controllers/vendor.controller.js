@@ -138,37 +138,8 @@ exports.createVendor = async (req, res) => {
         // Send verification email
         try {
             const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/?token=${result.verificationToken}&tokenType=vendor-password-setup`;
-            
-            const emailHtml = `
-                <div style="font-family:system-ui,Segoe UI,Arial,sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <h2 style="color: #1e293b; margin-bottom: 16px;">Welcome to MarketMaster, ${firstName}!</h2>
-                    <p style="color: #475569; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">
-                        Your vendor account has been created by the SuperAdmin. To activate your account and start managing your business, please verify your email and set a secure password.
-                    </p>
-                    <div style="background-color: #f1f5f9; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                        <p style="color: #64748b; font-size: 14px; margin: 0 0 12px 0;">
-                            <strong>Business:</strong> ${businessName}
-                        </p>
-                        <p style="color: #64748b; font-size: 14px; margin: 0;">
-                            <strong>Email:</strong> ${email}
-                        </p>
-                    </div>
-                    <p style="margin-bottom: 20px;">
-                        <a href="${verifyUrl}"
-                           style="background:#2563eb;color:#fff;padding: 12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight: bold;font-size: 14px;">
-                           Verify Email & Set Password
-                        </a>
-                    </p>
-                    <p style="color: #64748b; font-size: 14px; margin-bottom: 8px;">If the button doesn't work, copy and paste this URL into your browser:</p>
-                    <p style="word-break:break-all; color: #2563eb; font-size: 12px;">${verifyUrl}</p>
-                    <p style="margin-top:32px;font-size:12px;color:#94a3b8;border-top: 1px solid #f1f5f9; padding-top: 16px;">
-                        This verification link is valid for 24 hours. For security reasons, do not share this link with anyone else.
-                    </p>
-                </div>
-            `;
-
-            await emailService.sendVerificationEmail(email, verifyUrl);
-            console.log(`✅ Verification email sent to ${email}`);
+            await emailService.sendVerificationEmail(email, verifyUrl, { name: firstName });
+            console.log(`Verification email sent to ${email}`);
         } catch (emailErr) {
             console.error('Failed to send verification email:', emailErr);
             // Don't fail the request if email fails, but log it
@@ -207,7 +178,7 @@ exports.deleteVendor = async (req, res) => {
             });
         }
 
-        await vendorService.deleteVendor(id);
+        await vendorService.deleteVendor(id, req.user.userId);
 
         return res.status(200).json({
             success: true,

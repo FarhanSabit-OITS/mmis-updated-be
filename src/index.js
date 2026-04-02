@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
+const path = require('path');
 
 
 const errorHandler = require('./middleware/errorHandler.middleware');
@@ -22,6 +23,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser()); // Parse cookies for refresh token
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 configureRouter(app)
 
 // File upload middleware (for bulk CSV uploads)

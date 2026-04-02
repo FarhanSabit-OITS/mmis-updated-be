@@ -161,11 +161,10 @@ exports.register = async (req, res) => {
       await sendVerificationEmail(
         normalizedEmail,
         verifyUrl,
-        { name: normalizedName } // optional, if your service supports it
+        { name: normalizedName }
       );
     } catch (mailErr) {
       console.error('Verification email failed to send:', mailErr);
-
     }
 
 
@@ -1268,7 +1267,7 @@ exports.forgotPassword = async (req, res) => {
     const resetUrl = `${frontendBase}/reset-password?token=${encodeURIComponent(token)}`;
 
     try {
-      await sendPasswordResetEmail(normalizedEmail, resetUrl);
+      await sendPasswordResetEmail(normalizedEmail, resetUrl, { name: user?.name || 'User' });
     } catch (mailErr) {
       console.error('Password reset email failed:', mailErr);
       // We still return success to the user
@@ -1443,6 +1442,7 @@ exports.getMe = async (req, res) => {
         kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
         businessId,
         vendorId: user.stakeholder?.vendor?.id || null, // Actual UUID
+        marketId: user.admin?.marketMaster?.marketId || user.stakeholder?.vendor?.primaryMarketId || null,
         marketName,
         secondaryLabel,
         shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null,

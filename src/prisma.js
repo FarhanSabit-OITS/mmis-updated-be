@@ -6,8 +6,12 @@ const { PrismaClient } = require('@prisma/client');
  * Ensures only one instance of Prisma Client is created and reused across the application.
  * This prevents connection pool exhaustion and transaction issues.
  */
+const prismaLogLevels = process.env.PRISMA_LOG_LEVELS
+    ? process.env.PRISMA_LOG_LEVELS.split(',').map((level) => level.trim()).filter(Boolean)
+    : ['error'];
+
 const prisma = new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+    log: prismaLogLevels,
 });
 
 module.exports = prisma;
