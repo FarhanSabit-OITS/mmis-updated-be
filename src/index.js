@@ -24,14 +24,14 @@ app.use(cors(corsOptions));
 app.use(cookieParser()); // Parse cookies for refresh token
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
-configureRouter(app)
-
 // File upload middleware (for bulk CSV uploads)
 app.use(fileUpload({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   useTempFiles: true,
   tempFileDir: '/tmp/'
 }));
+
+configureRouter(app)
 
 
 

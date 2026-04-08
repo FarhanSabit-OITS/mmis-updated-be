@@ -33,7 +33,11 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 const hash = (pw: string) => bcrypt.hashSync(pw, 10);
-const DEV_PASSWORD = hash("Password@123");
+const DEFAULT_PW = "Password@123";
+if (!process.env.SEED_PASSWORD && process.env.NODE_ENV === 'production') {
+  throw new Error("SEED_PASSWORD environment variable must be set in production");
+}
+const DEV_PASSWORD = hash(process.env.SEED_PASSWORD || DEFAULT_PW);
 
 // ─── Source data from Kabale_Central_Market_FTS.xlsx ─────────────────────────
 // Columns: id | name | nin | phone_no | category | fc_no (stall/shop number) | mth_pay

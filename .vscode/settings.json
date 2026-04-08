@@ -2,5 +2,20 @@
     "cSpell.words": [
         "pkey",
         "TOTP"
+    ],
+    "graph-it-live.enableMcpDebugLogging": true,
+    "graph-it-live.enableMcpServer": true,
+    "antigravity-storage-manager.sync.storageProvider": "local",
+    "antigravity-storage-manager.sync.localPath": "\"C:\\FTS\\RESOURCES\\AntiBackup\"",
+    "npm-intellisense.packageSubfoldersIntellisense": true,
+    "antigravity-storage-manager.showCreditsBalance": true,
+    "antigravity-storage-manager.quota.historyRetentionDays": 3,
+    "antigravity-storage-manager.backup.path": "\"C:\\FTS\\RESOURCES\\AntiBackup\"",
+    "antigravity-storage-manager.backup.enabled": true,
+    "antigravity-storage-manager.quota.thresholds.danger": 10,
+    "antigravity-storage-manager.quota.pinnedModels": [
+        "gemini pro",
+        "claude opus",
+        "gemini flash"
     ]
 }
