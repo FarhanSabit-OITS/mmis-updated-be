@@ -8,6 +8,7 @@
 const prisma = require('../prisma');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { PaginationResponse } = require('../utils');
 
 /**
  * Build Prisma where clause from query parameters
@@ -100,9 +101,8 @@ const buildSortClause = (sortBy = 'vendorCode', order = 'desc') => {
  * @param {Object} pagination - Pagination options
  * @returns {Promise<Object>} Vendors data with pagination
  */
-const getAllVendorsWithDetails = async (filters, pagination) => {
-    const { page = 1, limit = 20 } = pagination;
-
+const getAllVendorsWithDetails = async (filters, {page =1, limit=20}) => {
+    
     // Ensure limit is within bounds
     const safeLimit = Math.min(Math.max(1, parseInt(limit)), 100);
     const safePage = Math.max(1, parseInt(page));
@@ -276,17 +276,11 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
     }))).filter(Boolean);
 
     const totalPages = Math.ceil(totalCount / safeLimit);
+    const pagination = new PaginationResponse(totalPages, page, limit)
 
     return {
         vendors: mappedResults, // Keep key 'vendors' for frontend compatibility
-        pagination: {
-            currentPage: safePage,
-            totalPages,
-            totalCount,
-            limit: safeLimit,
-            hasNext: safePage < totalPages,
-            hasPrev: safePage > 1
-        }
+        pagination
     };
 };
 
