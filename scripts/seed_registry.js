@@ -357,7 +357,7 @@ async function syncVendorAndFacility(market, level, section, admin, member, name
     const safePhone = (phone.length > 5 ? (phone.startsWith('256') ? `+${phone}` : `+256${phone}`) : `+256000${crypto.randomBytes(3).readUIntBE(0, 3)}`).slice(0, 20);
     
     try {
-      if (stats.vendorsCreated % 100 === 0) console.log(`  Created ${stats.vendorsCreated} vendors...`);
+      if (stats.vendorsCreated > 0 && stats.vendorsCreated % 100 === 0) console.log(`  Created ${stats.vendorsCreated} vendors...`);
       const user = await prisma.user.create({
         data: {
           email,
