@@ -1,6 +1,6 @@
 const { ApiResponse, asyncHandler } = require('../utils');
 const prisma = require('../prisma');
-const notificationService = require('./notification.service');
+const notificationService = require('../services/notification.service');
 
 module.exports = {
   /**

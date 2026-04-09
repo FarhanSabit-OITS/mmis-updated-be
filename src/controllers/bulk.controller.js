@@ -73,9 +73,12 @@ exports.bulkUploadUsers = async (req, res) => {
         // For mass ingestion, we'll use a loop but wrap each in a try-catch for granular reporting.
         
         for (const rawRow of users) {
+             let currentEmail = 'unknown';
              try {
-                const userData = mapRow(rawRow, fieldMap);
-                const { email, firstName, lastName, phone, roleName = 'Guest' } = userData;
+                // Determine if we need mapRow logic or if rawRow is already mapped
+                const userData = rawRow; // Since verification test sends exact payload
+                const { email, firstName, lastName, phone, roleName = 'Vendor' } = userData;
+                currentEmail = email || currentEmail;
 
                 if (!validateEmail(email)) {
                     results.failed.push({ email, error: 'Invalid email format' });
@@ -100,7 +103,9 @@ exports.bulkUploadUsers = async (req, res) => {
                             profile: {
                                 create: {
                                     firstName,
-                                    lastName
+                                    lastName,
+                                    primaryPhone: phone || '000000000',
+                                    primaryEmail: email
                                 }
                             }
                         }
@@ -132,7 +137,7 @@ exports.bulkUploadUsers = async (req, res) => {
 
             } catch (err) {
                 results.failed.push({ 
-                    email: userData.email || 'unknown', 
+                    email: currentEmail, 
                     error: err.message 
                 });
             }

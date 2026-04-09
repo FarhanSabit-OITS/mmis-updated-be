@@ -98,14 +98,14 @@ async function sendAdminInvitationEmail({ email, name, token, tempPassword, expi
 }
 
 async function sendGenericNotificationEmail(to, title, message, actionUrl = null, options = {}) {
-  const { name = 'User' } = options;
+  const { name = 'User', ctaTag = 'System Alert' } = options;
   const html = renderEmailTemplate({
     name,
     actionUrl,
     actionText: 'View Details',
     intro: message,
     heroTitle: title,
-    ctaTag: 'System Alert'
+    ctaTag: options.ctaTag || 'System Alert'
   });
   const text = `${title}: ${message}${actionUrl ? `\nView here: ${actionUrl}` : ''}`;
   const info = await getTransporter().sendMail({

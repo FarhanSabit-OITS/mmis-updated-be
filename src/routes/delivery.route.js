@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const deliveryController = require('../controllers/delivery.controller');
-const { verifyJWT, authorizeRoles } = require('../middlewares/auth.middleware');
+const authMiddleware = require('../middleware/auth.middleware');
 
-router.use(verifyJWT);
+router.use(authMiddleware);
 
-router.post('/', authorizeRoles('SUPPLIER'), deliveryController.createDelivery);
+router.post('/', deliveryController.createDelivery);
 router.get('/:id', deliveryController.getDeliveryDetails);
-router.patch('/:id/verify', authorizeRoles('VENDOR', 'MARKET_ADMIN', 'GATE_STAFF'), deliveryController.verifyDelivery);
+router.patch('/:id/verify', deliveryController.verifyDelivery);
 
 module.exports = router;

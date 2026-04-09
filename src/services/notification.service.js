@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const emailService = require('./email.service');
+const socketService = require('./socket.service');
 
 const prisma = new PrismaClient();
 
@@ -39,7 +40,7 @@ async function notify(params) {
                 message,
                 type,
                 actionUrl,
-                metadata
+                data: metadata
             }
         });
 
@@ -57,10 +58,16 @@ async function notify(params) {
                     title,
                     message,
                     actionUrl,
-                    { name: user.profile?.firstName || 'User' }
+                    { 
+                        name: user.profile?.firstName || 'User',
+                        ctaTag: params.ctaTag 
+                    }
                 );
             }
         }
+
+        // 3. Emit real-time WebSocket event
+        socketService.emitToUser(userId, 'new_notification', notification);
 
         return notification;
     } catch (error) {

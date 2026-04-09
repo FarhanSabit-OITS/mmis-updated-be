@@ -469,3 +469,104 @@ exports.recordStockReceipt = async (req, res) => {
     }
 };
 
+// ── NEW: Download Gate Token as PDF ──────────────────────────────────────────
+const tokenPdfService = require('../services/token.pdf.service');
+
+exports.downloadTokenPdf = async (req, res) => {
+    try {
+        const { code } = req.params;
+
+        const token = await prisma.marketToken.findUnique({
+            where: { shortCode: code },
+            include: {
+                vendor: { include: { primaryMarket: true } },
+                market: true,
+                recordedBy: { include: { profile: true } }
+            }
+        });
+
+        if (!token) {
+            return res.status(404).json({ success: false, message: 'Token not found' });
+        }
+
+        const pdfBuffer = await tokenPdfService.generateGateToken({
+            tokenCode:    token.shortCode,
+            tokenType:    token.tokenType   || 'ENTRY',
+            vendorName:   token.vendor?.businessName || token.holderName || 'N/A',
+            vendorCode:   token.vendor?.vendorCode   || token.identificationNumber || 'N/A',
+            marketName:   token.market?.name         || 'MarketMaster Market',
+            facilityName: token.facilityName || 'N/A',
+            validFrom:    token.issuedAt    || token.createdAt,
+            validUntil:   token.expiresAt,
+            issuedBy:     token.recordedBy
+                ? `${token.recordedBy.profile?.firstName || ''} ${token.recordedBy.profile?.lastName || ''}`.trim()
+                : 'Gate Authority',
+            payload: token.payload || {}
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Token-${code}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error('[TokenController] Token PDF error:', err);
+        return res.status(500).json({ success: false, message: 'Failed to generate token PDF' });
+    }
+};
+
+// ── NEW: Download KYC Verification Certificate PDF ────────────────────────────
+exports.downloadKycCertificate = async (req, res) => {
+    try {
+        const { stakeholderId } = req.params;
+
+        const stakeholder = await prisma.stakeholder.findUnique({
+            where: { id: stakeholderId },
+            include: {
+                user:     { include: { profile: true } },
+                vendor:   true,
+                supplier: true,
+                kycSubmissions: {
+                    where:   { status: 'VERIFIED' },
+                    orderBy: { reviewedAt: 'desc' },
+                    take: 1,
+                    include: { reviewedBy: { include: { user: { include: { profile: true } } } } }
+                }
+            }
+        });
+
+        if (!stakeholder) {
+            return res.status(404).json({ success: false, message: 'Stakeholder not found' });
+        }
+        if (stakeholder.kycStatus !== 'VERIFIED') {
+            return res.status(400).json({ success: false, message: 'KYC not yet verified for this stakeholder' });
+        }
+
+        const submission = stakeholder.kycSubmissions[0];
+        const profile    = stakeholder.user?.profile;
+        const vendor     = stakeholder.vendor;
+        const supplier   = stakeholder.supplier;
+
+        const pdfBuffer = await tokenPdfService.generateKycCertificate({
+            vendorName:       profile ? `${profile.firstName} ${profile.lastName}` : vendor?.businessName || supplier?.businessName || 'N/A',
+            vendorCode:       vendor?.vendorCode       || supplier?.supplierCode || 'N/A',
+            nidNumber:        profile?.nationalId      || submission?.metadata?.nidNumber || '—',
+            tinNumber:        profile?.taxIdNumber     || vendor?.taxIdNumber || submission?.metadata?.tinNumber || '—',
+            binnNumber:       vendor?.businessLicenseNumber || submission?.metadata?.binnNumber || '—',
+            verifiedAt:       submission?.reviewedAt   || stakeholder.kycVerifiedAt,
+            verifiedBy:       submission?.reviewedBy
+                ? `${submission.reviewedBy.user?.profile?.firstName || ''} ${submission.reviewedBy.user?.profile?.lastName || ''}`.trim()
+                : 'Market Administrator',
+            marketName:       'MarketMaster Market Authority',
+            tokenCode:        `KYC-CERT-${stakeholderId.slice(0, 8).toUpperCase()}`,
+            stakeholderType:  vendor ? 'VENDOR' : supplier ? 'SUPPLIER' : 'MEMBER',
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="KYC-Certificate-${stakeholderId}.pdf"`);
+        return res.send(pdfBuffer);
+    } catch (err) {
+        console.error('[TokenController] KYC certificate error:', err);
+        return res.status(500).json({ success: false, message: 'Failed to generate KYC certificate' });
+    }
+};
+
+

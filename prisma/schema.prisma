@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 
@@ -849,6 +848,10 @@ model Vendor {
   yearsInBusiness       Int?
   preferredMarkets      String[]
   primaryMarketId       String?
+  
+  isDelinquent     Boolean @default(false)
+  delinquencyStage Int     @default(0)
+  daysOverdue      Int     @default(0)
 
   stakeholder   Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
   primaryMarket Market?     @relation("PrimaryMarketVendors", fields: [primaryMarketId], references: [id])
@@ -2171,6 +2174,7 @@ model RentPayment {
 
   notes        String?  @db.Text
   receivedById String?
+  metadata     Json?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -2845,6 +2849,10 @@ model SupportTicket {
   priority     String @default("MEDIUM") @db.VarChar(20)
   status       String @default("OPEN") @db.VarChar(20)
   category     String @db.VarChar(50)
+  
+  aiSummary       String? @db.Text
+  aiInternalNotes String? @db.Text
+
   
   creatorId    String
   assignedToId String?

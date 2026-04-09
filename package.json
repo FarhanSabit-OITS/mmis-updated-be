@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
@@ -24,7 +25,9 @@
     "handlebars": "^4.7.9",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.11",
+    "pdfkit": "^0.18.0",
     "prisma": "^6.19.0",
+    "socket.io": "^4.8.3",
     "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },

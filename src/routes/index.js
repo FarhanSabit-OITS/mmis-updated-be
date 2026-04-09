@@ -14,11 +14,13 @@ const bulkRoutes = require('./bulk.routes');
 const assetRoutes = require('./asset.routes');
 const supportRoutes = require('./support.routes');
 const orderRoutes = require('./order.route');
-const deliveryRoutes = require('./delivery.route');
+const complianceRoutes = require('./compliance.routes');
 const documentRoutes = require('./document.routes');
+const deliveryRoutes = require('./delivery.route');
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
+    app.use('/api/compliance', complianceRoutes);
     app.use('/api/bulk', bulkRoutes);
     app.use('/api/documents', documentRoutes);
     app.use('/api/assets', assetRoutes);

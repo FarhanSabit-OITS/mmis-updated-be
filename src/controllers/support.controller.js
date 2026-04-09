@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const { notify } = require('../services/notification.service');
+const aiService = require('../services/ai.service');
 
 const prisma = new PrismaClient();
 
@@ -136,5 +137,35 @@ exports.updateTicket = async (req, res) => {
     } catch (error) {
         console.error('[SupportController] Error updating ticket:', error);
         return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+/**
+ * Summarize a ticket using AI
+ */
+exports.summarizeTicket = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const ticket = await prisma.supportTicket.findUnique({ where: { id } });
+        if (!ticket) {
+            return res.status(404).json({ success: false, message: 'Ticket not found' });
+        }
+
+        const summary = await aiService.summarizeTicket(ticket.description, ticket.resolution || '');
+
+        const updatedTicket = await prisma.supportTicket.update({
+            where: { id },
+            data: { aiSummary: summary },
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Ticket summarized by AI successfully',
+            data: updatedTicket
+        });
+    } catch (error) {
+        console.error('[SupportController] Error summarizing ticket:', error);
+        return res.status(500).json({ success: false, message: 'Failed to generate AI summary.' });
     }
 };
