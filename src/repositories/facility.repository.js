@@ -1,25 +1,25 @@
 const prisma = require('../shared/prisma');
 const { PaginationResponse } = require('../utils');
 module.exports = {
-  getShopList: async ({ page = 1, limit = 10, search, marketId, status, occupationStatus, shopType, memberId }) => {
+  getFacilityList: async ({ page = 1, limit = 10, search, marketId, status, occupationStatus, type, memberId }) => {
     const skip = (page - 1) * limit;
     const where = {
       ...(marketId && { marketId }),
       ...(status && { status }),
       ...(occupationStatus && { occupationStatus }),
-      ...(shopType && { shopType }),
+      ...(type && { type }),
       ...(memberId && { memberId }),
       ...(search && {
         OR: [
-          { shopName: { contains: search, mode: "insensitive" } },
-          { shopNumber: { contains: search, mode: "insensitive" } },
+          { facilityName: { contains: search, mode: "insensitive" } },
+          { unitNumber: { contains: search, mode: "insensitive" } },
           { uniqueCode: { contains: search, mode: "insensitive" } },
         ],
       }),
     };
 
-    const [shops, total] = await Promise.all([
-      prisma.shop.findMany({
+    const [facilities, total] = await Promise.all([
+      prisma.facility.findMany({
         where,
         skip,
         take: Number(limit),
@@ -32,21 +32,32 @@ module.exports = {
           createdBy: true,
           marketMaster: true,
           rentContracts: true,
-          shopAssets: true
+          assets: true,
+          vendors: {
+            include: {
+              stakeholder: {
+                include: {
+                  user: {
+                    select: { id: true, email: true, phone: true }
+                  }
+                }
+              }
+            }
+          }
         },
       }),
-      prisma.shop.count({ where }),
+      prisma.facility.count({ where }),
     ]);
 
     return {
-      shops,
+      facilities,
       pagination: new PaginationResponse(total, page, Number(limit))
     }
   },
   
-  getShopDetailsById: async (shopId) => {
-    const shop = await prisma.shop.findUnique({
-      where: { id: shopId },
+  getFacilityDetailsById: async (facilityId) => {
+    const facility = await prisma.facility.findUnique({
+      where: { id: facilityId },
       include: {
         market: {
           select: { id: true, name: true, address: true, status: true }
@@ -62,15 +73,28 @@ module.exports = {
             }
           }
         },
+        vendors: {
+          include: {
+            stakeholder: {
+              include: {
+                user: {
+                  select: { id: true, email: true, phone: true }
+                }
+              }
+            }
+          }
+        },
+        assets: true,
+        rentContracts: true
       },
     });
 
-    return shop;
+    return facility;
   },
 
-  editShop: async (shopId, updateData) => {
-    const shop = await prisma.shop.update({
-      where: { id: shopId },
+  editFacility: async (facilityId, updateData) => {
+    const facility = await prisma.facility.update({
+      where: { id: facilityId },
       data: updateData,
       include: {
         market: {
@@ -90,6 +114,6 @@ module.exports = {
       },
     });
 
-    return shop;
+    return facility;
   },
 };

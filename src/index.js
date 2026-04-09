@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
 const path = require('path');
+const os = require('os');
 
 
 const errorHandler = require('./middleware/errorHandler.middleware');
@@ -28,7 +29,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 app.use(fileUpload({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   useTempFiles: true,
-  tempFileDir: '/tmp/'
+  tempFileDir: os.tmpdir()
 }));
 
 configureRouter(app)

@@ -141,24 +141,24 @@ exports.setupShop = async (req, res) => {
                 });
             }
 
-            // C. Create Shop
-            // Check for level (optional, default to null or find first)
+            // C. Create Facility
             const level = await tx.marketLevel.findFirst({ where: { marketId } });
             const levelId = level ? level.id : null;
 
-            const shopUniqueCode = generateUniqueCode('SHP');
-            const shopNumberVal = `SHOP-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            const facilityUniqueCode = generateUniqueCode('FAC');
+            const facilityNumberVal = stallNumber || `F-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
 
-            const shop = await tx.shop.create({
+            const facility = await tx.facility.create({
                 data: {
                     market: { connect: { id: marketId } },
                     createdBy: { connect: { id: userId } },
                     member: { connect: { id: memberId } },
+                    vendors: { connect: { id: vendorId } },
                     ...(levelId ? { level: { connect: { id: levelId } } } : {}),
-                    uniqueCode: shopUniqueCode,
-                    shopNumber: shopNumberVal,
-                    shopName: shopName,
-                    shopType: 'RETAIL',
+                    uniqueCode: facilityUniqueCode,
+                    unitNumber: facilityNumberVal,
+                    facilityName: shopName,
+                    type: 'SHOP',
                     status: 'ACTIVE',
                     occupationStatus: 'OCCUPIED',
                     contractStartDate: new Date(),
@@ -168,40 +168,17 @@ exports.setupShop = async (req, res) => {
                 }
             });
 
-            // D. Create Stall
-            const stallUniqueCode = generateUniqueCode('STL');
-            const stallNumVal = stallNumber || `S-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
-
-            const stall = await tx.stall.create({
-                data: {
-                    vendor: { connect: { id: vendorId } },
-                    market: { connect: { id: marketId } },
-                    createdBy: { connect: { id: userId } },
-                    shop: { connect: { id: shop.id } }, // Connect to the created shop
-                    stallNumber: stallNumVal,
-                    uniqueCode: stallUniqueCode,
-                    displayName: shopName,
-                    stallType: 'PERMANENT',
-                    status: 'ACTIVE',
-                    category: 'Retail',
-                    dailyRate: "0.00", // Decimal as string is safer
-                    monthlyRate: parsedMonthlyRent.toFixed(2),
-                    contractStartDate: new Date(),
-                    contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1))
-                }
-            });
-
             const landlordMember = await ensureSystemLandlordMember(tx);
             await tx.rentContract.create({
                 data: {
-                    shopId: shop.id,
+                    facilityId: facility.id,
                     landlordId: landlordMember.id,
                     tenantId: vendorId,
-                    startDate: shop.contractStartDate,
-                    endDate: shop.contractEndDate,
+                    startDate: facility.contractStartDate,
+                    endDate: facility.contractEndDate,
                     durationMonths: 12,
                     monthlyRent: parsedMonthlyRent.toFixed(2),
-                    paymentDay: shop.paymentDay || 1,
+                    paymentDay: 1, // Defaulting to 1st
                     status: 'ACTIVE',
                     isActive: true,
                     contractNumber: generateUniqueCode('CTR'),
@@ -213,21 +190,20 @@ exports.setupShop = async (req, res) => {
                 }
             });
 
-            return { shop, stall, vendor };
+            return { facility, vendor };
         }, {
-            maxWait: 5000, // default: 2000
-            timeout: 20000 // default: 5000
+            maxWait: 5000,
+            timeout: 20000
         });
 
         // 3. Return updated info
-        // Fetch refreshed user data to return exact same structure as login
         const updatedUser = await prisma.user.findUnique({
             where: { id: userId },
             include: {
                 profile: true,
                 stakeholder: {
                     include: {
-                        vendor: { include: { stalls: true } }
+                        vendor: { include: { facilities: true } }
                     }
                 },
                 userRoles: { include: { role: true } }
@@ -236,17 +212,16 @@ exports.setupShop = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Shop and Stall created successfully',
+            message: 'Facility created and vendor assigned successfully',
             data: {
-                shopId: result.shop.id,
-                stallId: result.stall.id,
+                facilityId: result.facility.id,
                 user: {
                     id: updatedUser.id,
                     email: updatedUser.email,
                     role: updatedUser.userRoles[0]?.role?.name || 'Vendor',
                     status: 'ACTIVE',
                     vendorId: updatedUser.stakeholder?.vendor?.id,
-                    stalls: updatedUser.stakeholder?.vendor?.stalls || [],
+                    facilities: updatedUser.stakeholder?.vendor?.facilities || [],
                     kycStatus: updatedUser.stakeholder?.kycStatus
                 }
             }

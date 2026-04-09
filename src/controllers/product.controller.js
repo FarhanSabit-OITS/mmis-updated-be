@@ -60,22 +60,23 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // Check stall exists and belongs to vendor
-    const stall = await prisma.stall.findUnique({
-      where: { id: req.body.stallId }
+    // Check facility exists and belongs to vendor
+    const facility = await prisma.facility.findUnique({
+      where: { id: req.body.facilityId }
     });
 
-    if (!stall) {
+    if (!facility) {
       return res.status(404).json({
         success: false,
-        message: 'Stall not found'
+        message: 'Facility not found'
       });
     }
 
-    if (stall.vendorId !== vendorId) {
+    if (!facility.vendors || !await prisma.facility.findFirst({ where: { id: facility.id, vendors: { some: { id: vendorId } } } })) {
+      // Manual check because of many-to-many
       return res.status(403).json({
         success: false,
-        message: 'Stall does not belong to this vendor'
+        message: 'Facility does not belong to this vendor'
       });
     }
 
@@ -156,7 +157,7 @@ exports.listProducts = async (req, res) => {
 
     // Build filters
     const filters = {
-      stallId: req.query.stallId || null,
+      facilityId: req.query.facilityId || null,
       category: req.query.category || '',
       status: req.query.status || 'ACTIVE',
       search: req.query.search || '',
@@ -204,7 +205,7 @@ exports.getProduct = async (req, res) => {
     // Permission check: If user is vendor, can only view own products; Admin can view all
     if (userId) {
       const isAdmin = req.user.roleLevel && ['SUPER_ADMIN', 'NATIONAL_ADMIN', 'DISTRICT_ADMIN', 'CITY_ADMIN', 'MARKET_MASTER'].includes(req.user.roleLevel);
-      const isVendor = product.stall.vendor.stakeholder.user.id === userId;
+      const isVendor = product.facility.vendors.some(v => v.stakeholder.user.id === userId);
 
       if (!isAdmin && !isVendor && !product.isActive) {
         return res.status(403).json({
@@ -264,9 +265,8 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
-    // Auth check: Vendor can only update own products, Admin can update any
     const isAdmin = req.user.roleLevel && ['SUPER_ADMIN', 'NATIONAL_ADMIN', 'DISTRICT_ADMIN', 'CITY_ADMIN', 'MARKET_MASTER'].includes(req.user.roleLevel);
-    if (currentProduct.stall.vendor.stakeholder.user.id !== userId && !isAdmin) {
+    if (!currentProduct.facility.vendors.some(v => v.stakeholder.user.id === userId) && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized: Cannot update other vendors products'
@@ -284,10 +284,10 @@ exports.updateProduct = async (req, res) => {
     }
 
     // Cannot change stallId or SKU/barcode after creation
-    if (req.body.stallId && req.body.stallId !== currentProduct.stallId) {
+    if (req.body.facilityId && req.body.facilityId !== currentProduct.facilityId) {
       return res.status(400).json({
         success: false,
-        message: 'Cannot change stall after product creation'
+        message: 'Cannot change facility after product creation'
       });
     }
 
@@ -345,7 +345,7 @@ exports.deleteProduct = async (req, res) => {
 
     // Auth check
     const isAdmin = req.user.roleLevel && ['SUPER_ADMIN', 'NATIONAL_ADMIN', 'DISTRICT_ADMIN', 'CITY_ADMIN', 'MARKET_MASTER'].includes(req.user.roleLevel);
-    if (currentProduct.stall.vendor.stakeholder.user.id !== userId && !isAdmin) {
+    if (!currentProduct.facility.vendors.some(v => v.stakeholder.user.id === userId) && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Unauthorized: Cannot delete other vendors products'
@@ -493,16 +493,16 @@ exports.bulkUpload = async (req, res) => {
         continue;
       }
 
-      // Check stall ownership
-      const stall = await prisma.stall.findUnique({
-        where: { id: row.stall_id }
+      const facility = await prisma.facility.findUnique({
+        where: { id: row.facility_id },
+        include: { vendors: { where: { id: vendorId } } }
       });
 
-      if (!stall || stall.vendorId !== vendorId) {
+      if (!facility || facility.vendors.length === 0) {
         errors.push({
           row: rowNum,
-          field: 'stall_id',
-          message: 'Stall not found or does not belong to this vendor'
+          field: 'facility_id',
+          message: 'Facility not found or does not belong to this vendor'
         });
         if (stopOnError) break;
         continue;
@@ -603,7 +603,7 @@ exports.bulkUpload = async (req, res) => {
       for (const row of validRows) {
         const product = await tx.product.create({
           data: {
-            stallId: row.stall_id,
+            facilityId: row.facility_id,
             name: row.name,
             description: row.description || null,
             category: row.category,

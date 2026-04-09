@@ -154,26 +154,27 @@ enum MarketType {
   SEASONAL
 }
 
-enum ShopType {
-  RETAIL
-  WHOLESALE
-  SERVICE
-  FOOD
-  ELECTRONICS
-  CLOTHING
-  FURNITURE
-  JEWELRY
-  PHARMACY
-  STATIONERY
+enum FacilityType {
+  SHOP
+  STALL
+  WAREHOUSE
+  KIOSK
+  OFFICE
   OTHER
 }
 
-enum StallType {
-  PERMANENT
-  TEMPORARY
-  SEASONAL
-  POP_UP
-  KIOSK
+enum FacilityStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  CLOSED
+}
+
+enum OccupationStatus {
+  VACANT
+  OCCUPIED
+  RESERVED
+  LOCKED
 }
 
 enum MarketTokenType {
@@ -286,13 +287,11 @@ model User {
   createdLevels            MarketLevel[]   @relation("LevelCreatedBy")
   createdSections          MarketSection[] @relation("SectionCreatedBy")
   createdAisles            MarketAisle[]   @relation("AisleCreatedBy")
-  createdShops             Shop[]          @relation("ShopCreatedBy")
-  createdStalls            Stall[]         @relation("StallCreatedBy")
+  createdFacilities        Facility[]      @relation("FacilityCreatedBy")
   createdGates             MarketGate[]    @relation("GateCreatedBy")
   createdTokens            MarketToken[]   @relation("TokenCreatedBy")
   createdQrCodes           QrCode[]        @relation("QrCodeCreatedBy")
-  createdShopAssets        ShopAsset[]     @relation("ShopAssetCreatedBy")
-  createdStallAssets       StallAsset[]    @relation("StallAssetCreatedBy")
+  createdFacilityAssets    FacilityAsset[] @relation("FacilityAssetCreatedBy")
   registeredScannerDevices ScannerDevice[] @relation("ScannerDeviceRegistrar")
 
   // Other Operation Relations
@@ -549,8 +548,8 @@ model City {
 }
 
 model Market {
-  id     String @id @default(uuid())
-  cityId String
+  id          String  @id @default(uuid())
+  cityId      String
   name        String  @db.VarChar(200)
   uniqueCode  String  @unique @db.VarChar(50)
   displayName String? @db.VarChar(200)
@@ -595,11 +594,10 @@ model Market {
   city      City   @relation(fields: [cityId], references: [id])
   createdBy Admin? @relation("MarketCreator", fields: [createdByAdminId], references: [id])
 
-  levels   MarketLevel[]
-  sections MarketSection[]
-  shops    Shop[]
-  stalls   Stall[]         @relation("MarketStalls")
-  gates    MarketGate[]
+  levels     MarketLevel[]
+  sections   MarketSection[]
+  facilities Facility[]      @relation("MarketFacilities")
+  gates      MarketGate[]
 
   marketMasters MarketMaster[]
   pseudoAdmins  PseudoMarketAdmin[]
@@ -657,9 +655,8 @@ model MarketLevel {
   market    Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
   createdBy User   @relation("LevelCreatedBy", fields: [createdById], references: [id])
 
-  sections MarketSection[]
-  shops    Shop[]          @relation("LevelShops")
-  stalls   Stall[]         @relation("LevelStalls")
+  sections   MarketSection[]
+  facilities Facility[]      @relation("LevelFacilities")
 
   @@unique([marketId, levelNumber])
   @@index([marketId])
@@ -709,9 +706,8 @@ model MarketSection {
   supervisor PseudoMarketAdmin? @relation("SectionSupervisor", fields: [supervisorId], references: [id])
   createdBy  User               @relation("SectionCreatedBy", fields: [createdById], references: [id])
 
-  shops  Shop[]        @relation("SectionShops")
-  stalls Stall[]       @relation("SectionStalls")
-  aisles MarketAisle[]
+  facilities Facility[]    @relation("SectionFacilities")
+  aisles     MarketAisle[]
 
   sectionRules        Json?
   specialRequirements String? @db.VarChar(500)
@@ -747,7 +743,7 @@ model MarketAisle {
   section   MarketSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   createdBy User          @relation("AisleCreatedBy", fields: [createdById], references: [id])
 
-  stalls Stall[] @relation("AisleStalls")
+  facilities Facility[] @relation("AisleFacilities")
 
   @@unique([sectionId, aisleNumber])
   @@index([sectionId])
@@ -829,7 +825,7 @@ model Member {
 
   stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
 
-  shops         Shop[]
+  facilities    Facility[]
   rentContracts RentContract[] @relation("MemberAsLandlord")
 
   @@index([businessName])
@@ -856,7 +852,7 @@ model Vendor {
   marketMasterApprovalId String?
   approvedByMarketMaster MarketMaster? @relation("VendorApprover", fields: [marketMasterApprovalId], references: [id])
 
-  stalls        Stall[]
+  facilities    Facility[]     @relation("VendorFacilities")
   gateEntries   GateEntry[]
   rentContracts RentContract[] @relation("VendorAsTenant")
   marketTokens  MarketToken[]
@@ -937,148 +933,82 @@ model Guest {
   @@map("guests")
 }
 
-model Shop {
+model Facility {
   id        String  @id @default(uuid())
   marketId  String
   levelId   String?
   sectionId String?
-  memberId  String
+  aisleId   String?
+  memberId  String // Landlord/Owner
 
-  uniqueCode  String  @unique @db.VarChar(50)
-  shopNumber  String  @db.VarChar(20)
-  displayName String? @db.VarChar(150)
-  shopName    String  @db.VarChar(200)
+  uniqueCode   String  @unique @db.VarChar(50)
+  unitNumber   String  @db.VarChar(20) // Unified code for shopNumber/stallNumber
+  displayName  String? @db.VarChar(150)
+  facilityName String? @db.VarChar(200)
 
-  shopType     ShopType @default(RETAIL)
-  subType      String?  @db.VarChar(100)
-  categoryTags String[]
+  type     FacilityType @default(SHOP)
+  subType  String?      @db.VarChar(100)
+  category String?      @db.VarChar(100) // From Stall.category
+  tags     String[]
 
-  locationDescription String?  @db.VarChar(500)
-  accessPoints        String[]
+  locationDescription String? @db.VarChar(500)
 
+  // Infrastructure Booleans
   hasElectricity     Boolean @default(true)
   hasWaterSupply     Boolean @default(true)
   hasStorage         Boolean @default(false)
+  hasLighting        Boolean @default(true)
+  hasPowerOutlet     Boolean @default(true)
   hasAirConditioning Boolean @default(false)
-  hasDisplayWindow   Boolean @default(true)
   hasSecurityShutter Boolean @default(true)
+  hasDisplayCounter  Boolean @default(true)
 
   electricityMeterNumber String? @db.VarChar(50)
   waterMeterNumber       String? @db.VarChar(50)
-  internetConnection     Boolean @default(false)
 
-  monthlyRent     Decimal  @db.Decimal(12, 2)
+  // Billing (Unified)
+  monthlyRent     Decimal? @db.Decimal(12, 2)
+  dailyRate       Decimal? @db.Decimal(10, 2)
   securityDeposit Decimal? @db.Decimal(12, 2)
   maintenanceFee  Decimal? @db.Decimal(10, 2)
-  electricityRate Decimal? @db.Decimal(8, 2)
-  waterRate       Decimal? @db.Decimal(8, 2)
+  billingCycle    String   @default("MONTHLY") @db.VarChar(20)
 
-  contractStartDate DateTime
-  contractEndDate   DateTime
-  paymentDay        Int      @default(1)
-  gracePeriodDays   Int      @default(5)
-
-  status            String    @default("ACTIVE") @db.VarChar(50)
-  occupationStatus  String    @default("OCCUPIED") @db.VarChar(50)
-  lastRenovation    DateTime?
-  inspectionDueDate DateTime?
-
-  inventoryValue Decimal? @db.Decimal(15, 2)
-
-  createdById    String
-  marketMasterId String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  market       Market         @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  level        MarketLevel?   @relation("LevelShops", fields: [levelId], references: [id])
-  section      MarketSection? @relation("SectionShops", fields: [sectionId], references: [id])
-  member       Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  marketMaster MarketMaster?  @relation("ShopManager", fields: [marketMasterId], references: [id])
-  createdBy    User           @relation("ShopCreatedBy", fields: [createdById], references: [id])
-
-  stalls        Stall[]
-  rentContracts RentContract[]
-  shopAssets    ShopAsset[]
-
-  @@unique([marketId, shopNumber])
-  @@index([marketId])
-  @@index([memberId])
-  @@map("shops")
-}
-
-model Stall {
-  id        String  @id @default(uuid())
-  shopId    String
-  vendorId  String
-  sectionId String?
-  aisleId   String?
-  levelId   String?
-
-  uniqueCode  String  @unique @db.VarChar(50)
-  stallNumber String  @db.VarChar(20)
-  displayName String? @db.VarChar(150)
-
-  stallType      StallType @default(PERMANENT)
-  category       String    @db.VarChar(100)
-  subCategories  String[]
-  specialization String?   @db.VarChar(100)
-
-  hasDisplayCounter Boolean @default(true)
-  hasStorage        Boolean @default(false)
-  hasLighting       Boolean @default(true)
-  hasPowerOutlet    Boolean @default(true)
-  hasCashRegister   Boolean @default(false)
-
-  dailyRate       Decimal  @db.Decimal(10, 2)
-  monthlyRate     Decimal? @db.Decimal(12, 2)
-  securityDeposit Decimal? @db.Decimal(12, 2)
-  billingCycle    String   @default("DAILY") @db.VarChar(20)
-
-  contractStartDate DateTime
+  contractStartDate DateTime?
   contractEndDate   DateTime?
-  agreementTerms    Json?
 
-  openingTime   String?  @db.VarChar(10)
-  closingTime   String?  @db.VarChar(10)
-  operatingDays String[] @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"])
-
-  status            String    @default("ACTIVE") @db.VarChar(50)
-  operationalStatus String    @default("OPERATIONAL") @db.VarChar(50)
-  lastStockCheck    DateTime?
-  lastCleaning      DateTime?
-
-  visitCount Int @default(0)
+  status           FacilityStatus   @default(ACTIVE)
+  occupationStatus OccupationStatus @default(VACANT)
 
   qrCode String? @unique @db.VarChar(100)
 
   createdById    String
   marketMasterId String?
-  marketId       String
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  shop         Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  vendor       Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  section      MarketSection? @relation("SectionStalls", fields: [sectionId], references: [id])
-  aisle        MarketAisle?   @relation("AisleStalls", fields: [aisleId], references: [id])
-  marketMaster MarketMaster?  @relation("StallManager", fields: [marketMasterId], references: [id])
-  market       Market         @relation("MarketStalls", fields: [marketId], references: [id])
-  level        MarketLevel?   @relation("LevelStalls", fields: [levelId], references: [id])
-  createdBy    User           @relation("StallCreatedBy", fields: [createdById], references: [id])
+  market       Market         @relation("MarketFacilities", fields: [marketId], references: [id], onDelete: Cascade)
+  level        MarketLevel?   @relation("LevelFacilities", fields: [levelId], references: [id])
+  section      MarketSection? @relation("SectionFacilities", fields: [sectionId], references: [id])
+  aisle        MarketAisle?   @relation("AisleFacilities", fields: [aisleId], references: [id])
+  member       Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  marketMaster MarketMaster?  @relation("FacilityManager", fields: [marketMasterId], references: [id])
+  createdBy    User           @relation("FacilityCreatedBy", fields: [createdById], references: [id])
 
-  products     Product[]
-  sales        Sale[]
-  stallAssets  StallAsset[]
-  gateEntries  GateEntry[]
-  marketTokens MarketToken[]
-
+  rentContracts     RentContract[]
+  assets            FacilityAsset[]
+  products          Product[]
+  sales             Sale[]
+  gateEntries       GateEntry[]
+  marketTokens      MarketToken[]
   healthInspections HealthInspection[]
+  vendors           Vendor[]           @relation("VendorFacilities")
+  supplierInvoices  SupplierInvoice[]
+  deliveries        Delivery[]
 
-  @@unique([shopId, stallNumber])
-  @@index([shopId])
-  @@index([vendorId])
-  @@map("stalls")
+  @@unique([marketId, unitNumber])
+  @@index([marketId])
+  @@index([memberId])
+  @@map("facilities")
 }
 
 model Admin {
@@ -1189,10 +1119,9 @@ model MarketMaster {
   admin  Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
   market Market @relation(fields: [marketId], references: [id])
 
-  managedShops    Shop[]        @relation("ShopManager")
-  managedStalls   Stall[]       @relation("StallManager")
-  rentCollections RentPayment[]
-  vendorApprovals Vendor[]      @relation("VendorApprover")
+  managedFacilities Facility[]    @relation("FacilityManager")
+  rentCollections   RentPayment[]
+  vendorApprovals   Vendor[]      @relation("VendorApprover")
 
   @@index([marketId])
   @@map("market_masters")
@@ -1287,7 +1216,7 @@ model MarketToken {
 
   marketId   String
   gateId     String?
-  stallId    String?
+  facilityId String?
   vendorId   String?
   customerId String?
   adminId    String?
@@ -1326,7 +1255,7 @@ model MarketToken {
 
   market    Market      @relation("MarketTokens", fields: [marketId], references: [id])
   gate      MarketGate? @relation("GateTokens", fields: [gateId], references: [id])
-  stall     Stall?      @relation(fields: [stallId], references: [id])
+  facility  Facility?   @relation(fields: [facilityId], references: [id])
   vendor    Vendor?     @relation(fields: [vendorId], references: [id])
   customer  Customer?   @relation(fields: [customerId], references: [id])
   admin     Admin?      @relation("AdminIssuedTokens", fields: [adminId], references: [id])
@@ -1829,7 +1758,7 @@ model Transaction {
 model Sale {
   id String @id @default(uuid())
 
-  stallId        String
+  facilityId     String
   customerId     String?
   totalAmount    Decimal @db.Decimal(12, 2)
   taxAmount      Decimal @db.Decimal(12, 2)
@@ -1847,13 +1776,13 @@ model Sale {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  stall     Stall     @relation(fields: [stallId], references: [id], onDelete: Cascade)
+  facility  Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   customer  Customer? @relation(fields: [customerId], references: [id])
   createdBy User      @relation("SaleCreator", fields: [createdById], references: [id])
 
   saleItems SaleItem[]
 
-  @@index([stallId])
+  @@index([facilityId])
   @@index([customerId])
   @@index([saleDate])
   @@index([paymentStatus])
@@ -1880,7 +1809,7 @@ model SaleItem {
 model Product {
   id String @id @default(uuid())
 
-  stallId     String
+  facilityId  String
   name        String  @db.VarChar(200)
   description String? @db.Text
   category    String  @db.VarChar(100)
@@ -1907,13 +1836,13 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  stall            Stall             @relation(fields: [stallId], references: [id], onDelete: Cascade)
+  facility         Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   supplier         Supplier?         @relation(fields: [supplierId], references: [id])
   createdBy        User              @relation("ProductCreator", fields: [createdById], references: [id])
   saleItems        SaleItem[]
   inventoryRecords InventoryRecord[]
 
-  @@index([stallId])
+  @@index([facilityId])
   @@index([category])
   @@index([sku])
   @@index([barcode])
@@ -1951,7 +1880,7 @@ model StockMovement {
   id String @id @default(uuid())
 
   marketId     String
-  stallId      String?
+  facilityId   String?
   movementType String  @db.VarChar(50)
   quantity     Decimal @db.Decimal(10, 2)
   unit         String  @db.VarChar(20)
@@ -1973,12 +1902,12 @@ model StockMovement {
   updatedAt   DateTime @updatedAt
 
   market      Market             @relation("MarketStockMovements", fields: [marketId], references: [id])
-  // stall             Stall?     @relation(fields: [stallId], references: [id])
+  // facility             Facility?     @relation(fields: [facilityId], references: [id])
   inspectedBy PseudoMarketAdmin? @relation("StockCounter", fields: [inspectedById], references: [id])
   createdBy   User               @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
-  @@index([stallId])
+  @@index([facilityId])
   @@index([movementType])
   @@index([createdAt])
   @@map("stock_movements")
@@ -2239,7 +2168,7 @@ model RentPayment {
 model RentContract {
   id String @id @default(uuid())
 
-  shopId         String
+  facilityId     String
   landlordId     String
   tenantId       String
   startDate      DateTime
@@ -2264,14 +2193,14 @@ model RentContract {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  shop      Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  landlord  Member @relation("MemberAsLandlord", fields: [landlordId], references: [id])
-  tenant    Vendor @relation("VendorAsTenant", fields: [tenantId], references: [id])
-  createdBy User   @relation("RentContractCreator", fields: [createdById], references: [id])
+  facility  Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  landlord  Member   @relation("MemberAsLandlord", fields: [landlordId], references: [id])
+  tenant    Vendor   @relation("VendorAsTenant", fields: [tenantId], references: [id])
+  createdBy User     @relation("RentContractCreator", fields: [createdById], references: [id])
 
   payments RentPayment[]
 
-  @@index([shopId])
+  @@index([facilityId])
   @@index([landlordId])
   @@index([tenantId])
   @@index([status])
@@ -2283,7 +2212,7 @@ model HealthInspection {
   id String @id @default(uuid())
 
   marketId       String
-  stallId        String
+  facilityId     String
   inspectionDate DateTime
   inspectorId    String
 
@@ -2307,12 +2236,12 @@ model HealthInspection {
   updatedAt   DateTime @updatedAt
 
   market    Market            @relation("MarketHealthInspections", fields: [marketId], references: [id])
-  stall     Stall             @relation(fields: [stallId], references: [id])
+  facility  Facility          @relation(fields: [facilityId], references: [id])
   inspector PseudoMarketAdmin @relation("HealthInspector", fields: [inspectorId], references: [id])
   createdBy User              @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
-  @@index([stallId])
+  @@index([facilityId])
   @@index([inspectionDate])
   @@index([inspectorId])
   @@map("health_inspections")
@@ -2413,7 +2342,8 @@ model SupplierInvoice {
   id String @id @default(uuid())
 
   supplierId    String
-  stallId       String
+  facilityId    String
+  facility      Facility @relation(fields: [facilityId], references: [id])
   invoiceNumber String   @unique @db.VarChar(100)
   invoiceDate   DateTime
   dueDate       DateTime
@@ -2441,7 +2371,7 @@ model SupplierInvoice {
   invoiceItems InvoiceItem[]
 
   @@index([supplierId])
-  @@index([stallId])
+  @@index([facilityId])
   @@index([invoiceNumber])
   @@index([dueDate])
   @@index([paymentStatus])
@@ -2499,7 +2429,7 @@ model Complaint {
   id String @id @default(uuid())
 
   customerId  String
-  stallId     String?
+  facilityId  String?
   title       String  @db.VarChar(200)
   description String  @db.Text
   category    String? @db.VarChar(100)
@@ -2524,7 +2454,7 @@ model Complaint {
   customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId])
-  @@index([stallId])
+  @@index([facilityId])
   @@index([status])
   @@index([priority])
   @@index([createdAt])
@@ -2568,8 +2498,8 @@ model GuestEntry {
   entryTime DateTime
   exitTime  DateTime?
 
-  purpose       String?  @db.VarChar(100)
-  visitedStalls String[]
+  purpose           String?  @db.VarChar(100)
+  visitedFacilities String[]
 
   verifiedById      String?
   verificationNotes String? @db.Text
@@ -2592,12 +2522,12 @@ model GuestEntry {
 model GateEntry {
   id String @id @default(uuid())
 
-  marketId  String
-  gateId    String
-  vendorId  String
-  stallId   String
-  entryTime DateTime
-  exitTime  DateTime?
+  marketId   String
+  gateId     String
+  vendorId   String
+  facilityId String
+  entryTime  DateTime
+  exitTime   DateTime?
 
   vehicleNumber String? @db.VarChar(50)
   vehicleType   String? @db.VarChar(50)
@@ -2622,26 +2552,27 @@ model GateEntry {
   market    Market             @relation("MarketGateEntries", fields: [marketId], references: [id])
   gate      MarketGate         @relation(fields: [gateId], references: [id])
   vendor    Vendor             @relation(fields: [vendorId], references: [id])
-  stall     Stall              @relation(fields: [stallId], references: [id])
+  facility  Facility           @relation(fields: [facilityId], references: [id])
   counter   PseudoMarketAdmin? @relation("GateCounter", fields: [counterId], references: [id])
   createdBy User               @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
   @@index([gateId])
   @@index([vendorId])
+  @@index([facilityId])
   @@index([entryTime])
   @@map("gate_entries")
 }
 
-model ShopAsset {
+model FacilityAsset {
   id String @id @default(uuid())
 
-  shopId    String
-  assetType String @db.VarChar(50)
-  assetUrl  String @db.VarChar(500)
-  fileName  String @db.VarChar(200)
-  fileSize  Int
-  mimeType  String @db.VarChar(100)
+  facilityId String
+  assetType  String @db.VarChar(50)
+  assetUrl   String @db.VarChar(500)
+  fileName   String @db.VarChar(200)
+  fileSize   Int
+  mimeType   String @db.VarChar(100)
 
   description String?  @db.Text
   tags        String[]
@@ -2653,42 +2584,13 @@ model ShopAsset {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  shop      Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  createdBy User @relation("ShopAssetCreatedBy", fields: [createdById], references: [id])
+  facility  Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("FacilityAssetCreatedBy", fields: [createdById], references: [id])
 
-  @@index([shopId])
+  @@index([facilityId])
   @@index([assetType])
   @@index([isActive])
-  @@map("shop_assets")
-}
-
-model StallAsset {
-  id String @id @default(uuid())
-
-  stallId   String
-  assetType String @db.VarChar(50)
-  assetUrl  String @db.VarChar(500)
-  fileName  String @db.VarChar(200)
-  fileSize  Int
-  mimeType  String @db.VarChar(100)
-
-  description String?  @db.Text
-  tags        String[]
-
-  isActive Boolean @default(true)
-
-  metadata    Json?
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  stall     Stall @relation(fields: [stallId], references: [id], onDelete: Cascade)
-  createdBy User  @relation("StallAssetCreatedBy", fields: [createdById], references: [id])
-
-  @@index([stallId])
-  @@index([assetType])
-  @@index([isActive])
-  @@map("stall_assets")
+  @@map("facility_assets")
 }
 
 model Delivery {
@@ -2696,7 +2598,8 @@ model Delivery {
 
   // Delivery Details
   supplierId   String
-  stallId      String
+  facilityId   String
+  facility     Facility  @relation(fields: [facilityId], references: [id])
   deliveryDate DateTime
   expectedDate DateTime?
   receivedDate DateTime?
@@ -2730,7 +2633,7 @@ model Delivery {
 
   // Indexes
   @@index([supplierId])
-  @@index([stallId])
+  @@index([facilityId])
   @@index([deliveryDate])
   @@index([status])
   @@map("deliveries")

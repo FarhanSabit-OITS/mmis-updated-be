@@ -26,7 +26,7 @@ router.post('/:vendorId/products', productController.createProduct);
 /**
  * List all products for a vendor
  * GET /api/vendors/:vendorId/products
- * Query params: stallId, category, status, search, sort, order, page, limit
+ * Query params: facilityId, category, status, search, sort, order, page, limit
  */
 router.get('/:vendorId/products', productController.listProducts);
 

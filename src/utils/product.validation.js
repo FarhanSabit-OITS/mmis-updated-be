@@ -62,9 +62,9 @@ const validateProductCreation = (body) => {
     }
   }
 
-  // Stall ID validation
-  if (!body.stallId || typeof body.stallId !== 'string') {
-    errors.push({ field: 'stallId', message: 'Stall ID is required' });
+  // Facility ID validation
+  if (!body.facilityId || typeof body.facilityId !== 'string') {
+    errors.push({ field: 'facilityId', message: 'Facility ID is required' });
   }
 
   // Cost Price validation (optional but if provided, must be < price)
@@ -238,8 +238,8 @@ const validateBulkUploadRow = (row, rowIndex) => {
   const fieldErrors = [];
 
   // Required fields check
-  if (!row.stall_id || row.stall_id.trim() === '') {
-    fieldErrors.push('stall_id is required');
+  if (!row.facility_id || row.facility_id.trim() === '') {
+    fieldErrors.push('facility_id is required');
   }
   if (!row.name || row.name.trim() === '') {
     fieldErrors.push('name is required');

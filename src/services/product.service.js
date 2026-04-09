@@ -19,7 +19,7 @@ const createProduct = async (productData, userId) => {
     // Create product
     const product = await tx.product.create({
       data: {
-        stallId: productData.stallId,
+        facilityId: productData.facilityId,
         name: productData.name,
         description: productData.description || null,
         category: productData.category,
@@ -77,9 +77,9 @@ const getProductById = async (productId) => {
   const product = await prisma.product.findUnique({
     where: { id: productId },
     include: {
-      stall: {
+      facility: {
         include: {
-          vendor: {
+          vendors: {
             include: {
               stakeholder: {
                 include: {
@@ -213,10 +213,10 @@ const softDeleteProduct = async (productId, userId, reason = '') => {
  * @param {string} excludeProductId - Product ID to exclude (for updates)
  * @returns {boolean} - True if SKU is unique
  */
-const isSkuUnique = async (stallId, sku, excludeProductId = null) => {
+const isSkuUnique = async (facilityId, sku, excludeProductId = null) => {
   const query = {
     where: {
-      stallId: stallId,
+      facilityId: facilityId,
       sku: sku,
       isActive: true
     }
@@ -260,7 +260,7 @@ const isBarcodeUnique = async (barcode, excludeProductId = null) => {
  */
 const getVendorProducts = async (vendorId, filters = {}) => {
   const {
-    stallId,
+    facilityId,
     category,
     status = 'ACTIVE',
     search = '',
@@ -272,15 +272,15 @@ const getVendorProducts = async (vendorId, filters = {}) => {
 
   // Build where clause
   const where = {
-    stall: {
+    facility: {
       vendor: {
         id: vendorId
       }
     }
   };
 
-  if (stallId) {
-    where.stallId = stallId;
+  if (facilityId) {
+    where.facilityId = facilityId;
   }
 
   if (category) {
@@ -337,8 +337,8 @@ const getVendorProducts = async (vendorId, filters = {}) => {
   const products = await prisma.product.findMany({
     where,
     include: {
-      stall: {
-        select: { stallNumber: true }
+      facility: {
+        select: { unitNumber: true }
       }
     },
     orderBy: {

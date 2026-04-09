@@ -436,7 +436,7 @@ exports.verifyEmail = async (req, res) => {
         userRoles: { include: { role: true } },
         stakeholder: {
           include: {
-            vendor: { include: { stalls: true } },
+            vendor: { include: { facilities: true } },
             supplier: true
           }
         },
@@ -519,7 +519,7 @@ exports.verifyEmail = async (req, res) => {
           status: 'ACTIVE',
           kycStatus: updatedUser.stakeholder?.kycStatus || 'NOT_SUBMITTED',
           vendorId: updatedUser.stakeholder?.vendor?.id || null,
-          stalls: updatedUser.stakeholder?.vendor?.stalls || []
+          facilities: updatedUser.stakeholder?.vendor?.facilities || []
         },
       },
     });
@@ -845,7 +845,7 @@ exports.login = async (req, res) => {
           emailVerified: user.emailVerified,
           kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
           vendorId: user.stakeholder?.vendor?.id || null,
-          stalls: user.stakeholder?.vendor?.stalls || []
+          facilities: user.stakeholder?.vendor?.facilities || []
         },
       },
     });
@@ -1385,7 +1385,7 @@ exports.getMe = async (req, res) => {
         profile: true,
         stakeholder: {
           include: {
-            vendor: { include: { primaryMarket: true, stalls: true } },
+            vendor: { include: { primaryMarket: true, facilities: true } },
             supplier: true
           }
         },
@@ -1445,8 +1445,8 @@ exports.getMe = async (req, res) => {
         marketId: user.admin?.marketMaster?.marketId || user.stakeholder?.vendor?.primaryMarketId || null,
         marketName,
         secondaryLabel,
-        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null,
-        stalls: user.stakeholder?.vendor?.stalls || []
+        unitNumber: user.stakeholder?.vendor?.facilities?.[0]?.unitNumber || null,
+        facilities: user.stakeholder?.vendor?.facilities || []
       }
     });
   } catch (err) {

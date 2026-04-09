@@ -204,9 +204,9 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
                 vendor: {
                     include: {
                         primaryMarket: { include: { city: { include: { district: true } } } },
-                        stalls: { include: { shop: true, market: true }, where: { status: { not: 'DELETED' } } },
+                        facilities: { include: { market: true }, where: { status: { not: 'DELETED' } } },
                         approvedByMarketMaster: { include: { admin: { include: { user: { include: { profile: true } } } } } },
-                        _count: { select: { stalls: true, gateEntries: true, taxPayments: true, rentContracts: true, marketTokens: true, invitations: true } }
+                        _count: { select: { facilities: true, gateEntries: true, taxPayments: true, rentContracts: true, marketTokens: true, invitations: true } }
                     }
                 },
                 supplier: {
@@ -247,10 +247,10 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
             },
 
             // Vendor specific
-            stalls: sh.vendor?.stalls || [],
+            facilities: sh.vendor?.facilities || [],
             stats: sh.vendor ? {
-                totalStalls: sh.vendor._count.stalls,
-                activeStalls: sh.vendor.stalls.filter(s => s.status === 'ACTIVE').length,
+                totalFacilities: sh.vendor._count.facilities,
+                activeFacilities: sh.vendor.facilities.filter(s => s.status === 'ACTIVE').length,
                 totalGateEntries: sh.vendor._count.gateEntries
             } : {},
 
@@ -451,7 +451,7 @@ const deleteVendor = async (vendorId, actorUserId) => {
                         user: true
                     }
                 },
-                stalls: {
+                facilities: {
                     select: { id: true }
                 },
                 marketTokens: {
@@ -466,7 +466,7 @@ const deleteVendor = async (vendorId, actorUserId) => {
 
         const userId = vendor.stakeholder.userId;
         const stakeholderId = vendor.stakeholderId;
-        const stallIds = vendor.stalls.map((stall) => stall.id);
+        const facilityIds = vendor.facilities.map((f) => f.id);
         const directTokenIds = vendor.marketTokens.map((token) => token.id);
 
         const userQrCodes = await tx.qrCode.findMany({
@@ -475,9 +475,9 @@ const deleteVendor = async (vendorId, actorUserId) => {
         });
         const qrCodeIds = userQrCodes.map((code) => code.id);
 
-        const stallTokens = stallIds.length
+        const stallTokens = facilityIds.length
             ? await tx.marketToken.findMany({
-                where: { stallId: { in: stallIds } },
+                where: { facilityId: { in: facilityIds } },
                 select: { id: true }
             })
             : [];
@@ -530,7 +530,7 @@ const deleteVendor = async (vendorId, actorUserId) => {
 
         // Reassign required authorship references before removing the user row.
         if (actorUserId && actorUserId !== userId) {
-            await tx.shop.updateMany({
+            await tx.facility.updateMany({
                 where: { createdById: userId },
                 data: { createdById: actorUserId }
             });
@@ -565,7 +565,7 @@ const deleteVendor = async (vendorId, actorUserId) => {
                 OR: [
                     { vendorId },
                     { userId },
-                    ...(stallIds.length ? [{ stallId: { in: stallIds } }] : [])
+                    ...(facilityIds.length ? [{ facilityId: { in: facilityIds } }] : [])
                 ]
             }
         });
@@ -574,13 +574,13 @@ const deleteVendor = async (vendorId, actorUserId) => {
             where: {
                 OR: [
                     { vendorId },
-                    ...(stallIds.length ? [{ stallId: { in: stallIds } }] : [])
+                    ...(facilityIds.length ? [{ facilityId: { in: facilityIds } }] : [])
                 ]
             }
         });
 
         await tx.healthInspection.deleteMany({
-            where: stallIds.length ? { stallId: { in: stallIds } } : { id: { in: [] } }
+            where: facilityIds.length ? { facilityId: { in: facilityIds } } : { id: { in: [] } }
         });
 
         await tx.taxPayment.deleteMany({
@@ -591,9 +591,9 @@ const deleteVendor = async (vendorId, actorUserId) => {
             where: { tenantId: vendorId }
         });
 
-        if (stallIds.length) {
-            await tx.stall.deleteMany({
-                where: { id: { in: stallIds } }
+        if (facilityIds.length) {
+            await tx.facility.deleteMany({
+                where: { id: { in: facilityIds } }
             });
         }
 

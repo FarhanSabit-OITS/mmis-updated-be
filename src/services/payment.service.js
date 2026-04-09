@@ -86,10 +86,10 @@ class PaymentService {
         rentContracts: {
           where: {
             isActive: true,
-            ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+            ...(marketScopeId ? { facility: { marketId: marketScopeId } } : {})
           }
         },
-        stalls: {
+        facilities: {
           where: {
             status: { not: 'DELETED' },
             ...(marketScopeId ? { marketId: marketScopeId } : {})
@@ -108,13 +108,13 @@ class PaymentService {
     const member = await prisma.member.findUnique({
       where: { stakeholderId: vendor.stakeholderId }
     });
-    const primaryStall = vendor.stalls.find((stall) => stall.shop);
+    const primaryFacility = vendor.facilities[0];
 
-    if (!member || !primaryStall?.shop) {
+    if (!member || !primaryFacility) {
       return;
     }
 
-    const inferredMonthlyRent = toNumber(primaryStall.monthlyRate || primaryStall.shop.monthlyRent);
+    const inferredMonthlyRent = toNumber(primaryFacility.monthlyRent);
     if (inferredMonthlyRent <= 0) {
       return;
     }
@@ -122,7 +122,7 @@ class PaymentService {
     const existingContract = await prisma.rentContract.findFirst({
       where: {
         tenantId: vendor.id,
-        shopId: primaryStall.shop.id,
+        facilityId: primaryFacility.id,
         isActive: true
       }
     });
@@ -135,14 +135,14 @@ class PaymentService {
 
     await prisma.rentContract.create({
       data: {
-        shopId: primaryStall.shop.id,
+        facilityId: primaryFacility.id,
         landlordId: landlordMember.id,
         tenantId: vendor.id,
-        startDate: primaryStall.shop.contractStartDate || primaryStall.contractStartDate || new Date(),
-        endDate: primaryStall.shop.contractEndDate || primaryStall.contractEndDate || new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+        startDate: primaryFacility.contractStartDate || new Date(),
+        endDate: primaryFacility.contractEndDate || new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
         durationMonths: 12,
         monthlyRent: inferredMonthlyRent,
-        paymentDay: primaryStall.shop.paymentDay || 1,
+        paymentDay: 1,
         status: 'ACTIVE',
         isActive: true,
         contractNumber: generateUniqueCode('CTR'),
@@ -159,7 +159,7 @@ class PaymentService {
     return vendors.map((vendor) => {
       const obligations = obligationsByVendorId.get(vendor.id) || [];
       const payments = paymentsByVendorId.get(vendor.id) || [];
-      const firstContractMarket = vendor.rentContracts.find((contract) => contract.shop?.market)?.shop?.market;
+      const firstContractMarket = vendor.rentContracts.find((contract) => contract.facility?.market)?.facility?.market;
       const totalOutstanding = obligations.reduce((sum, item) => sum + item.outstandingAmount, 0);
       const totalOverdue = obligations
         .filter((item) => item.status === 'OVERDUE')
@@ -175,7 +175,7 @@ class PaymentService {
         vendorName: vendor.businessName,
         marketId: vendor.primaryMarketId || firstContractMarket?.id || null,
         marketName: vendor.primaryMarket?.name || firstContractMarket?.name || 'Unknown Market',
-        shopNumbers: vendor.rentContracts.map((contract) => contract.shop?.shopNumber).filter(Boolean),
+        unitNumbers: vendor.rentContracts.map((contract) => contract.facility?.unitNumber).filter(Boolean),
         totalOutstanding,
         totalPaid,
         overdueAmount: totalOverdue,
@@ -210,14 +210,14 @@ class PaymentService {
       prisma.rentPayment.findMany({
         where: {
           contract: {
-            ...(marketId ? { shop: { marketId } } : {})
+            ...(marketId ? { facility: { marketId } } : {})
           }
         },
         include: {
           contract: {
             include: {
               tenant: true,
-              shop: { include: { market: true } }
+              facility: { include: { market: true } }
             }
           }
         }
@@ -282,14 +282,14 @@ class PaymentService {
     const duePayments = await prisma.rentPayment.findMany({
       where: {
         contract: {
-          ...(marketId ? { shop: { marketId } } : {})
+          ...(marketId ? { facility: { marketId } } : {})
         }
       },
       include: {
         contract: {
           include: {
             tenant: true,
-            shop: true
+            facility: true
           }
         }
       },
@@ -311,7 +311,7 @@ class PaymentService {
       .map((item) => ({
         vendorId: item.vendorId,
         vendorName: item.vendorName,
-        shopNumber: item.shopNumber,
+        unitNumber: item.unitNumber,
         amountDue: item.outstandingAmount,
         dueDate: item.dueDate,
         daysOverdue: item.daysOverdue,
@@ -360,7 +360,7 @@ class PaymentService {
           rentContracts: {
             where: { isActive: true },
             include: {
-              shop: { include: { market: true } },
+              facility: { include: { market: true } },
               payments: true
             }
           }
@@ -380,7 +380,7 @@ class PaymentService {
             id: contract.id,
             tenantId: vendor.id,
             tenant: { id: vendor.id, businessName: vendor.businessName },
-            shop: contract.shop,
+            facility: contract.facility,
           }
         }))
       )
@@ -443,10 +443,10 @@ class PaymentService {
         rentContracts: {
           where: {
             isActive: true,
-            ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {}),
+            ...(marketScopeId ? { facility: { marketId: marketScopeId } } : { finance: true }),
           },
           include: {
-            shop: true,
+            facility: true,
             payments: { orderBy: { dueDate: 'asc' } }
           }
         }
@@ -493,11 +493,11 @@ class PaymentService {
       where: {
         contract: {
           tenantId: vendorId,
-          ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+          ...(marketScopeId ? { facility: { marketId: marketScopeId } } : {})
         }
       },
       include: {
-        contract: { include: { shop: true, tenant: true } }
+        contract: { include: { facility: true, tenant: true } }
       },
       orderBy: { dueDate: 'asc' }
     });
@@ -620,10 +620,10 @@ class PaymentService {
         rentContracts: {
           where: {
             isActive: true,
-            ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+            ...(marketScopeId ? { facility: { marketId: marketScopeId } } : {})
           },
           include: {
-            shop: true,
+            facility: true,
             payments: true
           }
         }
@@ -651,10 +651,10 @@ class PaymentService {
           rentContracts: {
             where: {
               isActive: true,
-              ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+              ...(marketScopeId ? { facility: { marketId: marketScopeId } } : {})
             },
             include: {
-              shop: true,
+              facility: true,
               payments: true
             }
           }
@@ -679,7 +679,7 @@ class PaymentService {
         ...payment,
         contract: {
           id: item.id,
-          shop: item.shop,
+          facility: item.facility,
           tenant: { id: vendor.id, businessName: vendor.businessName }
         }
       }))
@@ -730,7 +730,7 @@ class PaymentService {
           status: 'PENDING',
           notes: notes || null,
         },
-        include: { contract: { include: { shop: true, tenant: true } } }
+        include: { contract: { include: { facility: true, tenant: true } } }
       });
     }
 
@@ -753,11 +753,11 @@ class PaymentService {
           vendorName: vendor.businessName,
           contractId: paymentRow.contractId,
           rentPaymentId: paymentRow.id,
-          marketId: paymentRow.contract.shop.marketId,
-          shopNumber: paymentRow.contract.shop.shopNumber,
+          marketId: paymentRow.contract.facility.marketId,
+          unitNumber: paymentRow.contract.facility.unitNumber,
           periodLabel: `${targetMonth.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}`,
           documentId,
-          description: `Rent payment for ${paymentRow.contract.shop.shopNumber}`,
+          description: `Rent payment for ${paymentRow.contract.facility.unitNumber}`,
           notes: notes || null,
           enteredByUserId: actorUserId,
         }
@@ -779,7 +779,7 @@ class PaymentService {
         receiptNumber: outstandingAmount <= 0 ? (paymentRow.receiptNumber || `RCPT-${Date.now()}`) : paymentRow.receiptNumber,
         notes: notes || paymentRow.notes,
       },
-      include: { contract: { include: { shop: true, tenant: true } } }
+      include: { contract: { include: { facility: true, tenant: true } } }
     });
 
     const refreshedObligation = (await this.enrichRentPayments([updatedPayment]))[0];
@@ -859,7 +859,7 @@ class PaymentService {
         isLate: status === 'OVERDUE',
         gracePeriodDays: payment.gracePeriodDays || 0,
         lateFee: toNumber(payment.lateFee),
-        shopNumber: payment.contract?.shop?.shopNumber || 'N/A',
+        unitNumber: payment.contract?.facility?.unitNumber || 'N/A',
         landlordName: 'Market Administration',
         daysOverdue,
         installments,

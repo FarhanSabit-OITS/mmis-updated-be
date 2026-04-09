@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const DATA_DIR = path.join(process.cwd(), 'Data');
 
 async function seed() {
-  console.log('--- Starting Comprehensive Market Registry Seeding ---');
+  console.log('--- Starting Comprehensive Market Registry Seeding (Unified Facility Model) ---');
 
   // 1. Geography: District & City
   const districts = [
@@ -34,7 +34,6 @@ async function seed() {
       }
     });
   }
-
 
   const jinjaDist = await prisma.district.findUnique({ where: { code: 'UG-JIN' } });
   const kabaleDist = await prisma.district.findUnique({ where: { code: 'UG-KAB' } });
@@ -99,7 +98,6 @@ async function seed() {
     }
   });
 
-
   const memberStakeholder = await prisma.stakeholder.upsert({
     where: { userId: memberUser.id },
     update: {},
@@ -148,7 +146,7 @@ async function seed() {
   await processStandardMarket(marketMap['Kabale Central Market'], 'Kabale Central Market FTS.xlsx', systemAdmin, systemMember);
   await processStandardMarket(marketMap['Mbarara Marketplace'], 'Mbarrara Marketplace.xlsx', systemAdmin, systemMember, true);
 
-  console.log('--- Seeding Completed ---');
+  console.log('--- Seeding Completed successfully ---');
 }
 
 async function processJinja(market, admin, member) {
@@ -186,42 +184,20 @@ async function processJinja(market, admin, member) {
         levelId: level.id,
         uniqueCode: sectionCode,
         name: sheetName,
-        sectionType: sheetName.includes('LOCKUP') ? 'SHOP_ZONE' : 'STALL_ZONE',
+        sectionType: 'COMMERCIAL',
         createdById: admin.id
       }
     });
 
-
-
-    const shopNumber = `S-${section.uniqueCode}`.slice(0, 20);
-    const shop = await prisma.shop.upsert({
-      where: { marketId_shopNumber: { marketId: market.id, shopNumber } },
-      update: {},
-      create: {
-        marketId: market.id,
-        sectionId: section.id,
-        levelId: level.id,
-        uniqueCode: `SHOP-${section.uniqueCode}`.slice(0, 50),
-        shopNumber,
-        shopName: `${sheetName} Container`.slice(0, 200),
-        monthlyRent: 0,
-        memberId: member.id,
-        createdById: admin.id,
-        contractStartDate: new Date(),
-        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 10))
-      }
-    });
-
-
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-    for (const row of rows.slice(0, 10)) { // Limit for initial seed
+    for (const row of rows.slice(0, 50)) { // Increased limit
       const name = row['NAME'] || row['CURRENT VENDOR'] || 'Unknown Vendor';
       const phone = String(row['PHONE NO.'] || row['CONTACT'] || row['TELL'] || '').replace(/\s/g, '');
       const stallNo = row['FACILITY NO.'] || row['FACILITY NO'] || 'Unknown';
       
       if (name === 'Unknown Vendor' || name === 'VACANT') continue;
 
-      await createVendorAsset(market, section, shop, admin, name, phone, stallNo, 150000);
+      await createFacilityWithVendor(market, level, section, admin, member, name, phone, stallNo, 150000, sheetName.includes('LOCKUP') ? 'SHOP' : 'STALL');
     }
   }
 }
@@ -269,30 +245,8 @@ async function processStandardMarket(market, fileName, admin, member, isMbarara 
       }
     });
 
-
-
-    const shopNumber = `S-${section.uniqueCode}`.slice(0, 20);
-    const shop = await prisma.shop.upsert({
-      where: { marketId_shopNumber: { marketId: market.id, shopNumber } },
-      update: {},
-      create: {
-        marketId: market.id,
-        sectionId: section.id,
-        levelId: level.id,
-        uniqueCode: `SHOP-${section.uniqueCode}`.slice(0, 50),
-        shopNumber,
-        shopName: `${cat} Container`.slice(0, 200),
-        monthlyRent: 0,
-        memberId: member.id,
-        createdById: admin.id,
-        contractStartDate: new Date(),
-        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 10))
-      }
-    });
-
-
     const catRows = rows.filter(r => (r['category'] || r['CATEGORY'] || 'General') === cat);
-    for (const row of catRows.slice(0, 10)) {
+    for (const row of catRows.slice(0, 50)) {
       let name = row['name'] || row['NAME.'] || 'Unknown';
       let phone = String(row['phone_no'] || row['mobile_number'] || '').replace(/\s/g, '');
       let stallNo = row['fc_no'] || row['FC NO.'] || 'Unknown';
@@ -301,13 +255,12 @@ async function processStandardMarket(market, fileName, admin, member, isMbarara 
       if (isNaN(rent)) rent = 0;
       if (isMbarara) rent *= 1000;
 
-      await createVendorAsset(market, section, shop, admin, name, phone, stallNo, rent);
-
+      await createFacilityWithVendor(market, level, section, admin, member, name, phone, stallNo, rent, 'STALL');
     }
   }
 }
 
-async function createVendorAsset(market, section, shop, admin, name, phone, stallNo, rent) {
+async function createFacilityWithVendor(market, level, section, admin, member, name, phone, unitNumber, rent, type = 'STALL') {
   let basePhone = phone.length > 5 ? (phone.startsWith('256') ? `+${phone}` : `+256${phone}`) : `+256000${Math.floor(Math.random()*1000000)}`;
   let email = `vendor.${Math.random().toString(36).substr(2, 9)}@marketmaster.ug`;
   let safePhone = basePhone;
@@ -335,15 +288,11 @@ async function createVendorAsset(market, section, shop, admin, name, phone, stal
         safePhone = `${basePhone}-${attempts}`;
         return null;
       }
-      console.error(`Failed to create user ${email}:`, e.message);
       return null;
     });
 
     if (user) break;
-    if (attempts >= 5) {
-      console.error(`Aborting user creation for ${name} after 5 phone collision attempts.`);
-      return;
-    }
+    if (attempts >= 5) return;
   }
 
   if (!user) return;
@@ -361,31 +310,33 @@ async function createVendorAsset(market, section, shop, admin, name, phone, stal
     }
   });
 
-  await prisma.stall.upsert({
+  await prisma.facility.upsert({
     where: { 
-      shopId_stallNumber: { 
-        shopId: shop.id, 
-        stallNumber: String(stallNo).slice(0, 20) 
+      marketId_unitNumber: { 
+        marketId: market.id, 
+        unitNumber: String(unitNumber).slice(0, 20) 
       } 
     },
-    update: {},
+    update: {
+      vendors: { connect: { id: vendor.id } }
+    },
     create: {
       marketId: market.id,
+      levelId: level.id,
       sectionId: section.id,
-      shopId: shop.id,
-      vendorId: vendor.id,
-      uniqueCode: `STALL-${market.uniqueCode}-${stallNo}-${Math.floor(Math.random()*1000)}`.slice(0, 50),
-      stallNumber: String(stallNo).slice(0, 20),
-      stallType: 'PERMANENT',
-      category: section.name.slice(0, 100),
+      memberId: member.id,
+      createdById: admin.id,
+      uniqueCode: `FAC-${market.uniqueCode}-${unitNumber}-${Math.floor(Math.random()*1000)}`.slice(0, 50),
+      unitNumber: String(unitNumber).slice(0, 20),
+      type: type,
+      status: 'ACTIVE',
+      occupationStatus: 'OCCUPIED',
+      monthlyRent: rent,
       dailyRate: (rent / 30).toFixed(2),
-      monthlyRate: rent,
       contractStartDate: new Date(),
-      createdById: admin.id
+      vendors: { connect: { id: vendor.id } }
     }
   });
-
-
 }
 
 seed()
