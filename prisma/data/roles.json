@@ -1,0 +1,10 @@
+[
+  { "name": "Guest", "description": "New registered user", "level": null },
+  { "name": "SuperAdmin", "description": "System-wide administrator", "level": "SUPER_ADMIN" },
+  { "name": "MarketMaster", "description": "Manages a specific market", "level": "MARKET_MASTER" },
+  { "name": "GateCounter", "description": "Gate entry/exit management", "level": "PSEUDO_MARKET_ADMIN" },
+  { "name": "HealthInspector", "description": "Health and sanitation inspector", "level": "PSEUDO_MARKET_ADMIN" },
+  { "name": "SecurityGuard", "description": "Market security staff", "level": "PSEUDO_MARKET_ADMIN" },
+  { "name": "Vendor", "description": "Market vendor / shop owner", "level": null },
+  { "name": "Supplier", "description": "Goods supplier", "level": null }
+]

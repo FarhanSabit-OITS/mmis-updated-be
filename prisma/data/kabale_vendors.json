@@ -1,0 +1,7652 @@
+[
+  {
+    "id": 1,
+    "name": "BYEKWASO BADRU AND TUNGIRE FRA",
+    "nin": "CM5308210041DG",
+    "phone": "256774425414",
+    "category": "Retail Shops",
+    "fcNo": "B1.078",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 2,
+    "name": "MONDAY JULIUS & TWINOMUJUNI MA",
+    "nin": "CM7000910H0JMG",
+    "phone": "256771303081",
+    "category": "Butcher",
+    "fcNo": "B1.035",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 3,
+    "name": "MUTEKANGA JOSHUA-CENTRAL MKT20",
+    "nin": "CM75009100GT5A",
+    "phone": "256783663364",
+    "category": "Retail Shops",
+    "fcNo": "B1.032",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 4,
+    "name": "Twesigye Hebert B1-28",
+    "nin": "CM80009107TX8L",
+    "phone": "256772836319",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-028",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 5,
+    "name": "Mugarura Ambrose",
+    "nin": "CM9800910JpYLA",
+    "phone": "256773982053",
+    "category": "Others",
+    "fcNo": "AX-05F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 6,
+    "name": "NIWAGABA EDSON",
+    "nin": "CM84037106T5Cl",
+    "phone": "256775827010",
+    "category": "Others",
+    "fcNo": "AX-10F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 7,
+    "name": "KATWIREMU STEPHEN",
+    "nin": "CM5803410812EF",
+    "phone": "256772459284",
+    "category": "Retail Shops",
+    "fcNo": "B2-17",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 8,
+    "name": "MBABAZI  HELLEN",
+    "nin": "CF7900910KTMYd",
+    "phone": "256772560097",
+    "category": "Saloon",
+    "fcNo": "AX-35F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 9,
+    "name": "Tumushabe Alice St 340 Tumusha",
+    "nin": null,
+    "phone": "256788507574",
+    "category": "Food Stuff",
+    "fcNo": "St 340",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 10,
+    "name": "Santrine Aheisibwe",
+    "nin": "CF860091099Q6e",
+    "phone": "256775664085",
+    "category": "Tailoring and Textile",
+    "fcNo": "A2 046",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 11,
+    "name": "Tindimwebwa Jenipher Kate stal",
+    "nin": null,
+    "phone": "256773450542",
+    "category": "Vegetables",
+    "fcNo": "Stall 302",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 12,
+    "name": "Mataze laban and Kyarisiima Ga",
+    "nin": null,
+    "phone": "256785749603",
+    "category": "Vegetables",
+    "fcNo": "Stall 295",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 13,
+    "name": "Deogratias Kabebasiza",
+    "nin": "CM5600910A1WHj",
+    "phone": "256077993258",
+    "category": "New Clothes",
+    "fcNo": "A2 054",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 14,
+    "name": "Judith Asiimwe",
+    "nin": "CF76009100CGKH",
+    "phone": "256772563833",
+    "category": "New Clothes",
+    "fcNo": "A2 063",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 15,
+    "name": "KAMUSIIME PATIENCE / NYIRANSAB",
+    "nin": "CF68009106W6Ph",
+    "phone": "256772562734",
+    "category": "New Clothes",
+    "fcNo": "A2 077",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 16,
+    "name": "Kandindi Mwamina stall 214",
+    "nin": null,
+    "phone": "256781507888",
+    "category": "Vegetables",
+    "fcNo": "Stall 214",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 17,
+    "name": "Naturinda Jackline 165",
+    "nin": null,
+    "phone": "256789275899",
+    "category": "Vegetables",
+    "fcNo": "Stall 165",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 18,
+    "name": "Nyiramugisha Dafuriza stall 02",
+    "nin": null,
+    "phone": "256780361154",
+    "category": "Vegetables",
+    "fcNo": "26",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 19,
+    "name": "Owarimpa Loy stall 67",
+    "nin": null,
+    "phone": "256776819586",
+    "category": "Vegetables",
+    "fcNo": "stall 67",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 20,
+    "name": "Akankwasa Vangi stall 001",
+    "nin": null,
+    "phone": "25677830841",
+    "category": "Vegetables",
+    "fcNo": "stall 001",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 21,
+    "name": "Kyarikunda Fortunate stall 031",
+    "nin": null,
+    "phone": "256775452473",
+    "category": "Vegetables",
+    "fcNo": "stall 031",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 22,
+    "name": "Kamushaba Annah stall 77",
+    "nin": null,
+    "phone": "256765695271",
+    "category": "Vegetables",
+    "fcNo": "stall 77",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 23,
+    "name": "Owomugisha Victoria stall 96",
+    "nin": "6488usuqqqqqq",
+    "phone": "256788650679",
+    "category": "Vegetables",
+    "fcNo": "stall 96",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 24,
+    "name": "Rev. Kabagambe Robert stall 10",
+    "nin": "IRAS/CIN/231181162",
+    "phone": "256772530978",
+    "category": "Vegetables",
+    "fcNo": "stall 104",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 25,
+    "name": "Nyesigye Doris stall 269",
+    "nin": "CF0779171004ND",
+    "phone": "256779171004",
+    "category": "Vegetables",
+    "fcNo": "Stall 269",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 26,
+    "name": "ABDUL-CH28-30 BABYEHUZYA",
+    "nin": "CM650371028AVC",
+    "phone": "256772345440",
+    "category": "Birds",
+    "fcNo": "CH28-30",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 27,
+    "name": "NATUKUNDA SHIFRAKYOMUKAMA PEAC",
+    "nin": null,
+    "phone": "256784977261",
+    "category": "Food Stuff",
+    "fcNo": "PT-006",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 28,
+    "name": "Kamugisha Asiat and Keirungi P",
+    "nin": null,
+    "phone": "256765095920",
+    "category": "Food Stuff",
+    "fcNo": "PT023",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 29,
+    "name": "KEMIGISHA CATHERINE -MATOOKE-7",
+    "nin": null,
+    "phone": "256762480802",
+    "category": "Food Stuff",
+    "fcNo": "PT-76",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 30,
+    "name": "MUTESIGENSI FRED AND BARUNGI P",
+    "nin": null,
+    "phone": "256774856630",
+    "category": "Food Stuff",
+    "fcNo": "PT-32",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 31,
+    "name": "TUSIIME MILDRED-ST-58-MATOOKE",
+    "nin": null,
+    "phone": "256756942447",
+    "category": "Food Stuff",
+    "fcNo": "ST-58-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 32,
+    "name": "STELLA-ST-DRY PRODUCE-017 TIBA",
+    "nin": "CF63009102E22F",
+    "phone": "256779001499",
+    "category": "Food Stuff",
+    "fcNo": "ST-017",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 33,
+    "name": "BRENDA-DRY PRODUCE-ST-18 KUKUN",
+    "nin": "CF860091044YZF",
+    "phone": "256778313233",
+    "category": "Food Stuff",
+    "fcNo": "ST-018",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 34,
+    "name": "AUGUSTINE NJUNWOHA",
+    "nin": "cm0772645342na",
+    "phone": "256772645342",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 35,
+    "name": "TINDIMWEBWA SILVA",
+    "nin": "CM600091038GZk",
+    "phone": "256778046971",
+    "category": "Others",
+    "fcNo": "AX-44G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 36,
+    "name": "Kyosha Moreen stall 177",
+    "nin": null,
+    "phone": "256783031557",
+    "category": "Vegetables",
+    "fcNo": "stall 177",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 37,
+    "name": "Kyomugisha Aidah stall 152",
+    "nin": null,
+    "phone": "256776983277",
+    "category": "Vegetables",
+    "fcNo": "Stall 152",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 38,
+    "name": "Korugyendo Immaculate stall 28",
+    "nin": null,
+    "phone": "256774679814",
+    "category": "Vegetables",
+    "fcNo": "Stall 280",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 39,
+    "name": "Kenema Agness stall 254",
+    "nin": null,
+    "phone": "256785276956",
+    "category": "Vegetables",
+    "fcNo": "Stall 254",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 40,
+    "name": "Kiconco Pross stall 260",
+    "nin": "CF782017646XXX",
+    "phone": "256782017646",
+    "category": "Vegetables",
+    "fcNo": "Stall 260",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 41,
+    "name": "Karungi Doreen stall 267",
+    "nin": null,
+    "phone": "256783634203",
+    "category": "Vegetables",
+    "fcNo": "Stall 267",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 42,
+    "name": "Mukayisenga Leonia stall 239",
+    "nin": 775443962,
+    "phone": "256775443962",
+    "category": "Vegetables",
+    "fcNo": "Stall 239",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 43,
+    "name": "Asasibwe Eva's and Tukamushaba",
+    "nin": null,
+    "phone": "256788833891",
+    "category": "Food Stuff",
+    "fcNo": "PT-001",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 44,
+    "name": "KYARIKUNDA JOVITA-MATOOKE-007",
+    "nin": null,
+    "phone": "256789707315",
+    "category": "Food Stuff",
+    "fcNo": "PT-007",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 45,
+    "name": "Twebaze Eunice PT020",
+    "nin": null,
+    "phone": "256782783047",
+    "category": "Food Stuff",
+    "fcNo": "PT020",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 46,
+    "name": "AYABARE JOSELINE-MATOOKE-19",
+    "nin": null,
+    "phone": "256775268640",
+    "category": "Food Stuff",
+    "fcNo": "PT-19",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 47,
+    "name": "KICONCO ANNET-MATOOKE-16",
+    "nin": null,
+    "phone": "256782603688",
+    "category": "Food Stuff",
+    "fcNo": "PT-16",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 48,
+    "name": "KIBAHENDA EMILY PROSS-MATOOKE-",
+    "nin": null,
+    "phone": "256787092405",
+    "category": "Food Stuff",
+    "fcNo": "PT-25",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 49,
+    "name": "ALEX-DRY PRODUCE-ST-19 KAJUNA",
+    "nin": "CM74009106072f",
+    "phone": "256782339978",
+    "category": "Food Stuff",
+    "fcNo": "ST-19",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 50,
+    "name": "AIDAH-DRY PRODUCE-ST-26 TUMWIJ",
+    "nin": "CF8300910JNU6K",
+    "phone": "256770942609",
+    "category": "Food Stuff",
+    "fcNo": "ST-26",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 51,
+    "name": "TUSHABE APOPHIA-DRY PRODUCE-ST",
+    "nin": null,
+    "phone": "256784974637",
+    "category": "Food Stuff",
+    "fcNo": "ST-29",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 52,
+    "name": "KAKIZA MARION",
+    "nin": "CM600091046AFe",
+    "phone": "256772902478",
+    "category": "Retail Shops",
+    "fcNo": "A1006",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 53,
+    "name": "MUSIIMENTA AGGREY",
+    "nin": "CM90009109LTJE",
+    "phone": "256773011990",
+    "category": "Retail Shops",
+    "fcNo": "B1-015",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 54,
+    "name": "Kobusingye Rhonah and Byamugis",
+    "nin": "CF8803710365Ne",
+    "phone": "256772121961",
+    "category": "Retail Shops",
+    "fcNo": "A1 028",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 55,
+    "name": "MONDAY FREDERICK",
+    "nin": "CM5800910016PC",
+    "phone": "256784937901",
+    "category": "Cereal Produce",
+    "fcNo": "AX-55G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 56,
+    "name": "SABIITI BAKER",
+    "nin": "CM75009105LFWg",
+    "phone": "256782291177",
+    "category": "Food Stuff",
+    "fcNo": "A1036",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 57,
+    "name": "MUSIIMENTA OLIVIA",
+    "nin": "CF8400910CV2UA",
+    "phone": "256782710230",
+    "category": "New Clothes",
+    "fcNo": "AX-60F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 58,
+    "name": "Ndabahwerize Henry",
+    "nin": "CM6500910CUJPg",
+    "phone": "256753406036",
+    "category": "Cereal Produce",
+    "fcNo": "AX-58G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 59,
+    "name": "Tinditumire Topista st 332",
+    "nin": null,
+    "phone": "256779548722",
+    "category": "Vegetables",
+    "fcNo": "St 332",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 60,
+    "name": "Nangeregeze Angella stall 308",
+    "nin": 782963239,
+    "phone": "256782963239",
+    "category": "Vegetables",
+    "fcNo": "Stall 308",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 61,
+    "name": "Ahumuza Precious stall 306",
+    "nin": null,
+    "phone": "256777408063",
+    "category": "Vegetables",
+    "fcNo": "Stall 306",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 62,
+    "name": "Nshemereirwe Ritah stall 140",
+    "nin": null,
+    "phone": "256788296485",
+    "category": "Vegetables",
+    "fcNo": "stall 140",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 63,
+    "name": "Tumuheirwe Ronah Nancy stall 1",
+    "nin": null,
+    "phone": "256777670947",
+    "category": "Vegetables",
+    "fcNo": "stall 117",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 64,
+    "name": "Mukafizi Maria stall 107",
+    "nin": null,
+    "phone": "256783569884",
+    "category": "Vegetables",
+    "fcNo": "stall 107",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 65,
+    "name": "Arinaitwe Jovinta stall 57 Ari",
+    "nin": "CF80055101GKWL",
+    "phone": "256787225229",
+    "category": "Vegetables",
+    "fcNo": "stall 57",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 66,
+    "name": "Turyashemererwa Hadijja 007",
+    "nin": null,
+    "phone": "256788760086",
+    "category": "Vegetables",
+    "fcNo": "7",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 67,
+    "name": "Tugume Christine stall 030",
+    "nin": 777672334,
+    "phone": "256777672334",
+    "category": "Vegetables",
+    "fcNo": "30",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 68,
+    "name": "Ruhangariyo Evas stall 322",
+    "nin": null,
+    "phone": "256704972949",
+    "category": "Vegetables",
+    "fcNo": "stall 322",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 69,
+    "name": "Tumuheki Cosbert stall 246",
+    "nin": null,
+    "phone": "256780572210",
+    "category": "Vegetables",
+    "fcNo": "Stall 246",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 70,
+    "name": "Mwesigye Boaz DF004",
+    "nin": null,
+    "phone": "256773770891",
+    "category": "Fish",
+    "fcNo": "DF004",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 71,
+    "name": "Mpirirwe Mary and Kiconco Agne",
+    "nin": null,
+    "phone": "256787733655",
+    "category": "Food Stuff",
+    "fcNo": "PT005",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 72,
+    "name": "TUMWEBAZE SCOVIA-MATOOKE-28",
+    "nin": null,
+    "phone": "256777126153",
+    "category": "Food Stuff",
+    "fcNo": "PT-28",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 73,
+    "name": "KYOMUHENDO KEDRESS",
+    "nin": "CF581121006RWA",
+    "phone": "256782531006",
+    "category": "Food Stuff",
+    "fcNo": "ST-14",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 74,
+    "name": "TUKAMUSHABWA RICHARD/NATURINDA",
+    "nin": null,
+    "phone": "256705534012",
+    "category": "Food Stuff",
+    "fcNo": "ST-28",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 75,
+    "name": "ALLEN TUMUSIIME",
+    "nin": "CF820091088Q8L",
+    "phone": "256780511155",
+    "category": "General Merchandise",
+    "fcNo": "AX-11G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 76,
+    "name": "BAZIMENYERA JOHN",
+    "nin": "CM500181006Z0K",
+    "phone": "256772828560",
+    "category": "Cereal Produce",
+    "fcNo": "AX-60G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 77,
+    "name": "Tindimwebwa Shallon & Kyomukam",
+    "nin": "CF7900910Q4DPj",
+    "phone": "256760698315",
+    "category": "Saloon",
+    "fcNo": "AX-31F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 78,
+    "name": "BANDIGIIRE DAN",
+    "nin": "CM890091049JEL",
+    "phone": "256784834980",
+    "category": "Retail Shops",
+    "fcNo": "B2-19",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 79,
+    "name": "Kibundi Mary",
+    "nin": "CF4000910C4LPc",
+    "phone": "256780853855",
+    "category": "Others",
+    "fcNo": "AX-43G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 80,
+    "name": "Kamusiime catherine St 344 Kam",
+    "nin": "CF82009100AFKD",
+    "phone": "256773721788",
+    "category": "Food Stuff",
+    "fcNo": "St 344",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 81,
+    "name": "Ninsiima Gloria stall 211",
+    "nin": null,
+    "phone": "256782017695",
+    "category": "Vegetables",
+    "fcNo": "Stall 211",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 82,
+    "name": "Tumwijukye Suzan stall 201",
+    "nin": null,
+    "phone": "256781890622",
+    "category": "Vegetables",
+    "fcNo": "Stall 201",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 83,
+    "name": "Ainomugisha Jane stall 198",
+    "nin": null,
+    "phone": "256783231487",
+    "category": "Vegetables",
+    "fcNo": "Stall 198",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 84,
+    "name": "BARYAHABWA FRANCIS",
+    "nin": "CM65009101J4Ld",
+    "phone": "256751595297",
+    "category": "New Clothes",
+    "fcNo": "AX-70 F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 85,
+    "name": "Tumwine Judith stall 81",
+    "nin": null,
+    "phone": "256776090769",
+    "category": "Vegetables",
+    "fcNo": "stall 81",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 86,
+    "name": "Ainebyoona Alexandro stall 261",
+    "nin": null,
+    "phone": "256760474519",
+    "category": "Vegetables",
+    "fcNo": "Stall 261",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 87,
+    "name": "Bahirirwe Gertrude stall 240",
+    "nin": null,
+    "phone": "256780373485",
+    "category": "Vegetables",
+    "fcNo": "Stall 240",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 88,
+    "name": "NATUKUNDA JENIFER-ST-003",
+    "nin": "CF7603410AUTTA",
+    "phone": "256775227310",
+    "category": "Food Stuff",
+    "fcNo": "ST-003",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 89,
+    "name": "Kyaribwene Rosemary and Mucung",
+    "nin": null,
+    "phone": "256785344657",
+    "category": "Food Stuff",
+    "fcNo": "PT033",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 90,
+    "name": "NATUKUNDA DOREEN-MATOOKE-006",
+    "nin": null,
+    "phone": "256761981165",
+    "category": "Food Stuff",
+    "fcNo": "PT-006",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 91,
+    "name": "TWEBAZE HOPE-MATOOKE-68",
+    "nin": 774269410,
+    "phone": "256774269410",
+    "category": "Food Stuff",
+    "fcNo": "PT-68",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 92,
+    "name": "Kemirembe Josephine stall 253",
+    "nin": null,
+    "phone": "256781713769",
+    "category": "Vegetables",
+    "fcNo": "Stall 253",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 93,
+    "name": "DRACHIRI EMMANUEL",
+    "nin": "CM97040101T63H",
+    "phone": "256789152148",
+    "category": "Retail Shops",
+    "fcNo": "No.B1 005",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 94,
+    "name": "Wellen Tumuranzye",
+    "nin": "CM83009109C32c",
+    "phone": "256781453483",
+    "category": "Retail Shops",
+    "fcNo": "A1 019",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 95,
+    "name": "Mukeshimana cecilia/ kaguriro",
+    "nin": "CF73018100M7Wf",
+    "phone": "256789277011",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 96,
+    "name": "RWANIKA CHARLES AND KWATIRAYO",
+    "nin": null,
+    "phone": "256784853410",
+    "category": "Butcher",
+    "fcNo": "B1.076",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 97,
+    "name": "Tinyinondi justus-Central mkt",
+    "nin": "CM0783329945TJ",
+    "phone": "256783329945",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-029",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 98,
+    "name": "TUMWESIGYE  TIMOTHY",
+    "nin": "CM8400910LVW8A",
+    "phone": "256778220719",
+    "category": "Retail Shops",
+    "fcNo": "AX-002G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 99,
+    "name": "ITUMEINEHO CYRIL",
+    "nin": "CM5900910C6PGE",
+    "phone": "256393278607",
+    "category": "Cereal Produce",
+    "fcNo": "AX-13G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 100,
+    "name": "Barbrah Kanshabe",
+    "nin": "CF69037108CADh",
+    "phone": "256775912034",
+    "category": "Cereal Produce",
+    "fcNo": "AX-63G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 101,
+    "name": "Twesigye Brian and kibariroha",
+    "nin": "CM58009108TWVL",
+    "phone": "256772649777",
+    "category": "Butcher",
+    "fcNo": "B1.072",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 102,
+    "name": "ARINEITWE OBADIA",
+    "nin": "CM8100910788Ll",
+    "phone": "256781611732",
+    "category": "Saloon",
+    "fcNo": "AX-55F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 103,
+    "name": "BYOMUHANGI JUSTUS",
+    "nin": "CM63009100CGJK",
+    "phone": "256776922672",
+    "category": "Retail Shops",
+    "fcNo": "B2-030",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 104,
+    "name": "Judith Kebirugy",
+    "nin": "CF8900910d2C6J",
+    "phone": "256776777667",
+    "category": "New Clothes",
+    "fcNo": "A2 020",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 105,
+    "name": "SEBUKOZO PETER",
+    "nin": "CM4201810096XD",
+    "phone": "256772452577",
+    "category": "Vegetables",
+    "fcNo": "B1-016",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 106,
+    "name": "MUSIIMIRE JUDITH",
+    "nin": "CF92055100QX3J",
+    "phone": "256783119148",
+    "category": "New Clothes",
+    "fcNo": "A2 079",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 107,
+    "name": "Tumwebaze Mary stedia stall 18",
+    "nin": null,
+    "phone": "256785111326",
+    "category": "Vegetables",
+    "fcNo": "stall 182",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 108,
+    "name": "Kwehangana William stall 188",
+    "nin": 781282225,
+    "phone": "256781282225",
+    "category": "Vegetables",
+    "fcNo": "Stall 188",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 109,
+    "name": "Kyarikunda Johnson stall 187",
+    "nin": null,
+    "phone": "256789391977",
+    "category": "Vegetables",
+    "fcNo": "Stall 187",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 110,
+    "name": "Orishaba patience 149",
+    "nin": null,
+    "phone": "256782493699",
+    "category": "Vegetables",
+    "fcNo": "Stall 149",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 111,
+    "name": "Busingye Provia stall 128",
+    "nin": null,
+    "phone": "256776032299",
+    "category": "Vegetables",
+    "fcNo": "stall 128",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 112,
+    "name": "Mutesigensi Fred stall 111",
+    "nin": null,
+    "phone": "256774856630",
+    "category": "Vegetables",
+    "fcNo": "stall 111",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 113,
+    "name": "Nsiimenta Harriet stall 66",
+    "nin": null,
+    "phone": "256786239690",
+    "category": "Vegetables",
+    "fcNo": "stall 66",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 114,
+    "name": "Bitarabeho Jackson stall 105",
+    "nin": null,
+    "phone": "256770336496",
+    "category": "Vegetables",
+    "fcNo": "stall 105",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 115,
+    "name": "Baguma Prose stall 301",
+    "nin": null,
+    "phone": "256775684740",
+    "category": "Vegetables",
+    "fcNo": "Stall 301",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 116,
+    "name": "BUSINGYE NAUME",
+    "nin": "CF86065103QRJd",
+    "phone": "256770312970",
+    "category": "New Clothes",
+    "fcNo": "A2 040",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 117,
+    "name": "Augustine Ndihohabwe",
+    "nin": "CM72009100AQVA",
+    "phone": "256782838106",
+    "category": "Tailoring and Textile",
+    "fcNo": "A2 083",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 118,
+    "name": "Kemirembe Naira stall 242",
+    "nin": null,
+    "phone": "256782077914",
+    "category": "Vegetables",
+    "fcNo": "Stall 242",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 119,
+    "name": "MWESIGYE NELSON",
+    "nin": "CM69034102N7AE",
+    "phone": "256772520207",
+    "category": "Hardware",
+    "fcNo": "A1 - 001",
+    "monthlyPay": 200000
+  },
+  {
+    "id": 120,
+    "name": "NKIRIREHE FRANCIS",
+    "nin": "CM4500910DRPDE",
+    "phone": "256784260913",
+    "category": "Hardware",
+    "fcNo": "A1- 039",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 121,
+    "name": "Byamukama Ivan stall 277",
+    "nin": null,
+    "phone": "256751516625",
+    "category": "Vegetables",
+    "fcNo": "Stall 277",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 122,
+    "name": "Akankwasa Denis stall 268",
+    "nin": null,
+    "phone": "256782168509",
+    "category": "Vegetables",
+    "fcNo": "Stall 268",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 123,
+    "name": "Uwimana Mollen and Kyarisiima",
+    "nin": null,
+    "phone": "256781668106",
+    "category": "Food Stuff",
+    "fcNo": "PT013",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 124,
+    "name": "BUHWITSI CHARLES-MATOOKE-56",
+    "nin": null,
+    "phone": "256777084526",
+    "category": "Food Stuff",
+    "fcNo": "PT-56",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 125,
+    "name": "MUCUNGUZI JENNIFER AND GUMISIR",
+    "nin": "CF0771944177MJ",
+    "phone": "256771944177",
+    "category": "Food Stuff",
+    "fcNo": "ST-35",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 126,
+    "name": "Bernarda.  A1014 Kuribakanya",
+    "nin": "CM880091028G6h",
+    "phone": "256775682678",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 127,
+    "name": "Warren  Mwesigwa",
+    "nin": "CM69037102QEFG",
+    "phone": "256772967813",
+    "category": "Cereal Produce",
+    "fcNo": "AX-53G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 128,
+    "name": "Kukundakwe Kate byamugisha cen",
+    "nin": null,
+    "phone": "256789994301",
+    "category": "Butcher",
+    "fcNo": "B1.075",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 129,
+    "name": "KYARIMPA JACQUELINE",
+    "nin": "CF7000910AP55j",
+    "phone": "256772900162",
+    "category": "Food Stuff",
+    "fcNo": "A1037",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 130,
+    "name": "KYAKUNZIRE DEBORAH",
+    "nin": "CF9400910C2EAH",
+    "phone": "256787788844",
+    "category": "Cereal Produce",
+    "fcNo": "AX-59G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 131,
+    "name": "MOSES Agaba",
+    "nin": "CM87009102TD8e",
+    "phone": "256779548111",
+    "category": "New Clothes",
+    "fcNo": "A2007",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 132,
+    "name": "RWOMUSHANA MARGARET",
+    "nin": "CF57009107LUYl",
+    "phone": "256774045418",
+    "category": "Food Stuff",
+    "fcNo": "A1052",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 133,
+    "name": "TABARUKA HILDAH STALL-316",
+    "nin": null,
+    "phone": "256788747434",
+    "category": "Vegetables",
+    "fcNo": "STALL-316",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 134,
+    "name": "Kyoshabire meredius stall 314",
+    "nin": null,
+    "phone": "25677501946",
+    "category": "Vegetables",
+    "fcNo": "Stall 314",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 135,
+    "name": "NYOROZI GRACE",
+    "nin": "CF620371005W6e",
+    "phone": "256782344264",
+    "category": "New Clothes",
+    "fcNo": "A2 073",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 136,
+    "name": "Saidati Riziki stall 197 Saida",
+    "nin": "CF8400910JEWFE",
+    "phone": "256762303532",
+    "category": "Retail Shops",
+    "fcNo": "Stall 197",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 137,
+    "name": "Kabatoro Loyce stall 154",
+    "nin": 783634411,
+    "phone": "256783634411",
+    "category": "Vegetables",
+    "fcNo": "Stall 154",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 138,
+    "name": "Kyaryampa Lydia stall 024",
+    "nin": "CF75009102MTUh",
+    "phone": "256776271406",
+    "category": "Vegetables",
+    "fcNo": "24",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 139,
+    "name": "Abinomugisha Anthlem 006",
+    "nin": null,
+    "phone": "256780602744",
+    "category": "Vegetables",
+    "fcNo": "stall 006",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 140,
+    "name": "Ninshaba Moureen stall 97",
+    "nin": null,
+    "phone": "256786489293",
+    "category": "Vegetables",
+    "fcNo": "stall 97",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 141,
+    "name": "Rwomushana Timothy",
+    "nin": "CM0789544332RT",
+    "phone": "256772317166",
+    "category": "Hardware",
+    "fcNo": "A1-043",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 142,
+    "name": "AHIMBISIBWE JUDITH-MATOOKE-62",
+    "nin": null,
+    "phone": "256775154620",
+    "category": "Food Stuff",
+    "fcNo": "PT-62",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 143,
+    "name": "MUSINGUZI MARTIN",
+    "nin": "CM770091083EMG",
+    "phone": "256751564782",
+    "category": "Others",
+    "fcNo": "AX-28G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 144,
+    "name": "ARIGABA ANDREW KIIZA AND MBAAS",
+    "nin": "CM7400910K5PPH",
+    "phone": "256782008866",
+    "category": "Retail Shops",
+    "fcNo": "B1.038",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 145,
+    "name": "Tumuheise Joseline stall 210",
+    "nin": null,
+    "phone": "256779422853",
+    "category": "Vegetables",
+    "fcNo": "Stall 210",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 146,
+    "name": "Ariho Tobias and rwogamu Franc",
+    "nin": null,
+    "phone": "256763491998",
+    "category": "Butcher",
+    "fcNo": "B1.070",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 147,
+    "name": "Tumushabe Gloria/Akampurira Da",
+    "nin": "CF76055103EFIh",
+    "phone": "256773133114",
+    "category": "New Clothes",
+    "fcNo": "A2 003",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 148,
+    "name": "Niyozima Benard Kyasimire Conf",
+    "nin": "CF850091097G9c",
+    "phone": "256785922519",
+    "category": "New Clothes",
+    "fcNo": "A2 030",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 149,
+    "name": "Tumuheirwe jacenta St 343",
+    "nin": null,
+    "phone": "256782140498",
+    "category": "Vegetables",
+    "fcNo": "St 343",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 150,
+    "name": "ARINAWE JUDITH STALL-317",
+    "nin": 782264355,
+    "phone": "256782264355",
+    "category": "Vegetables",
+    "fcNo": "STALL-317",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 151,
+    "name": "Turyasiima John stall 298",
+    "nin": "Cm0782357429",
+    "phone": "256772462621",
+    "category": "Vegetables",
+    "fcNo": "Stall 298",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 152,
+    "name": "SIIMA NORBERT",
+    "nin": "CM64009105A0WL",
+    "phone": "256775140505",
+    "category": "New Clothes",
+    "fcNo": "A2 059",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 153,
+    "name": "Tumuranze Agness stall 200",
+    "nin": null,
+    "phone": "256784088556",
+    "category": "Vegetables",
+    "fcNo": "Stall 200",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 154,
+    "name": "Turyahabwe Justus David and Ky",
+    "nin": null,
+    "phone": "256787782497",
+    "category": "Vegetables",
+    "fcNo": "stall 174",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 155,
+    "name": "Katungwesi Apollo stall 157",
+    "nin": null,
+    "phone": "256784627061",
+    "category": "Vegetables",
+    "fcNo": "Stall 157",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 156,
+    "name": "Kyarisiima Judith stall 145",
+    "nin": null,
+    "phone": "256787975630",
+    "category": "Vegetables",
+    "fcNo": "Stall 145",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 157,
+    "name": "Sserwadda Hassan stall 115",
+    "nin": null,
+    "phone": "256781504667",
+    "category": "Vegetables",
+    "fcNo": "stall 115",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 158,
+    "name": "Arindwamukama Odomaro stall 03",
+    "nin": null,
+    "phone": "256775661991",
+    "category": "Vegetables",
+    "fcNo": "37",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 159,
+    "name": "Ngabirano Ketty Gangwenyima st",
+    "nin": null,
+    "phone": "256772540762",
+    "category": "Vegetables",
+    "fcNo": "stall 91",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 160,
+    "name": "KYAKUNZIRE DEBORAH",
+    "nin": "CF9400910C2EAH",
+    "phone": "256787788844",
+    "category": "Cereal Produce",
+    "fcNo": "AX - 059 G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 161,
+    "name": "Musinga David stall 283",
+    "nin": null,
+    "phone": "256777083341",
+    "category": "Vegetables",
+    "fcNo": "Stall 283",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 162,
+    "name": "NINSHABA TUHAMIZE",
+    "nin": "CF880271023CQF",
+    "phone": "256772336626",
+    "category": "Retail Shops",
+    "fcNo": "B1062",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 163,
+    "name": "MUGISHA JOHN / Katushabe Angel",
+    "nin": "CM84055106ET3E",
+    "phone": "256775581750",
+    "category": "New Clothes",
+    "fcNo": "A2 072",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 164,
+    "name": "Tumwebaze Grace stall 282",
+    "nin": null,
+    "phone": "256783636963",
+    "category": "Vegetables",
+    "fcNo": "Stall 282",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 165,
+    "name": "Ekyaritorana macklin stall 264",
+    "nin": null,
+    "phone": "256779705394",
+    "category": "Vegetables",
+    "fcNo": "Stall 264",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 166,
+    "name": "Tumuhamye Gloria and Natukunda",
+    "nin": null,
+    "phone": "256765617194",
+    "category": "Vegetables",
+    "fcNo": "Stall 238",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 167,
+    "name": "AINEMBABAZI DERRICK-CH07-09",
+    "nin": null,
+    "phone": "256780907188",
+    "category": "Birds",
+    "fcNo": "CH07-09",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 168,
+    "name": "Kembabazi Robinah and Musiimen",
+    "nin": null,
+    "phone": "256774890993",
+    "category": "Food Stuff",
+    "fcNo": "PT007",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 169,
+    "name": "Natukunda MOREEN and Friday Ev",
+    "nin": null,
+    "phone": "256777996641",
+    "category": "Food Stuff",
+    "fcNo": "PT035",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 170,
+    "name": "Oworinawe Praxedar and Tumuhei",
+    "nin": null,
+    "phone": "256783391025",
+    "category": "Food Stuff",
+    "fcNo": "PT027",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 171,
+    "name": "TUKAHIRWA FLAVIA -MATOOKE-005",
+    "nin": null,
+    "phone": "256789441384",
+    "category": "Food Stuff",
+    "fcNo": "PT-005",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 172,
+    "name": "TUMWINE BEATRICE-MATOOKE-71",
+    "nin": null,
+    "phone": "256778130343",
+    "category": "Food Stuff",
+    "fcNo": "PT-71",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 173,
+    "name": "ENID-DRY PRODUCE-ST-20 KICONCO",
+    "nin": "CF66091080H5C",
+    "phone": "256772432415",
+    "category": "Food Stuff",
+    "fcNo": "ST-20",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 174,
+    "name": "KYARISIIMA HALIMA",
+    "nin": "CF720091009VKF",
+    "phone": "256771692945",
+    "category": "Food Stuff",
+    "fcNo": "ST-27",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 175,
+    "name": "Turyahumura Juliet Katusi lock",
+    "nin": 777912537,
+    "phone": "256777912537",
+    "category": "Retail Shops",
+    "fcNo": "A1-096",
+    "monthlyPay": 50000
+  },
+  {
+    "id": 176,
+    "name": "MBANDIZI ROBERT LOCK UP NO.A2-",
+    "nin": "CM782293426XXX",
+    "phone": "256782293426",
+    "category": "New Clothes",
+    "fcNo": "A2-062",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 177,
+    "name": "KATWIREMU STEPHEN",
+    "nin": "CM5803410812EF",
+    "phone": "256772459284",
+    "category": "New Clothes",
+    "fcNo": "B2 017",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 178,
+    "name": "Titus Byrushaya",
+    "nin": "CM550091001LOa",
+    "phone": "256772974628",
+    "category": "Food Stuff",
+    "fcNo": "A1054",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 179,
+    "name": "Sanyu provia st 333",
+    "nin": null,
+    "phone": "256771070377",
+    "category": "Vegetables",
+    "fcNo": "St 333",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 180,
+    "name": "Ahumuza Ruth st 329",
+    "nin": null,
+    "phone": "256775034065",
+    "category": "Vegetables",
+    "fcNo": "St 329",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 181,
+    "name": "KARUHURA JACOB",
+    "nin": "CM87009100KVTj",
+    "phone": "256779548206",
+    "category": "New Clothes",
+    "fcNo": "A2 074",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 182,
+    "name": "SABIITI MARGARET",
+    "nin": "CF5900910L1D4F",
+    "phone": "256785488322",
+    "category": "Retail Shops",
+    "fcNo": "B1 059",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 183,
+    "name": "Kyomuhendo Dinnah stall 108",
+    "nin": null,
+    "phone": "256786192611",
+    "category": "Vegetables",
+    "fcNo": "stall 108",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 184,
+    "name": "NIWAMANYA GILLIAN",
+    "nin": "CF8800910L0UAH",
+    "phone": "256775082691",
+    "category": "Retail Shops",
+    "fcNo": "B1-010",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 185,
+    "name": "Muhwezi Deus stall 65",
+    "nin": null,
+    "phone": "256767086235",
+    "category": "Vegetables",
+    "fcNo": "stall 65",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 186,
+    "name": "Bakenine Stanley stall 68",
+    "nin": null,
+    "phone": "256772376515",
+    "category": "Vegetables",
+    "fcNo": "stall 68",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 187,
+    "name": "Tibeyendera Andrew and Tukamuh",
+    "nin": null,
+    "phone": "256776943471",
+    "category": "Vegetables",
+    "fcNo": "stall 78",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 188,
+    "name": "Kasande Emily stall 98",
+    "nin": null,
+    "phone": "256782699295",
+    "category": "Vegetables",
+    "fcNo": "stall 98",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 189,
+    "name": "Kyomukama christine stall 233",
+    "nin": "CF7700910AT5WJ",
+    "phone": "256782398978",
+    "category": "Vegetables",
+    "fcNo": "Stall 233",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 190,
+    "name": "Kyomukama Salome DF0014",
+    "nin": null,
+    "phone": "256774789264",
+    "category": "Fish",
+    "fcNo": "DF014",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 191,
+    "name": "Tumwesigye Lucky PT021",
+    "nin": null,
+    "phone": "256765009077",
+    "category": "Food Stuff",
+    "fcNo": "PT021",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 192,
+    "name": "TWINOMUJUNI BOAZ",
+    "nin": "CM830091008GWl",
+    "phone": "256774037181",
+    "category": "New Clothes",
+    "fcNo": "A2 -043",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 193,
+    "name": "Penlope lockup no A1005 Nabaas",
+    "nin": "CF94009109RU2a",
+    "phone": "256708133736",
+    "category": "General Merchandise",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 194,
+    "name": "Babigarukamu Mary",
+    "nin": null,
+    "phone": "256772305455",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 195,
+    "name": "SYLIVIA-ST-004 KYASIIMIRE",
+    "nin": "CF830091099PRK",
+    "phone": "256782616599",
+    "category": "Food Stuff",
+    "fcNo": "STALL-004",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 196,
+    "name": "Byekwaso justus and kantabira",
+    "nin": null,
+    "phone": "256782773866",
+    "category": "Butcher",
+    "fcNo": "B1.071",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 197,
+    "name": "Turyatunga Rolland Arintuga Na",
+    "nin": null,
+    "phone": "256",
+    "category": "New Clothes",
+    "fcNo": "A2 006",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 198,
+    "name": "Kyomugisha christine st 334",
+    "nin": null,
+    "phone": "256783882919",
+    "category": "Vegetables",
+    "fcNo": "St 334",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 199,
+    "name": "Orishaba Blessed stall 288",
+    "nin": null,
+    "phone": "256775224544",
+    "category": "Vegetables",
+    "fcNo": "Stall 288",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 200,
+    "name": "Peace Arinaitwe",
+    "nin": "CF65009102LNOH",
+    "phone": "256772383279",
+    "category": "New Clothes",
+    "fcNo": "A2 067",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 201,
+    "name": "KEMBABAZI MEDIUS/ Kyomukama Me",
+    "nin": "CF72009107VVQC",
+    "phone": "25677544624",
+    "category": "New Clothes",
+    "fcNo": "A2 057",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 202,
+    "name": "KABONEIRE JEAN",
+    "nin": "CF640271098LEe",
+    "phone": "256772630859",
+    "category": "New Clothes",
+    "fcNo": "A2 002",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 203,
+    "name": "MERRON Asiimwe",
+    "nin": "CF93009102DJUJ",
+    "phone": "256776914317",
+    "category": "Vegetables",
+    "fcNo": "Stall 204",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 204,
+    "name": "Akankwasa Edith Mary stall 164",
+    "nin": null,
+    "phone": "256774114767",
+    "category": "Vegetables",
+    "fcNo": "Stall 164",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 205,
+    "name": "Kobusingye Nairah stall 135",
+    "nin": null,
+    "phone": "256774511551",
+    "category": "Vegetables",
+    "fcNo": "stall 135",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 206,
+    "name": "Kyomugisha Zainabu stall 100",
+    "nin": null,
+    "phone": "256701847540",
+    "category": "Vegetables",
+    "fcNo": "stall 100",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 207,
+    "name": "Tukacungurwa Lydia stall 95",
+    "nin": null,
+    "phone": "256773211366",
+    "category": "Vegetables",
+    "fcNo": "stall 95",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 208,
+    "name": "TUMUSIIME GENEROUS BATARE",
+    "nin": "CF6900910JFTYL",
+    "phone": "256772395799",
+    "category": "General Merchandise",
+    "fcNo": "A1 - 002",
+    "monthlyPay": 200000
+  },
+  {
+    "id": 209,
+    "name": "Nimusiima Rabecca stall 284",
+    "nin": null,
+    "phone": "256777407890",
+    "category": "Vegetables",
+    "fcNo": "Stall 284",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 210,
+    "name": "Kyarisiima mable stall 285",
+    "nin": null,
+    "phone": "256784493249",
+    "category": "Vegetables",
+    "fcNo": "Stall 285",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 211,
+    "name": "Atuheire Gloria stall 250",
+    "nin": null,
+    "phone": "256773234213",
+    "category": "Vegetables",
+    "fcNo": "Stall 250",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 212,
+    "name": "Ainembabazi Alecia and Owamani",
+    "nin": null,
+    "phone": "256761470072",
+    "category": "Food Stuff",
+    "fcNo": "PT 002",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 213,
+    "name": "TUSIIME LYDIA AND NIWAMANYA SH",
+    "nin": 781503138,
+    "phone": "256781503138",
+    "category": "Food Stuff",
+    "fcNo": "PT-009",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 214,
+    "name": "AHIMBISIBWE JEREMINAH-MATOOKE-",
+    "nin": null,
+    "phone": "256775966181",
+    "category": "Food Stuff",
+    "fcNo": "PT-40",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 215,
+    "name": "KYAMPEIRE EVAS-ST-57-MATOOKE",
+    "nin": null,
+    "phone": "256787247911",
+    "category": "Food Stuff",
+    "fcNo": "ST-57-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 216,
+    "name": "NATUKUNDA APOPHIA AND ASIIMWE",
+    "nin": null,
+    "phone": "256772757960",
+    "category": "Food Stuff",
+    "fcNo": "ST-36",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 217,
+    "name": "TUSHEMEREIRWE HENRY",
+    "nin": "CM5900910221HF",
+    "phone": "256772439242",
+    "category": "Others",
+    "fcNo": "AX-33G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 218,
+    "name": "ARIYO  FRANCIS",
+    "nin": "CM99055107T3HE",
+    "phone": "256773946879",
+    "category": "General Merchandise",
+    "fcNo": "AX-38G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 219,
+    "name": "Mutabazi Alex 151",
+    "nin": null,
+    "phone": "256778681856",
+    "category": "Vegetables",
+    "fcNo": "Stall 151",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 220,
+    "name": "Agaba Micheal central mkt 2024",
+    "nin": "CM0778176079AM",
+    "phone": "256778176079",
+    "category": "Retail Shops",
+    "fcNo": "B2 007",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 221,
+    "name": "NGARAMBE JANE-CENTRAL MKT2024",
+    "nin": "CF7000910J3U8A",
+    "phone": "256782616807",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-017",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 222,
+    "name": "Katabazi emmanuel central mkt2",
+    "nin": "CM0782579250KE",
+    "phone": "256782579250",
+    "category": "Butcher",
+    "fcNo": "B1.079",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 223,
+    "name": "TUGUMISIRIZE JANE",
+    "nin": "CF5600910JC46j",
+    "phone": "256779090112",
+    "category": "New Clothes",
+    "fcNo": "A2 047",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 224,
+    "name": "Justine Kembabazi",
+    "nin": "CF8600910072dL",
+    "phone": "256773552258",
+    "category": "New Clothes",
+    "fcNo": "A2 050",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 225,
+    "name": "Tugumisirize Tom stall 311",
+    "nin": "CM0776808503TT",
+    "phone": "256776808503",
+    "category": "Vegetables",
+    "fcNo": "Stall 311",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 226,
+    "name": "Kembabazi Racheal stall 305",
+    "nin": null,
+    "phone": "256782775683",
+    "category": "Vegetables",
+    "fcNo": "Stall 305",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 227,
+    "name": "KOBUGYENYI RODAH",
+    "nin": "CF93018109WCTe",
+    "phone": "256778009256",
+    "category": "New Clothes",
+    "fcNo": "A2 068",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 228,
+    "name": "Mukabaranga Hadijah stall 215",
+    "nin": null,
+    "phone": "25678771854",
+    "category": "Vegetables",
+    "fcNo": "Stall 215",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 229,
+    "name": "Begumisa Annet stall 195",
+    "nin": "CF776973541XXX",
+    "phone": "256776973541",
+    "category": "Vegetables",
+    "fcNo": "Stall 195",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 230,
+    "name": "Bakandema Franco stall 129",
+    "nin": null,
+    "phone": "256775155923",
+    "category": "Vegetables",
+    "fcNo": "stall 129",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 231,
+    "name": "Kyomuhendo Zawadi stall 122",
+    "nin": null,
+    "phone": "256773138066",
+    "category": "Vegetables",
+    "fcNo": "stall 122",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 232,
+    "name": "Twinomucunguzi Jasper stall 01",
+    "nin": "CM782774767XXX",
+    "phone": "256782774767",
+    "category": "Vegetables",
+    "fcNo": "stall 010",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 233,
+    "name": "Owomugisha Charity stall 79",
+    "nin": "CF0775465838TO",
+    "phone": "256775465838",
+    "category": "Vegetables",
+    "fcNo": "stall 79",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 234,
+    "name": "Koheirwe Florence stall 82",
+    "nin": null,
+    "phone": "256776956682",
+    "category": "Vegetables",
+    "fcNo": "stall 82",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 235,
+    "name": "Kyarisiima Getrude stall 84",
+    "nin": null,
+    "phone": "256754506921",
+    "category": "Vegetables",
+    "fcNo": "stall 84",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 236,
+    "name": "Bridget Tugumirize",
+    "nin": "CF96009109MQFH",
+    "phone": "256775163960",
+    "category": "New Clothes",
+    "fcNo": "A2 071",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 237,
+    "name": "KADUGALA FRED",
+    "nin": "CM70009104RVVA",
+    "phone": "256772681176",
+    "category": "Retail Shops",
+    "fcNo": "A1 044",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 238,
+    "name": "Nahabwe shallot DF005",
+    "nin": null,
+    "phone": "256773252532",
+    "category": "Fish",
+    "fcNo": "DF005",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 239,
+    "name": "TUMUBWEINE-CH10-12 LYDIA",
+    "nin": "CF690341023ZUA",
+    "phone": "256772837911",
+    "category": "Birds",
+    "fcNo": "CH10-12",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 240,
+    "name": "Nkorenta Patience and Twinomug",
+    "nin": null,
+    "phone": "256775121866",
+    "category": "Food Stuff",
+    "fcNo": "PT-003",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 241,
+    "name": "RUTAZANA MAGGIE ZIINE",
+    "nin": "CF550091006T9G",
+    "phone": "256772688468",
+    "category": "Others",
+    "fcNo": "AX-29G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 242,
+    "name": "TWINOMUSINGUZI IRENE",
+    "nin": "CF6700910J3UTg",
+    "phone": "256772304460",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 200000
+  },
+  {
+    "id": 243,
+    "name": "TUKAMUHABWA RUTH",
+    "nin": "CF90009106QK9J",
+    "phone": "256777877768",
+    "category": "Others",
+    "fcNo": "AX-42G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 244,
+    "name": "Bamuhebwa Alaudia stall 199",
+    "nin": null,
+    "phone": "256779808946",
+    "category": "Vegetables",
+    "fcNo": "Stall 199",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 245,
+    "name": "Ruth Nshabohurira",
+    "nin": "CF730009108TRr",
+    "phone": "256772888694",
+    "category": "Cereal Produce",
+    "fcNo": "AX-64G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 246,
+    "name": "Kikanda Monday and ziriheihi e",
+    "nin": 784127140,
+    "phone": "256784127140",
+    "category": "Butcher",
+    "fcNo": "No.b180",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 247,
+    "name": "Asiimwe Evaline",
+    "nin": "CF900091094KHk",
+    "phone": "256775610020",
+    "category": "Saloon",
+    "fcNo": "AX-16F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 248,
+    "name": "Arinaitwe Ivan",
+    "nin": "CM0772955739XX",
+    "phone": "256772955739",
+    "category": "Retail Shops",
+    "fcNo": "B2-045",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 249,
+    "name": "Kemigisha Justine and mbonimpa",
+    "nin": null,
+    "phone": "256778504706",
+    "category": "Retail Shops",
+    "fcNo": "B2-057",
+    "monthlyPay": 70000
+  },
+  {
+    "id": 250,
+    "name": "KINAHEIRWE HOPE STALL-318",
+    "nin": null,
+    "phone": "256782848472",
+    "category": "Vegetables",
+    "fcNo": "STALL-318",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 251,
+    "name": "TUMURAMYE DEMITORI",
+    "nin": "CF74009107NZXf",
+    "phone": "256782514475",
+    "category": "New Clothes",
+    "fcNo": "A2 053",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 252,
+    "name": "Nkurunungi. Agatha stall 216",
+    "nin": null,
+    "phone": "256788087571",
+    "category": "Vegetables",
+    "fcNo": "Stall 216",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 253,
+    "name": "Kabakyenga Jack B1 056 Kabakye",
+    "nin": "CM62009107VYXE",
+    "phone": "256782575917",
+    "category": "Retail Shops",
+    "fcNo": "B1056",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 254,
+    "name": "Bafokorora Alice b1 63 Bafokor",
+    "nin": "CF5000910229EJ",
+    "phone": "256782963290",
+    "category": "Retail Shops",
+    "fcNo": "Stall 63",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 255,
+    "name": "KYAKUNZIRE FLORENCE",
+    "nin": "CF74009107T1QL",
+    "phone": "256783329984",
+    "category": "Retail Shops",
+    "fcNo": "B1065",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 256,
+    "name": "Turyataha Jolly stall 044",
+    "nin": null,
+    "phone": "256785004248",
+    "category": "Vegetables",
+    "fcNo": "44",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 257,
+    "name": "Kyarimpa catherine 237",
+    "nin": null,
+    "phone": "256780275537",
+    "category": "Vegetables",
+    "fcNo": "Stall 237",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 258,
+    "name": "Asiimwe Ruth and Tumusiime Eru",
+    "nin": null,
+    "phone": "256780523309",
+    "category": "Vegetables",
+    "fcNo": "stall 74",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 259,
+    "name": "Twikirize Patience and Katusii",
+    "nin": "CF0775031477TP",
+    "phone": "256775031477",
+    "category": "Vegetables",
+    "fcNo": "stall 020",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 260,
+    "name": "Ninsiima Lucky stall 021",
+    "nin": null,
+    "phone": "256754548187",
+    "category": "Vegetables",
+    "fcNo": "stall 021",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 261,
+    "name": "Byamugisha Friday stall 99",
+    "nin": "CM772699345xxc",
+    "phone": "256772699345",
+    "category": "Vegetables",
+    "fcNo": "stall 99",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 262,
+    "name": "Monica Atukwase",
+    "nin": "CF93101102W9Wg",
+    "phone": "256783647065",
+    "category": "New Clothes",
+    "fcNo": "A2 042",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 263,
+    "name": "Tumusiime Annet and Nyakarungi",
+    "nin": null,
+    "phone": "256784703168",
+    "category": "Vegetables",
+    "fcNo": "Stall 274",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 264,
+    "name": "Kabale Women Association - Nab",
+    "nin": null,
+    "phone": "256775721785",
+    "category": "Vegetables",
+    "fcNo": "Stall 222",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 265,
+    "name": "Kyarimpa Angellah DF011",
+    "nin": null,
+    "phone": "256760459398",
+    "category": "Fish",
+    "fcNo": "DF011",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 266,
+    "name": "KEEYA NOAH",
+    "nin": "CM8600910501Ne",
+    "phone": "256771691161",
+    "category": "Hardware",
+    "fcNo": "A1 - 045",
+    "monthlyPay": 200000
+  },
+  {
+    "id": 267,
+    "name": "Turyamureeba John PT019",
+    "nin": null,
+    "phone": "256782568672",
+    "category": "Food Stuff",
+    "fcNo": "PT019",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 268,
+    "name": "TWINAMASIKO AISHA-MATOOKE-27",
+    "nin": null,
+    "phone": "256784319520",
+    "category": "Food Stuff",
+    "fcNo": "PT-27",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 269,
+    "name": "NINSIIMA FORTUNATE-MATOOKE-52",
+    "nin": null,
+    "phone": "256778874663",
+    "category": "Food Stuff",
+    "fcNo": "PT-52",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 270,
+    "name": "EKYENSI ERIKORA SHALLON-MATOOK",
+    "nin": null,
+    "phone": "256773488799",
+    "category": "Food Stuff",
+    "fcNo": "PT-63",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 271,
+    "name": "JAMES-PRODUCE-ST-15 BYAMUKAMA",
+    "nin": "CM7000910098AK",
+    "phone": "256760070030",
+    "category": "Food Stuff",
+    "fcNo": "ST-15",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 272,
+    "name": "Tumuhimbise Gloria stall 148",
+    "nin": "CF0774957766MG",
+    "phone": "256774957766",
+    "category": "Vegetables",
+    "fcNo": "stall 148",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 273,
+    "name": "Kyomuhendo Grace stall 171",
+    "nin": null,
+    "phone": "256787261681",
+    "category": "Vegetables",
+    "fcNo": "stall 171",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 274,
+    "name": "RUGAJU JACK",
+    "nin": "CM500091061RUe",
+    "phone": "256772946315",
+    "category": "Food Stuff",
+    "fcNo": "A1041",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 275,
+    "name": "Agness Kengazi",
+    "nin": "CF48112102CW2H",
+    "phone": "256772693488",
+    "category": "Food Stuff",
+    "fcNo": "A1082",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 276,
+    "name": "Akandinda Johnson stall 304",
+    "nin": "CM779549922XXX",
+    "phone": "256779549922",
+    "category": "Vegetables",
+    "fcNo": "Stall 304",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 277,
+    "name": "Lowenah Akampurira",
+    "nin": "CF9903710GVWNF",
+    "phone": "256770469967",
+    "category": "New Clothes",
+    "fcNo": "A2 065",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 278,
+    "name": "Mugabirwe Hope stall 142",
+    "nin": null,
+    "phone": "256704127896",
+    "category": "Vegetables",
+    "fcNo": "stall 142",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 279,
+    "name": "Nyabukye Joy Esther stall 85",
+    "nin": null,
+    "phone": "256784118076",
+    "category": "Vegetables",
+    "fcNo": "stall 85",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 280,
+    "name": "MUGISHA RICHARD",
+    "nin": "CM820091010LMa",
+    "phone": "25678688829",
+    "category": "New Clothes",
+    "fcNo": "A2 056",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 281,
+    "name": "Sabiiti Aaron and Tumwesigye A",
+    "nin": null,
+    "phone": "256787088248",
+    "category": "Fish",
+    "fcNo": "DF017",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 282,
+    "name": "Byaruhanga Emmanuel DF006",
+    "nin": null,
+    "phone": "256776554308",
+    "category": "Fish",
+    "fcNo": "DF006",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 283,
+    "name": "Nabimanya peninah stall 281",
+    "nin": null,
+    "phone": "256782267565",
+    "category": "Vegetables",
+    "fcNo": "Stall281",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 284,
+    "name": "Kyomuhangi Gloria stall 271",
+    "nin": "CF8600910TOVPF",
+    "phone": "256773443907",
+    "category": "Vegetables",
+    "fcNo": "Stall 271",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 285,
+    "name": "Mugeyehweki promise stall 225",
+    "nin": "CF0773992426MP",
+    "phone": "256773992426",
+    "category": "Vegetables",
+    "fcNo": "Stall 255",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 286,
+    "name": "Atukunda Patience DF008",
+    "nin": null,
+    "phone": "256781447688",
+    "category": "Fish",
+    "fcNo": "DF008",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 287,
+    "name": "Byomuhangi Milton and Nzirwegy",
+    "nin": "CM620091088U3J",
+    "phone": "256782529836",
+    "category": "Food Stuff",
+    "fcNo": "PT036",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 288,
+    "name": "Mpirirwe Charity and Mugwaneza",
+    "nin": null,
+    "phone": "256771813499",
+    "category": "Food Stuff",
+    "fcNo": "PT030",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 289,
+    "name": "TUKWASIBWE ROSEMARY-MATOOKE-15",
+    "nin": null,
+    "phone": "256778840932",
+    "category": "Food Stuff",
+    "fcNo": "PT-15",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 290,
+    "name": "TUMUHIMBISE JUDITH-MATOOKE-34",
+    "nin": null,
+    "phone": "256777266937",
+    "category": "Food Stuff",
+    "fcNo": "PT-34",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 291,
+    "name": "FREGENSIO-DRY PRODUCE-ST-25 BY",
+    "nin": "CM420091008NVK",
+    "phone": "256780215980",
+    "category": "Food Stuff",
+    "fcNo": "ST-25",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 292,
+    "name": "Emily Katushabe",
+    "nin": "CF79009100A9Af",
+    "phone": "256783371001",
+    "category": "Cereal Produce",
+    "fcNo": "A1 - 047",
+    "monthlyPay": 110000
+  },
+  {
+    "id": 293,
+    "name": "TURYASIIMA JOHN AND MUJUNI GOO",
+    "nin": "Cm0782357429",
+    "phone": "256772462621",
+    "category": "Retail Shops",
+    "fcNo": "B1.041",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 294,
+    "name": "Kyarimpa prossy stall 312",
+    "nin": null,
+    "phone": "256776681185",
+    "category": "Vegetables",
+    "fcNo": "Stall 312",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 295,
+    "name": "Orishaba moreen and Ninsiima R",
+    "nin": null,
+    "phone": "256772295327",
+    "category": "Vegetables",
+    "fcNo": "Stall 163",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 296,
+    "name": "Muhumuza Hillary Ishamail stal",
+    "nin": null,
+    "phone": "256785711218",
+    "category": "Vegetables",
+    "fcNo": "stall 127",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 297,
+    "name": "Kamusiime Judith stall 025",
+    "nin": null,
+    "phone": "256776641294",
+    "category": "Vegetables",
+    "fcNo": "25",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 298,
+    "name": "Tindimwebwa Medius stall 86",
+    "nin": null,
+    "phone": "256750538938",
+    "category": "Vegetables",
+    "fcNo": "stall 86",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 299,
+    "name": "Ariho Jackline stall 226",
+    "nin": null,
+    "phone": "256787249618",
+    "category": "Vegetables",
+    "fcNo": "Stall 226",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 300,
+    "name": "MUFUMU JOVIA AND KYOMUHENDO VA",
+    "nin": null,
+    "phone": "256772187988",
+    "category": "Food Stuff",
+    "fcNo": "PT-044",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 301,
+    "name": "Atukunda Mercy and kamutongo M",
+    "nin": null,
+    "phone": "256774488396",
+    "category": "Food Stuff",
+    "fcNo": "PT022",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 302,
+    "name": "SANYU SCOVIA-MATOOKE-009",
+    "nin": null,
+    "phone": "256778274454",
+    "category": "Food Stuff",
+    "fcNo": "PT-009",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 303,
+    "name": "BYARUGABA GILBERT-MATOOKE-18",
+    "nin": null,
+    "phone": "256788640215",
+    "category": "Food Stuff",
+    "fcNo": "PT-18",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 304,
+    "name": "BYARUHANGA FEDERENCE MARY-STAL",
+    "nin": null,
+    "phone": "256702276806",
+    "category": "Food Stuff",
+    "fcNo": "ST-290",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 305,
+    "name": "TUMUHEIRWE KELLEN",
+    "nin": "CF7300910JJ99G",
+    "phone": "256772197838",
+    "category": "Retail Shops",
+    "fcNo": "B1.009",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 306,
+    "name": "BYAMUKAMA JULIUS",
+    "nin": "CM8500910ELT9D",
+    "phone": "256778329519",
+    "category": "Retail Shops",
+    "fcNo": "AX-004G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 307,
+    "name": "Byamukama Alex and Muheire sil",
+    "nin": "CM66009109CFLG",
+    "phone": "256773650773",
+    "category": "Retail Shops",
+    "fcNo": "No.B1036",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 308,
+    "name": "MONDAY ERIC",
+    "nin": "CM70055103HWTj",
+    "phone": "256772841057",
+    "category": "New Clothes",
+    "fcNo": "A2 014",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 309,
+    "name": "TUSIIME GLORIA",
+    "nin": "CF8300910DKPLj",
+    "phone": "256772398431",
+    "category": "Shoes",
+    "fcNo": "A2 016",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 310,
+    "name": "KUBIRANGUME JOY",
+    "nin": "CF48037104CVXa",
+    "phone": "256392964673",
+    "category": "New Clothes",
+    "fcNo": "A2 004",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 311,
+    "name": "Turyashemererwa Mary kaheru 34",
+    "nin": 783622433,
+    "phone": "256783622433",
+    "category": "Vegetables",
+    "fcNo": "St 342",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 312,
+    "name": "Evas Ruhangariyo",
+    "nin": "CF87009102JL8a",
+    "phone": "256775200318",
+    "category": "New Clothes",
+    "fcNo": "A2 055",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 313,
+    "name": "Arineitwe Joel stall 219",
+    "nin": null,
+    "phone": "256770941357",
+    "category": "Vegetables",
+    "fcNo": "Stall 219",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 314,
+    "name": "Tumuheirwe Immaculate stall 20",
+    "nin": null,
+    "phone": "256777781239",
+    "category": "Vegetables",
+    "fcNo": "Stall 202",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 315,
+    "name": "Sabiiti Isaaya stall 192",
+    "nin": null,
+    "phone": "256779527209",
+    "category": "Vegetables",
+    "fcNo": "Stall 192",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 316,
+    "name": "Turyakira Emily and Akabibasa",
+    "nin": null,
+    "phone": "256786784834",
+    "category": "Vegetables",
+    "fcNo": "Stall 167",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 317,
+    "name": "Birihanze Joy stall 146",
+    "nin": 789583527,
+    "phone": "256789583527",
+    "category": "Vegetables",
+    "fcNo": "Stall 146",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 318,
+    "name": "Tindimwebwa Judith stall 161",
+    "nin": null,
+    "phone": "256775571295",
+    "category": "Vegetables",
+    "fcNo": "stall 161",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 319,
+    "name": "Akankwasa Catherine and Tukamu",
+    "nin": null,
+    "phone": "256763734758",
+    "category": "Vegetables",
+    "fcNo": "stall 114",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 320,
+    "name": "AINAMANI SHALLON",
+    "nin": "CF8603410K22ND",
+    "phone": "256764808499",
+    "category": "Retail Shops",
+    "fcNo": "Lock up no.12",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 321,
+    "name": "OWEMBABAZI MARIA LYDIA STALL -",
+    "nin": null,
+    "phone": "256778790477",
+    "category": "Vegetables",
+    "fcNo": "STALL-319",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 322,
+    "name": "Magara peace stall 258",
+    "nin": null,
+    "phone": "256786457548",
+    "category": "Vegetables",
+    "fcNo": "Stall 258",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 323,
+    "name": "Kiconco Adrine stall 244",
+    "nin": null,
+    "phone": "256756780308",
+    "category": "Vegetables",
+    "fcNo": "Stall 244",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 324,
+    "name": "Aringanyira Leticia and Nkurun",
+    "nin": null,
+    "phone": "256787638228",
+    "category": "Food Stuff",
+    "fcNo": "PT015",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 325,
+    "name": "Tugumisirize Charity and Akamp",
+    "nin": null,
+    "phone": "256781192949",
+    "category": "Food Stuff",
+    "fcNo": "PT032",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 326,
+    "name": "KYARIMPA MERAB-MATOOKE-14",
+    "nin": null,
+    "phone": "256783580194",
+    "category": "Food Stuff",
+    "fcNo": "PT-14",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 327,
+    "name": "AHABWE NOSIATA-MATOOKE-39",
+    "nin": null,
+    "phone": "25677688399",
+    "category": "Food Stuff",
+    "fcNo": "PT-39",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 328,
+    "name": "KESANDE JACKLINE-MATOOKE-44",
+    "nin": null,
+    "phone": "256787611961",
+    "category": "Food Stuff",
+    "fcNo": "PT-44",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 329,
+    "name": "BEINOMUGISHA GEOFREY-MATOOKE-2",
+    "nin": null,
+    "phone": "256777116406",
+    "category": "Food Stuff",
+    "fcNo": "PT-21",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 330,
+    "name": "SANYU GRACE-MATOOKE-54",
+    "nin": null,
+    "phone": "256787388508",
+    "category": "Food Stuff",
+    "fcNo": "PT-54",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 331,
+    "name": "TURYASINGURA GLORIA-MATOOKE-67",
+    "nin": null,
+    "phone": "256774624534",
+    "category": "Food Stuff",
+    "fcNo": "PT-67",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 332,
+    "name": "AGABA HILLARY",
+    "nin": "CM7000910GG7Hl",
+    "phone": "256772588513",
+    "category": "Others",
+    "fcNo": "AX - 36 F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 333,
+    "name": "MBABAZI SUMAYIA",
+    "nin": "CF84101108ZDHC",
+    "phone": "256775044031",
+    "category": "Retail Shops",
+    "fcNo": "B1.008",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 334,
+    "name": "Nayebare Sarah-central mkt2024",
+    "nin": "IRAS/CIN/240173035",
+    "phone": "256781508338",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-018",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 335,
+    "name": "Asiimwe Florence stall 141",
+    "nin": null,
+    "phone": "256782878412",
+    "category": "Vegetables",
+    "fcNo": "stall 141",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 336,
+    "name": "Besigye joseph",
+    "nin": "CM580091008G3K",
+    "phone": "256752786781",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-031",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 337,
+    "name": "MUGISHA BERNET",
+    "nin": "CM87009107UL4c",
+    "phone": "256789164415",
+    "category": "Cereal Produce",
+    "fcNo": "AX-62G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 338,
+    "name": "MBONIGABA JOHN",
+    "nin": "CM63009100CNFj",
+    "phone": "256772336626",
+    "category": "Tailoring and Textile",
+    "fcNo": "A2 015",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 339,
+    "name": "Mandela Hafasha",
+    "nin": "CM89018104R7Uj",
+    "phone": "256783254580",
+    "category": "New Clothes",
+    "fcNo": "A2 029",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 340,
+    "name": "Musinguzi Assuman st 326",
+    "nin": null,
+    "phone": "256778606879",
+    "category": "Vegetables",
+    "fcNo": "St 326",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 341,
+    "name": "Tumusiime charity st 324",
+    "nin": "IRAS/CIN/231109714",
+    "phone": "256771825913",
+    "category": "Vegetables",
+    "fcNo": "St 324",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 342,
+    "name": "Turyakira Emmanuel stall 217",
+    "nin": null,
+    "phone": "256782770332",
+    "category": "Vegetables",
+    "fcNo": "Stall 217",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 343,
+    "name": "Ninsiima Comfort stall 209",
+    "nin": null,
+    "phone": "256784507262",
+    "category": "Vegetables",
+    "fcNo": "Stall 209",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 344,
+    "name": "Asiimwe Annet stall 175",
+    "nin": null,
+    "phone": "256775200630",
+    "category": "Vegetables",
+    "fcNo": "stall 175",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 345,
+    "name": "Kobusigye Jane stall 168",
+    "nin": null,
+    "phone": "256772628681",
+    "category": "Vegetables",
+    "fcNo": "Stall 168",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 346,
+    "name": "Bitambaki Lawrence stall 273",
+    "nin": null,
+    "phone": "256775392355",
+    "category": "Vegetables",
+    "fcNo": "Stall 273",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 347,
+    "name": "Kobusingye Gift stall 131",
+    "nin": null,
+    "phone": "256763976196",
+    "category": "Vegetables",
+    "fcNo": "stall 131",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 348,
+    "name": "BITARABEHO VICTORIA",
+    "nin": "CF5000910C49DH",
+    "phone": "256787919731",
+    "category": "Vegetables",
+    "fcNo": "Stall 208",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 349,
+    "name": "Tumusiime Grace stall 023",
+    "nin": null,
+    "phone": "256774961414",
+    "category": "Vegetables",
+    "fcNo": "23",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 350,
+    "name": "Asiimwe Grace stall 61",
+    "nin": null,
+    "phone": "256775756126",
+    "category": "Vegetables",
+    "fcNo": "stall 61",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 351,
+    "name": "Arinaitwe Patrick stall 62",
+    "nin": null,
+    "phone": "256764193680",
+    "category": "Vegetables",
+    "fcNo": "stall 62",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 352,
+    "name": "Tumuhimbise Mary stall 230",
+    "nin": null,
+    "phone": "256778378568",
+    "category": "Vegetables",
+    "fcNo": "Stall 230",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 353,
+    "name": "Safari Alphanse DF010",
+    "nin": null,
+    "phone": "256772908795",
+    "category": "Fish",
+    "fcNo": "DF010",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 354,
+    "name": "MUTABAZI DENIS-MATOOKE-13",
+    "nin": null,
+    "phone": "256705596226",
+    "category": "Food Stuff",
+    "fcNo": "PT-13",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 355,
+    "name": "KESIIME JOY-MATOOKE-70",
+    "nin": null,
+    "phone": "256773005923",
+    "category": "Food Stuff",
+    "fcNo": "PT-70",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 356,
+    "name": "MUSIIKA DISMUS",
+    "nin": "CM830091033TZL",
+    "phone": "256779410779",
+    "category": "Retail Shops",
+    "fcNo": "B1-014",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 357,
+    "name": "TOM AHIMBISIBWE",
+    "nin": "CM810091019YJB",
+    "phone": "256787292147",
+    "category": "General Merchandise",
+    "fcNo": "AX-39G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 358,
+    "name": "MBABAZIZE BETACE",
+    "nin": "CF85009109V5QC",
+    "phone": "256775160148",
+    "category": "Others",
+    "fcNo": "AX-40G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 359,
+    "name": "BARUGAHARE COSMA",
+    "nin": "CM500091059X0H",
+    "phone": "256772393252",
+    "category": "Cereal Produce",
+    "fcNo": "AX-51G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 360,
+    "name": "Safari Eunice Family of Rutaga",
+    "nin": "CF780091078HDL",
+    "phone": "256784766117",
+    "category": "Cereal Produce",
+    "fcNo": "AX-12G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 361,
+    "name": "NANKABIRWA JALILAH",
+    "nin": "CF95017103FYRg",
+    "phone": "256778028117",
+    "category": "Saloon",
+    "fcNo": "AX-17F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 362,
+    "name": "Turyakira Generous",
+    "nin": "CF7900910969Ug",
+    "phone": "256772549192",
+    "category": "Saloon",
+    "fcNo": "AX-29F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 363,
+    "name": "Grace Akampreza",
+    "nin": "CF92009102DECl",
+    "phone": "256078887933",
+    "category": "New Clothes",
+    "fcNo": "A2024",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 364,
+    "name": "Turinawe medius St 336",
+    "nin": "IRAS/CIN/240608195",
+    "phone": "256789901030",
+    "category": "Vegetables",
+    "fcNo": "St 336",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 365,
+    "name": "Tumwijukye benard stall 315",
+    "nin": null,
+    "phone": "256776663431",
+    "category": "Vegetables",
+    "fcNo": "Stall 315",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 366,
+    "name": "MBAKYENGE ABEL",
+    "nin": "CM73018109JZDf",
+    "phone": "256789609579",
+    "category": "Food Stuff",
+    "fcNo": "A2001",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 367,
+    "name": "Tindimwebwa Edith stall 178",
+    "nin": null,
+    "phone": "256785711218",
+    "category": "Vegetables",
+    "fcNo": "stall 178",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 368,
+    "name": "Katushabe Boniconsila stall 13",
+    "nin": 788530514,
+    "phone": "256788530514",
+    "category": "Vegetables",
+    "fcNo": "stall 134",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 369,
+    "name": "Ayebare Grace stall 118",
+    "nin": null,
+    "phone": "256783869500",
+    "category": "Vegetables",
+    "fcNo": "stall 118",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 370,
+    "name": "Tumuhairwe Sarah Jackline stal",
+    "nin": null,
+    "phone": "256778937522",
+    "category": "Vegetables",
+    "fcNo": "38",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 371,
+    "name": "Katusiime Sarah stall 040",
+    "nin": null,
+    "phone": "256786444430",
+    "category": "Vegetables",
+    "fcNo": "40",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 372,
+    "name": "Rukundo Joshua stall 63",
+    "nin": null,
+    "phone": "256771247110",
+    "category": "Vegetables",
+    "fcNo": "Stall 63",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 373,
+    "name": "TUSINGWIRE OLIVER STALL-320",
+    "nin": null,
+    "phone": "256789480572",
+    "category": "Vegetables",
+    "fcNo": "STALL-320",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 374,
+    "name": "Asiimwe Mariam stall 87",
+    "nin": null,
+    "phone": "256780217148",
+    "category": "Vegetables",
+    "fcNo": "stall 87",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 375,
+    "name": "DORIS NINSIIMA",
+    "nin": "CF778385220XXX",
+    "phone": "256778385220",
+    "category": "Saloon",
+    "fcNo": "AX - 20 F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 376,
+    "name": "KWEZIRIKIIRE BONIFANSI",
+    "nin": "CM58009103ZRKa",
+    "phone": "256781524125",
+    "category": "New Clothes",
+    "fcNo": "A2 075",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 377,
+    "name": "Busingye Jackline stall 243",
+    "nin": null,
+    "phone": "256786359886",
+    "category": "Vegetables",
+    "fcNo": "Stall 243",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 378,
+    "name": "Kakuru Dickens stall 245",
+    "nin": null,
+    "phone": "256771416521",
+    "category": "Vegetables",
+    "fcNo": "Stall 245",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 379,
+    "name": "Twebaze Lydia DF012",
+    "nin": null,
+    "phone": "256773141323",
+    "category": "Fish",
+    "fcNo": "DF012",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 380,
+    "name": "MUKIDADI-MATOOKE-001 ISUMA",
+    "nin": "CM860091033LRh",
+    "phone": "256781231181",
+    "category": "Food Stuff",
+    "fcNo": "ST-01",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 381,
+    "name": "MUJUNI BENSON-MATOOKE-22",
+    "nin": null,
+    "phone": "256773017428",
+    "category": "Food Stuff",
+    "fcNo": "PT-22",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 382,
+    "name": "AHIMBISIBWE PHIONAH-ST-72-MATO",
+    "nin": null,
+    "phone": "256788421031",
+    "category": "Food Stuff",
+    "fcNo": "ST-72-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 383,
+    "name": "NABIMANYA SAMUEL",
+    "nin": "CM83009106W7YK",
+    "phone": "256782527454",
+    "category": "Others",
+    "fcNo": "AX-47G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 384,
+    "name": "ARYATUHEREZA EVAS",
+    "nin": "CF8800910DC84d",
+    "phone": "256782619227",
+    "category": "Food Stuff",
+    "fcNo": "A1_066",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 385,
+    "name": "Tayebwa Phiona stall 300",
+    "nin": null,
+    "phone": "256774339319",
+    "category": "Vegetables",
+    "fcNo": "Stall 300",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 386,
+    "name": "NATURINDA ELIZABETH",
+    "nin": "CF991161002GZJ",
+    "phone": "256776618891",
+    "category": "Retail Shops",
+    "fcNo": "B1060",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 387,
+    "name": "KATUSIIME HELLEN",
+    "nin": "CF830091034KRH",
+    "phone": "256784349682",
+    "category": "Retail Shops",
+    "fcNo": "B1-067",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 388,
+    "name": "Kyampire Immaculate stall 179",
+    "nin": null,
+    "phone": "256781265959",
+    "category": "Vegetables",
+    "fcNo": "Stall",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 389,
+    "name": "Orishasba Magret stall 120",
+    "nin": null,
+    "phone": "256773717447",
+    "category": "Vegetables",
+    "fcNo": "stall 120",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 390,
+    "name": "Turyasiima Rose stall 56",
+    "nin": null,
+    "phone": "256750671735",
+    "category": "Vegetables",
+    "fcNo": "stall 56",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 391,
+    "name": "TURYAMWESIGA EDITH",
+    "nin": "CF70009102T48E",
+    "phone": "256782530455",
+    "category": "Hardware",
+    "fcNo": "A1 - 040",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 392,
+    "name": "Akampurira Naboth stall 234",
+    "nin": "CM0787513518AN",
+    "phone": "256787513518",
+    "category": "Vegetables",
+    "fcNo": "Stall 234",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 393,
+    "name": "TURINAWE-CH01-03 WILSON",
+    "nin": "CM73009102N7UF",
+    "phone": "256782112576",
+    "category": "Birds",
+    "fcNo": "CH01-03",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 394,
+    "name": "Tindimwebwa Harriet and Musiim",
+    "nin": null,
+    "phone": "256774800270",
+    "category": "Food Stuff",
+    "fcNo": "PT029",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 395,
+    "name": "Turyomurugyendo Agness and Bur",
+    "nin": null,
+    "phone": "256775415299",
+    "category": "Food Stuff",
+    "fcNo": "PT024",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 396,
+    "name": "KYOMUGISHA GYAVIRA-MATOOKE-47",
+    "nin": null,
+    "phone": "256771611452",
+    "category": "Food Stuff",
+    "fcNo": "PT-47",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 397,
+    "name": "KEFEZA EDISA-MATOOKE-65",
+    "nin": null,
+    "phone": "256779973290",
+    "category": "Food Stuff",
+    "fcNo": "PT-65",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 398,
+    "name": "NASASIIRA BRIDGET-MATOOKE-66",
+    "nin": null,
+    "phone": "256776220693",
+    "category": "Food Stuff",
+    "fcNo": "PT-66",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 399,
+    "name": "NTUHE FRED",
+    "nin": "CM450551040DWJ",
+    "phone": "256772926952",
+    "category": "Saloon",
+    "fcNo": "AX - 023 F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 400,
+    "name": "KAGWA JACQUELINE",
+    "nin": "CF5903410CDFUL",
+    "phone": "256772468538",
+    "category": "Retail Shops",
+    "fcNo": "AX-08G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 401,
+    "name": "OWOYESIGIRE ALEX AND SARTUDAY",
+    "nin": "CM81009108TXAJ",
+    "phone": "256775997779",
+    "category": "Retail Shops",
+    "fcNo": "B1.045",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 402,
+    "name": "Kemigisha Gauda mwanje-central",
+    "nin": "CF62055104KWVL",
+    "phone": "256782765540",
+    "category": "Retail Shops",
+    "fcNo": "B1-023",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 403,
+    "name": "ZARIBWEGIRIRE ESTA RUKANGA-CEN",
+    "nin": 789192226,
+    "phone": "256789192226",
+    "category": "Retail Shops",
+    "fcNo": "B1.-025",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 404,
+    "name": "KYOMUGISHA MELLAB",
+    "nin": "CF8800910A1JJF",
+    "phone": "256776735020",
+    "category": "Cereal Produce",
+    "fcNo": "AX-56G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 405,
+    "name": "BIRYABAREMA ELASMUS",
+    "nin": "CM920241038K6e",
+    "phone": "256788664942",
+    "category": "Others",
+    "fcNo": "AX-04F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 406,
+    "name": "Twijukye Denis",
+    "nin": "CM84009106XR4k",
+    "phone": "256751905188",
+    "category": "Saloon",
+    "fcNo": "AX-38F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 407,
+    "name": "NANKUNDA FRANCIS",
+    "nin": "CM77009109AXDl",
+    "phone": "256782310737",
+    "category": "Food Stuff",
+    "fcNo": "A1067",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 408,
+    "name": "Bright Rukundo",
+    "nin": "CM87062104APOe",
+    "phone": "256787566721",
+    "category": "Food Stuff",
+    "fcNo": "A1048",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 409,
+    "name": "NYAKIIRA JAMES",
+    "nin": "CM8400910093De",
+    "phone": "256779546944",
+    "category": "Others",
+    "fcNo": "AX-16G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 410,
+    "name": "RUZAMBA MEDAD-CENTRAL MKT NO.B",
+    "nin": null,
+    "phone": "256760772050",
+    "category": "New Clothes",
+    "fcNo": "No.b2 049",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 411,
+    "name": "Ainembabazi derrick st 328",
+    "nin": null,
+    "phone": "256780907188",
+    "category": "Vegetables",
+    "fcNo": "St 328",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 412,
+    "name": "Besigye Tumwebaze stall 169",
+    "nin": null,
+    "phone": "256789927650",
+    "category": "Vegetables",
+    "fcNo": "Stall no 169",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 413,
+    "name": "TWINAMAANI EDISON",
+    "nin": "CM58009105JCYl",
+    "phone": "256776989568",
+    "category": "New Clothes",
+    "fcNo": "A2 039",
+    "monthlyPay": 180000
+  },
+  {
+    "id": 414,
+    "name": "KWIKIRIZA SIMON",
+    "nin": "CM790091097KQd",
+    "phone": "256776060607",
+    "category": "New Clothes",
+    "fcNo": "A2 058",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 415,
+    "name": "Ainebyoona Issah stall 259",
+    "nin": null,
+    "phone": "256781254183",
+    "category": "Vegetables",
+    "fcNo": "Stall 259",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 416,
+    "name": "Turyomunsi Naziifa b1 051",
+    "nin": "CM783627983XXX",
+    "phone": "256783627983",
+    "category": "Retail Shops",
+    "fcNo": "B1 051",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 417,
+    "name": "Tumubweine Mark Twijukye Justu",
+    "nin": "CM7600910ANJVA",
+    "phone": "256782281358",
+    "category": "New Clothes",
+    "fcNo": "A2 084",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 418,
+    "name": "Tumusiime Josephine stall 162",
+    "nin": null,
+    "phone": "256772480356",
+    "category": "Vegetables",
+    "fcNo": "Stall 162",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 419,
+    "name": "Mbonigaba Paul stall 138",
+    "nin": null,
+    "phone": "256778151706",
+    "category": "Vegetables",
+    "fcNo": "stall 138",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 420,
+    "name": "Nasazi Florence stall 133",
+    "nin": null,
+    "phone": "25678664164",
+    "category": "Vegetables",
+    "fcNo": "stall 133",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 421,
+    "name": "Oringarukayo Winnie stall 119",
+    "nin": null,
+    "phone": "256773445723",
+    "category": "Vegetables",
+    "fcNo": "stall 119",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 422,
+    "name": "Akantorana Jonah stall 109",
+    "nin": null,
+    "phone": "256781862724",
+    "category": "Vegetables",
+    "fcNo": "stall 109",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 423,
+    "name": "Niwasimera shallon stall 016",
+    "nin": null,
+    "phone": "256781845680",
+    "category": "Vegetables",
+    "fcNo": "16",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 424,
+    "name": "Naturinda Doreen and Orishaba",
+    "nin": null,
+    "phone": "256778558146",
+    "category": "Vegetables",
+    "fcNo": "33",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 425,
+    "name": "Tushabe Godfrey stall 049",
+    "nin": null,
+    "phone": "256771169999",
+    "category": "Vegetables",
+    "fcNo": "49",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 426,
+    "name": "Niwagaba Doreen stall 022",
+    "nin": null,
+    "phone": "256784414522",
+    "category": "Vegetables",
+    "fcNo": "stall 022",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 427,
+    "name": "Niwamanya Alex stall 88",
+    "nin": null,
+    "phone": "256776791152",
+    "category": "Vegetables",
+    "fcNo": "stall 88",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 428,
+    "name": "Atwine Peace stall 94",
+    "nin": null,
+    "phone": "256777191240",
+    "category": "Vegetables",
+    "fcNo": "stall 94",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 429,
+    "name": "Kyarikunda Gorreti stall 232",
+    "nin": null,
+    "phone": "25678144882",
+    "category": "Vegetables",
+    "fcNo": "Stall 232",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 430,
+    "name": "Natukunda Vastine DF 009",
+    "nin": null,
+    "phone": "256785014586",
+    "category": "Fish",
+    "fcNo": "DF009",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 431,
+    "name": "Nshabohurira Mary Linden stall",
+    "nin": null,
+    "phone": "256764321667",
+    "category": "Vegetables",
+    "fcNo": "Stall 249",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 432,
+    "name": "Tumusiime Sadress stall 265",
+    "nin": null,
+    "phone": "256780044918",
+    "category": "Vegetables",
+    "fcNo": "Stall 265",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 433,
+    "name": "Behangana Sylvia and Oworinawe",
+    "nin": null,
+    "phone": "256778779223",
+    "category": "Food Stuff",
+    "fcNo": "PT037",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 434,
+    "name": "CHARITY-MATOOKE-002 TAMBO",
+    "nin": "CF8300910JTQAA",
+    "phone": "256774066611",
+    "category": "Food Stuff",
+    "fcNo": "ST-002",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 435,
+    "name": "KARIYO PATIENCE-MATOOKE-30",
+    "nin": null,
+    "phone": "256774844798",
+    "category": "Food Stuff",
+    "fcNo": "PT-30",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 436,
+    "name": "ALICE-DRY PRODUCE-ST-22 MBABAZ",
+    "nin": "CF62055103HXGL",
+    "phone": "256785994445",
+    "category": "Food Stuff",
+    "fcNo": "ST-22",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 437,
+    "name": "BYARUGABA WILLIAM",
+    "nin": "CM6200910DGZ6D",
+    "phone": "256779805484",
+    "category": "Others",
+    "fcNo": "AX-23G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 438,
+    "name": "BIRYAMARAKI APOLLO",
+    "nin": "CM5300910DHE2D",
+    "phone": "256782712096",
+    "category": "Cereal Produce",
+    "fcNo": "AX-52G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 439,
+    "name": "Patience Atukunda",
+    "nin": "CF0000910QPANe",
+    "phone": "256777699823",
+    "category": "Food Stuff",
+    "fcNo": "A1062",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 440,
+    "name": "MWESIGWA JUSTUS",
+    "nin": "CM880341038V5l",
+    "phone": "256775842677",
+    "category": "New Clothes",
+    "fcNo": "A2 013",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 441,
+    "name": "KARAMA ALI",
+    "nin": "CM51024100NU4d",
+    "phone": "256772447764",
+    "category": "Retail Shops",
+    "fcNo": "AX- 34G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 442,
+    "name": "Lelia Tusiime stall 303",
+    "nin": "CF74009108E1CE",
+    "phone": "256771625474",
+    "category": "Vegetables",
+    "fcNo": "Stall 303",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 443,
+    "name": "Orishaba,Akampurira ,Scovia st",
+    "nin": "CF8600910TOVPF",
+    "phone": "256773443907",
+    "category": "Vegetables",
+    "fcNo": "Stall 272",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 444,
+    "name": "AMANYA AMBITIOUS",
+    "nin": "CM94009104D73K",
+    "phone": "256704584512",
+    "category": "Retail Shops",
+    "fcNo": "B1-066",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 445,
+    "name": "Twikirize Winefred stall 156",
+    "nin": null,
+    "phone": "256775866401",
+    "category": "Vegetables",
+    "fcNo": "Stall 156",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 446,
+    "name": "Natukunda Cletas and Namara Jo",
+    "nin": null,
+    "phone": "256782560875",
+    "category": "Vegetables",
+    "fcNo": "stall 106",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 447,
+    "name": "Bujara Abdu stall 052",
+    "nin": null,
+    "phone": "256708760897",
+    "category": "Vegetables",
+    "fcNo": "52",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 448,
+    "name": "Busingye Joyce stall 73",
+    "nin": null,
+    "phone": "256760663065",
+    "category": "Vegetables",
+    "fcNo": "stall 73",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 449,
+    "name": "Nyanjura Kellen stall 070",
+    "nin": null,
+    "phone": "256763415337",
+    "category": "Vegetables",
+    "fcNo": "stall 070",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 450,
+    "name": "Byomuhangi Mathew stall 90",
+    "nin": null,
+    "phone": "256784498311",
+    "category": "Vegetables",
+    "fcNo": "stall 90",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 451,
+    "name": "Kugumisiriza Lyn Dennis stall",
+    "nin": "CM0782324523BD",
+    "phone": "256782324523",
+    "category": "Vegetables",
+    "fcNo": "stall 189",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 452,
+    "name": "Turyatemba Dan and Byaruhanga",
+    "nin": null,
+    "phone": "256772664075",
+    "category": "Fish",
+    "fcNo": "DF019",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 453,
+    "name": "Akampa Joan stall 223",
+    "nin": null,
+    "phone": "256787573745",
+    "category": "Vegetables",
+    "fcNo": "Stall 223",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 454,
+    "name": "OWOYESIGIRE FRANK CH16-18",
+    "nin": null,
+    "phone": "256781883831",
+    "category": "Birds",
+    "fcNo": "CH16-18",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 455,
+    "name": "KYOMUHANGI JENNINAH",
+    "nin": "CF760091038GHF",
+    "phone": "256774704860",
+    "category": "Food Stuff",
+    "fcNo": "ST-001",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 456,
+    "name": "Kamusiime Jovanisi and Namukas",
+    "nin": null,
+    "phone": "256783218747",
+    "category": "Food Stuff",
+    "fcNo": "PT018",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 457,
+    "name": "KYOMUKAMA ROSE-MATOOKE-64",
+    "nin": null,
+    "phone": "256778220727",
+    "category": "Food Stuff",
+    "fcNo": "PT-64",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 458,
+    "name": "AKANKWASA ALLEN-MATOOKE-37",
+    "nin": "CF776952504XXX",
+    "phone": "256776952504",
+    "category": "Food Stuff",
+    "fcNo": "PT-37",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 459,
+    "name": "KATUSHABE ANITAH",
+    "nin": "CF94009100LJ9J",
+    "phone": "256784607138",
+    "category": "Food Stuff",
+    "fcNo": "ST-21",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 460,
+    "name": "ATWINE FREDRICK",
+    "nin": "CM9700910KAL0G",
+    "phone": "256782611284",
+    "category": "Others",
+    "fcNo": "AX-32",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 461,
+    "name": "TUMUKUNDE CYRUS",
+    "nin": "CM76009107M16E",
+    "phone": "256772898414",
+    "category": "Retail Shops",
+    "fcNo": "A1021",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 462,
+    "name": "TWONGYEIRWE BENON",
+    "nin": "CM53009102ANEJ",
+    "phone": "256777912947",
+    "category": "Others",
+    "fcNo": "AX-22G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 463,
+    "name": "RUTH  KATUSHABE",
+    "nin": "CF83009105U77G",
+    "phone": "256782768810",
+    "category": "Others",
+    "fcNo": "AX-31G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 464,
+    "name": "ARINAITWE ANNA",
+    "nin": "CF8100910J3U3e",
+    "phone": "256776163710",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 465,
+    "name": "NIWANDINDA  DAVID",
+    "nin": "CM900091027QYF",
+    "phone": "256789902236",
+    "category": "General Merchandise",
+    "fcNo": "AX-006G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 466,
+    "name": "John Rwabwisho",
+    "nin": "CM48027100HD7j",
+    "phone": "256775872667",
+    "category": "Retail Shops",
+    "fcNo": "A1017",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 467,
+    "name": "Turyatunga josephat",
+    "nin": "CM0789605035TJ",
+    "phone": "256789605035",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-019",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 468,
+    "name": "UWAMAHORO ANNET",
+    "nin": "CF710091099QDh",
+    "phone": "256782017881",
+    "category": "Food Stuff",
+    "fcNo": "A1049",
+    "monthlyPay": 110000
+  },
+  {
+    "id": 469,
+    "name": "CHRISTINE KEMBABAZI",
+    "nin": "CF79009107AU4D",
+    "phone": "256775725050",
+    "category": "New Clothes",
+    "fcNo": "A2-32",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 470,
+    "name": "BEITWENDA EVASSY",
+    "nin": "CF580091013GLg",
+    "phone": "256789093535",
+    "category": "New Clothes",
+    "fcNo": "A2 034",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 471,
+    "name": "ZIRIHEHI FRED",
+    "nin": "CM6300910D6NCL",
+    "phone": "256752901126",
+    "category": "New Clothes",
+    "fcNo": "A2 048",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 472,
+    "name": "Kyomukama William and Tukwasib",
+    "nin": "CM73009108L9NE",
+    "phone": "256782281226",
+    "category": "Retail Shops",
+    "fcNo": "B2-055",
+    "monthlyPay": 70000
+  },
+  {
+    "id": 473,
+    "name": "Binomugisha cristine stall 287",
+    "nin": null,
+    "phone": "256774229692",
+    "category": "Vegetables",
+    "fcNo": "Stall 287",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 474,
+    "name": "TURYAGUMANAWE ONESIMUS",
+    "nin": "CM97009106W0Mh",
+    "phone": "256751957373",
+    "category": "New Clothes",
+    "fcNo": "A2 066",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 475,
+    "name": "Biryomumeisho PEACE B1 047",
+    "nin": null,
+    "phone": "256772653051",
+    "category": "Retail Shops",
+    "fcNo": "Stall B1 047",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 476,
+    "name": "Arinaitwe Dickson B1 050",
+    "nin": null,
+    "phone": "256778314599",
+    "category": "Retail Shops",
+    "fcNo": "B1 050",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 477,
+    "name": "TUHIRIRWE JUSTINE MARANDA",
+    "nin": "CF6900910E7NAh",
+    "phone": "256774476450",
+    "category": "New Clothes",
+    "fcNo": "A2 038",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 478,
+    "name": "Mwesigwa Abel B1061 Mwesigwa A",
+    "nin": "CM650371045XQF",
+    "phone": "256772687883",
+    "category": "Retail Shops",
+    "fcNo": "B1061",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 479,
+    "name": "Asiimwe Jackson stall 173",
+    "nin": null,
+    "phone": "256773091660",
+    "category": "Vegetables",
+    "fcNo": "stall 173",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 480,
+    "name": "Sanyu Saidat Stall 185",
+    "nin": 775691105,
+    "phone": "256775691105",
+    "category": "Vegetables",
+    "fcNo": "Stall 185",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 481,
+    "name": "Kiconco Rosette stall 103",
+    "nin": null,
+    "phone": "256784329810",
+    "category": "Vegetables",
+    "fcNo": "stall 103",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 482,
+    "name": "Asiimwe Joan stall 002",
+    "nin": null,
+    "phone": "256775725874",
+    "category": "Vegetables",
+    "fcNo": "2",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 483,
+    "name": "Mujuni Deus stall 015",
+    "nin": 782269855,
+    "phone": "256782269855",
+    "category": "Vegetables",
+    "fcNo": "15",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 484,
+    "name": "Kyarikunda Winnie stall 034",
+    "nin": null,
+    "phone": "256783604525",
+    "category": "Vegetables",
+    "fcNo": "34",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 485,
+    "name": "Tukamuhabwa Isaac stall 046",
+    "nin": "0777664013tyyu",
+    "phone": "256777664013",
+    "category": "Vegetables",
+    "fcNo": "46",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 486,
+    "name": "Tusingwire Judith stall 60",
+    "nin": null,
+    "phone": "256777835152",
+    "category": "Vegetables",
+    "fcNo": "stall 60",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 487,
+    "name": "Katureebe Wensislaus stall 029",
+    "nin": null,
+    "phone": "256776961284",
+    "category": "Vegetables",
+    "fcNo": "stall 029",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 488,
+    "name": "Katushabe Ruth stall 047",
+    "nin": null,
+    "phone": "256789804069",
+    "category": "Vegetables",
+    "fcNo": "stall 047",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 489,
+    "name": "Iragaba francis stall 236",
+    "nin": null,
+    "phone": "256780275537",
+    "category": "Vegetables",
+    "fcNo": "Stall 236",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 490,
+    "name": "Musinguzi Frank DF 002",
+    "nin": null,
+    "phone": "256772917306",
+    "category": "Fish",
+    "fcNo": "DF002",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 491,
+    "name": "Musiimenta Pross and Atuhaire",
+    "nin": null,
+    "phone": "256786073149",
+    "category": "Food Stuff",
+    "fcNo": "PT016",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 492,
+    "name": "Musiimenta Christine and Akamp",
+    "nin": null,
+    "phone": "256785002796",
+    "category": "Food Stuff",
+    "fcNo": "PT038",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 493,
+    "name": "KYOMUGISHA SHALLON-MATOOKE-41",
+    "nin": null,
+    "phone": "256778821039",
+    "category": "Food Stuff",
+    "fcNo": "PT-41",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 494,
+    "name": "ALOYSIOUS-PRODUCE-ST-11 MUCUNG",
+    "nin": "CM8300910K6UVA",
+    "phone": "256781523530",
+    "category": "Food Stuff",
+    "fcNo": "ST-11",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 495,
+    "name": "KENYANGYE KEVINA-DRY PRODUCE-S",
+    "nin": "CF66009101459A",
+    "phone": "256775145823",
+    "category": "Food Stuff",
+    "fcNo": "ST-30",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 496,
+    "name": "TURYAGENDA LAZARO",
+    "nin": "CM54009100MGJf",
+    "phone": "256772378607",
+    "category": "General Merchandise",
+    "fcNo": "A1 013",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 497,
+    "name": "Ahimbisibwe Brenda's stall 158",
+    "nin": null,
+    "phone": "256771236667",
+    "category": "Vegetables",
+    "fcNo": "Stall 158",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 498,
+    "name": "BYANSI ROBERT/ENID MUHAIRWE NA",
+    "nin": "CM700091015UEe",
+    "phone": "256782369013",
+    "category": "Food Stuff",
+    "fcNo": "A1030",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 499,
+    "name": "ALI ZAINAB",
+    "nin": "CF59009108E3ED",
+    "phone": "256772636071",
+    "category": "Food Stuff",
+    "fcNo": "A2 010",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 500,
+    "name": "KATASHAYA NORAH",
+    "nin": "CF52009104HGJd",
+    "phone": "256772421535",
+    "category": "New Clothes",
+    "fcNo": "A2 021",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 501,
+    "name": "Orishaba hope st 335",
+    "nin": null,
+    "phone": "256782570619",
+    "category": "Vegetables",
+    "fcNo": "St 335",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 502,
+    "name": "Kyasiimire wine st 331",
+    "nin": null,
+    "phone": "256751798492",
+    "category": "Vegetables",
+    "fcNo": "St 331",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 503,
+    "name": "Niwamanya Enid stall 297",
+    "nin": null,
+    "phone": "256784985590",
+    "category": "Vegetables",
+    "fcNo": "Stall 297",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 504,
+    "name": "Nyirahabimana Hadija stall 220",
+    "nin": 778118454,
+    "phone": "256778118454",
+    "category": "Vegetables",
+    "fcNo": "Stall 220",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 505,
+    "name": "Tukahirwa Edivina stall 203",
+    "nin": null,
+    "phone": "256773203442",
+    "category": "Vegetables",
+    "fcNo": "Stall 203",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 506,
+    "name": "FLORENCE MWESIGWA-B1 069 FLORE",
+    "nin": "CF520101063VZL",
+    "phone": "256772325064",
+    "category": "Retail Shops",
+    "fcNo": "B1069",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 507,
+    "name": "Ahimbisibwe Lydia stall 241",
+    "nin": null,
+    "phone": "256785484517",
+    "category": "Vegetables",
+    "fcNo": "Stall 241",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 508,
+    "name": "Akankunda Ronald stall 121",
+    "nin": null,
+    "phone": "256787210383",
+    "category": "Vegetables",
+    "fcNo": "stall 121",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 509,
+    "name": "Ensisemaki Hamijah stall 003",
+    "nin": "IRAS/CIN/231236955",
+    "phone": "256783006519",
+    "category": "Vegetables",
+    "fcNo": "stall 003",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 510,
+    "name": "Museeta Micheal stall 009",
+    "nin": "CM788224570XXX",
+    "phone": "256788224570",
+    "category": "Vegetables",
+    "fcNo": "stall 009",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 511,
+    "name": "Nyirasafari Mariam stall 76",
+    "nin": null,
+    "phone": "256781410411",
+    "category": "Vegetables",
+    "fcNo": "stall76",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 512,
+    "name": "Muhungirehe George-Central mkt",
+    "nin": "CM0773191921XX",
+    "phone": "256773191921",
+    "category": "Butcher",
+    "fcNo": "Lock up 046",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 513,
+    "name": "Tukwasibwe Elias St 001",
+    "nin": null,
+    "phone": "256772897945",
+    "category": "Fish",
+    "fcNo": "DF 001",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 514,
+    "name": "Twikirize Florida DF007",
+    "nin": null,
+    "phone": "256788422920",
+    "category": "Fish",
+    "fcNo": "DF007",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 515,
+    "name": "PENINNAH-PRODUCE-ST-10 BUREGYE",
+    "nin": "CF74009107L6XL",
+    "phone": "256775814227",
+    "category": "Food Stuff",
+    "fcNo": "ST-10",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 516,
+    "name": "Niwagaba Ruth and Kyarimpa Eni",
+    "nin": null,
+    "phone": "256782172574",
+    "category": "Food Stuff",
+    "fcNo": "PT031",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 517,
+    "name": "KYOMUGISHA SARAH-MATOOKE-010",
+    "nin": null,
+    "phone": "256773813651",
+    "category": "Food Stuff",
+    "fcNo": "PT-010",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 518,
+    "name": "KYARIMPA REGINA-MATOOKE-24",
+    "nin": null,
+    "phone": "256783559935",
+    "category": "Food Stuff",
+    "fcNo": "PT-24",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 519,
+    "name": "KELLEN-DRY PRODUCE-ST-24 NAMAR",
+    "nin": "CF6200910JGCKK",
+    "phone": "256775419673",
+    "category": "Food Stuff",
+    "fcNo": "ST-24",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 520,
+    "name": "TUGEINEYO JACKSON",
+    "nin": "CM77009109TEAH",
+    "phone": "256772964865",
+    "category": "Retail Shops",
+    "fcNo": "B1-006",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 521,
+    "name": "KATO ANTHONY",
+    "nin": "CM92027104VG5L",
+    "phone": "256779634738",
+    "category": "Retail Shops",
+    "fcNo": "AX-19G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 522,
+    "name": "MATSIKO BENSON",
+    "nin": "CM600091039ZJK",
+    "phone": "256774643348",
+    "category": "Retail Shops",
+    "fcNo": "No.B1.013",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 523,
+    "name": "HENRY  MASIKO",
+    "nin": "CM772880292FHV",
+    "phone": "256772880292",
+    "category": "General Merchandise",
+    "fcNo": "AX-21G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 524,
+    "name": "NIWAMANYA JAMES",
+    "nin": "CM8400910DKRNC",
+    "phone": "256777842141",
+    "category": "Retail Shops",
+    "fcNo": "B1.042",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 525,
+    "name": "MUHANGI ANTHONY",
+    "nin": "CM760091008TUK",
+    "phone": "256782922797",
+    "category": "Retail Shops",
+    "fcNo": "B1.034",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 526,
+    "name": "Turyasingura Herbert 262",
+    "nin": null,
+    "phone": "256783533675",
+    "category": "Vegetables",
+    "fcNo": "Stall 262",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 527,
+    "name": "Nasuna Juliet and Kasigazi pru",
+    "nin": null,
+    "phone": "256778257084",
+    "category": "Vegetables",
+    "fcNo": "Stall 286",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 528,
+    "name": "ASIIMWE RETIVAH",
+    "nin": "CF89037108GYUE",
+    "phone": "256781779015",
+    "category": "Saloon",
+    "fcNo": "AX-54F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 529,
+    "name": "Tibesigwa Elastus and Amupaire",
+    "nin": null,
+    "phone": "25677622643",
+    "category": "Retail Shops",
+    "fcNo": "B2-11",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 530,
+    "name": "MWESIGYE CONSTANTINE",
+    "nin": "CM660091014KVa",
+    "phone": "256788884994",
+    "category": "New Clothes",
+    "fcNo": "A2 012",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 531,
+    "name": "Asiimwe Judith Tubarekye Molly",
+    "nin": "CF5900910CHLYJ",
+    "phone": "256758055471",
+    "category": "New Clothes",
+    "fcNo": "A2 037",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 532,
+    "name": "Karungi Ruthstall 309",
+    "nin": null,
+    "phone": "256774143718",
+    "category": "Vegetables",
+    "fcNo": "Stall 309",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 533,
+    "name": "TIBASIIMA FREDIANAH",
+    "nin": "CF5800910H8LAa",
+    "phone": "256773827335",
+    "category": "New Clothes",
+    "fcNo": "A2 078",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 534,
+    "name": "TWESIGYE LEOPOLD",
+    "nin": "CM7100910061QC",
+    "phone": "256782628606",
+    "category": "Retail Shops",
+    "fcNo": "Stall 64",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 535,
+    "name": "Ngabirano Gerevazio stall 126",
+    "nin": null,
+    "phone": "256704850532",
+    "category": "Vegetables",
+    "fcNo": "stall 126",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 536,
+    "name": "Twikirize Gilbert stall 014",
+    "nin": null,
+    "phone": "256782652786",
+    "category": "Vegetables",
+    "fcNo": "14",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 537,
+    "name": "Kyarimpa Dinavence stall 039",
+    "nin": null,
+    "phone": "256780536036",
+    "category": "Vegetables",
+    "fcNo": "39",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 538,
+    "name": "Kiconco Olivia stall 051",
+    "nin": null,
+    "phone": "256771040929",
+    "category": "Vegetables",
+    "fcNo": "51",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 539,
+    "name": "Tukamuhabwa Mary stall 64",
+    "nin": null,
+    "phone": "256784610423",
+    "category": "Vegetables",
+    "fcNo": "Stall 64",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 540,
+    "name": "Kukundakwe Hildah stall 327",
+    "nin": null,
+    "phone": "256778286107",
+    "category": "Vegetables",
+    "fcNo": "ST327",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 541,
+    "name": "Tukwasibwe Allen stall no. 089",
+    "nin": null,
+    "phone": "256779411716",
+    "category": "Vegetables",
+    "fcNo": "stall no.89",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 542,
+    "name": "Mutabazi Denis stall 275",
+    "nin": 782202981,
+    "phone": "256782202981",
+    "category": "Vegetables",
+    "fcNo": "Stall 275",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 543,
+    "name": "Asiimwe kamiru 228",
+    "nin": null,
+    "phone": "256776202700",
+    "category": "NULL",
+    "fcNo": "Stall 228",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 544,
+    "name": "ENOCK-CH22-24 TURYAMUREEBA",
+    "nin": "CM9600910K1YHE",
+    "phone": "256771241415",
+    "category": "Birds",
+    "fcNo": "CH22-124",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 545,
+    "name": "Tindyebwa Alex DF013",
+    "nin": "CM0772837808TA",
+    "phone": "256772837808",
+    "category": "Fish",
+    "fcNo": "DF013",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 546,
+    "name": "TUMWEBAZE ANNET",
+    "nin": "CF66009107T5UF",
+    "phone": "256774721952",
+    "category": "Food Stuff",
+    "fcNo": "ST-12",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 547,
+    "name": "FRANK-DRY PRODUCE-ST-16 RUTWAA",
+    "nin": "CM6800910235Hg",
+    "phone": "256782628215",
+    "category": "Food Stuff",
+    "fcNo": "ST-16",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 548,
+    "name": "BIRUNGI PAPIUS-MATOOKE-23",
+    "nin": "CM774935940BP",
+    "phone": "256774935940",
+    "category": "Food Stuff",
+    "fcNo": "PT-23",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 549,
+    "name": "MUKASA MBIDE SOWED-ST-55-MATOO",
+    "nin": null,
+    "phone": "256782344951",
+    "category": "Food Stuff",
+    "fcNo": "55-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 550,
+    "name": "KAMUKAMA PULIKELIA - DRY PRODU",
+    "nin": null,
+    "phone": "256771568330",
+    "category": "Food Stuff",
+    "fcNo": "ST-33",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 551,
+    "name": "Peter Kakuru",
+    "nin": "CM820091080HIk",
+    "phone": "256774405461",
+    "category": "General Merchandise",
+    "fcNo": "A1 078",
+    "monthlyPay": 110000
+  },
+  {
+    "id": 552,
+    "name": "KYOMUKAMA SAMUELAND BIZIMANA J",
+    "nin": "CM8200910DK19E",
+    "phone": "256773219940",
+    "category": "Retail Shops",
+    "fcNo": "B1.043",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 553,
+    "name": "Byaruhanga Jack and Mutabazi c",
+    "nin": null,
+    "phone": "256778378601",
+    "category": "Butcher",
+    "fcNo": "B1.074",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 554,
+    "name": "TWESIGOMWE THERESA",
+    "nin": "CF50009105R52G",
+    "phone": "256772437729",
+    "category": "Retail Shops",
+    "fcNo": "B2-15",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 555,
+    "name": "NAMARA AGRESS",
+    "nin": "CF7000910JFQZC",
+    "phone": "256775463797",
+    "category": "Others",
+    "fcNo": "AX-24F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 556,
+    "name": "MUHWEZI LAUBEN",
+    "nin": "CM73009107LUZc",
+    "phone": "256788042470",
+    "category": "Saloon",
+    "fcNo": "AX-53F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 557,
+    "name": "Twikirize sadness and Ninsiima",
+    "nin": 789901868,
+    "phone": "256789901868",
+    "category": "Vegetables",
+    "fcNo": "Stall 292",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 558,
+    "name": "TIBEMANYA ANACLET",
+    "nin": "CM760091008RNJ",
+    "phone": "256774480452",
+    "category": "New Clothes",
+    "fcNo": "A2 070",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 559,
+    "name": "Lillian Ndyomugabi",
+    "nin": "CF550091094LLK",
+    "phone": "256772826464",
+    "category": "New Clothes",
+    "fcNo": "A2 064",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 560,
+    "name": "Asiimwe Immaculate stall 193",
+    "nin": null,
+    "phone": "256785064133",
+    "category": "Vegetables",
+    "fcNo": "Stall 193",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 561,
+    "name": "Ninsiima Kate Charity stall 17",
+    "nin": null,
+    "phone": "256783880305",
+    "category": "Vegetables",
+    "fcNo": "stall 176",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 562,
+    "name": "Turyahebwa Edward Gad stall 14",
+    "nin": null,
+    "phone": "256772389099",
+    "category": "Vegetables",
+    "fcNo": "Stall 147",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 563,
+    "name": "Tibebuza Robert stall 132",
+    "nin": null,
+    "phone": "256781521379",
+    "category": "Vegetables",
+    "fcNo": "stall 132",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 564,
+    "name": "Tukashaba Kate stall 032",
+    "nin": null,
+    "phone": "256703254761",
+    "category": "Vegetables",
+    "fcNo": "32",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 565,
+    "name": "Tugabirwe Patience stall 045",
+    "nin": null,
+    "phone": "256774397131",
+    "category": "Vegetables",
+    "fcNo": "45",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 566,
+    "name": "Kwarikunda Peace and Tumuhimbi",
+    "nin": null,
+    "phone": "256786592635",
+    "category": "Vegetables",
+    "fcNo": "stall 75",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 567,
+    "name": "Nkurunungi Ashirafu stall 054",
+    "nin": null,
+    "phone": "25677317847",
+    "category": "Vegetables",
+    "fcNo": "stall 054",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 568,
+    "name": "Busingye Lovina and Tumuramye",
+    "nin": 789090905,
+    "phone": "256789090905",
+    "category": "Food Stuff",
+    "fcNo": "PT004",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 569,
+    "name": "Tumwebaze Justina and Twikiriz",
+    "nin": null,
+    "phone": "256766316515",
+    "category": "Food Stuff",
+    "fcNo": "PT028",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 570,
+    "name": "Tumuhirwe Beatrice st-080",
+    "nin": null,
+    "phone": "256773266474",
+    "category": "Food Stuff",
+    "fcNo": "St-080",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 571,
+    "name": "kyomugisha phiona-matooke-36",
+    "nin": null,
+    "phone": "256784939655",
+    "category": "Food Stuff",
+    "fcNo": "PT-36",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 572,
+    "name": "NIWAMANYA RESTY",
+    "nin": "CF7800910LTU2H",
+    "phone": "256773117425",
+    "category": "Retail Shops",
+    "fcNo": "AX-01G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 573,
+    "name": "NEVERINE TUSASIIBWE",
+    "nin": "CF89009104VEQE",
+    "phone": "256775820587",
+    "category": "Retail Shops",
+    "fcNo": "AX-03G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 574,
+    "name": "Odith Asiimwe",
+    "nin": null,
+    "phone": "256789120654",
+    "category": "Retail Shops",
+    "fcNo": "A1 010",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 575,
+    "name": "KYARISIMA REHEMA",
+    "nin": "CF78009108MR7H",
+    "phone": "256774660300",
+    "category": "General Merchandise",
+    "fcNo": "AX-37G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 576,
+    "name": "Bernard A1 027 Bahikeine",
+    "nin": "CM54009100CZEk",
+    "phone": "256782424492",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 200000
+  },
+  {
+    "id": 577,
+    "name": "NTEGYEREIZE HOPE",
+    "nin": "CF66055104KWHL",
+    "phone": "256772669333",
+    "category": "Others",
+    "fcNo": "AX-07G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 578,
+    "name": "Kibariroha Norman",
+    "nin": "CM58009108TWVL",
+    "phone": "256772649777",
+    "category": "Cereal Produce",
+    "fcNo": "AX-54G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 579,
+    "name": "MUHEKI JOEL",
+    "nin": "CM66009105DZLA",
+    "phone": "256772563696",
+    "category": "Others",
+    "fcNo": "AX-07F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 580,
+    "name": "TURYAHEBWA JOAN",
+    "nin": "CF9300910G919k",
+    "phone": "256781621237",
+    "category": "Saloon",
+    "fcNo": "AX-030F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 581,
+    "name": "Ninsiima prime and mukarurema",
+    "nin": "CF0773945651NP",
+    "phone": "256773945651",
+    "category": "Retail Shops",
+    "fcNo": "B2-12",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 582,
+    "name": "NTEGYERIZE SHALLON",
+    "nin": "CF79009107U62f",
+    "phone": "256772580079",
+    "category": "New Clothes",
+    "fcNo": "A2 009",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 583,
+    "name": "Christine Ssendawura",
+    "nin": "CF80009105EYKf",
+    "phone": "256772570786",
+    "category": "New Clothes",
+    "fcNo": "A2 011",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 584,
+    "name": "Atwongyeire Joice stall 310",
+    "nin": null,
+    "phone": "256771826526",
+    "category": "Vegetables",
+    "fcNo": "Stall 310",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 585,
+    "name": "Ninsiima justine 206",
+    "nin": null,
+    "phone": "256785629144",
+    "category": "Vegetables",
+    "fcNo": "Stall 206",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 586,
+    "name": "Turinawe Julius stall 196",
+    "nin": null,
+    "phone": "256705469126",
+    "category": "Vegetables",
+    "fcNo": "Stall 196",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 587,
+    "name": "Atukunda Jackline Karuma stall",
+    "nin": null,
+    "phone": "256782462510",
+    "category": "Vegetables",
+    "fcNo": "stall 113",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 588,
+    "name": "Tumwine Joy stall 071",
+    "nin": null,
+    "phone": "256761899186",
+    "category": "Vegetables",
+    "fcNo": "stall 071",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 589,
+    "name": "Ayebare Slyvia stall 93",
+    "nin": null,
+    "phone": "256781895394",
+    "category": "Vegetables",
+    "fcNo": "stall 93",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 590,
+    "name": "Tumwebaze Shallon Bonny stall",
+    "nin": "CF789610730XXX",
+    "phone": "256789610730",
+    "category": "Vegetables",
+    "fcNo": "Stall 231",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 591,
+    "name": "Asiimwe Fausta stall 279",
+    "nin": "CF87009107L10G",
+    "phone": "256782744973",
+    "category": "Vegetables",
+    "fcNo": "Stall 279",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 592,
+    "name": "Kyarisiima Cadress stall 248",
+    "nin": null,
+    "phone": "256782232427",
+    "category": "Vegetables",
+    "fcNo": "Stall 248",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 593,
+    "name": "KATUSHABE RONALD",
+    "nin": "CM790091013QPE",
+    "phone": "256782272148",
+    "category": "Tailoring and Textile",
+    "fcNo": "A2 - 018",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 594,
+    "name": "Gumisiriza Justine stall 229",
+    "nin": null,
+    "phone": "25676122345",
+    "category": "Vegetables",
+    "fcNo": "Stall 229",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 595,
+    "name": "GRACE-MATOOKE-003 SANYU",
+    "nin": "CF9009108L83E",
+    "phone": "256778214090",
+    "category": "Food Stuff",
+    "fcNo": "ST-003",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 596,
+    "name": "KYOBUTUNGI CAROLINE-MATOOKE-48",
+    "nin": null,
+    "phone": "256775332312",
+    "category": "Food Stuff",
+    "fcNo": "PT-48",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 597,
+    "name": "BEINOMUGISHA DEBURAH-MATOOKE-2",
+    "nin": null,
+    "phone": "256772374004",
+    "category": "Food Stuff",
+    "fcNo": "PT-26",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 598,
+    "name": "TUMWESIGYE ZUBEDDAH-MATOOKE-53",
+    "nin": null,
+    "phone": "256754406372",
+    "category": "Food Stuff",
+    "fcNo": "PT-53",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 599,
+    "name": "Twakire Anitah and Kyasiimire",
+    "nin": null,
+    "phone": "256784032800",
+    "category": "Food Stuff",
+    "fcNo": "PT-041",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 600,
+    "name": "ORISHABA JONAH-DRY PRODUCE-ST-",
+    "nin": null,
+    "phone": "256786193905",
+    "category": "Food Stuff",
+    "fcNo": "ST-40",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 601,
+    "name": "KAMUGISHA MEDARD AND RUKUNDO N",
+    "nin": 773552252,
+    "phone": "256773552252",
+    "category": "Butcher",
+    "fcNo": "B1.77",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 602,
+    "name": "ASIIMWE AND MIREMBE PATIENCE-C",
+    "nin": null,
+    "phone": "256782935982",
+    "category": "Retail Shops",
+    "fcNo": "B1.007",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 603,
+    "name": "MAGARA WILLIAM AND MBABAZI RON",
+    "nin": "CM6800910JQU5F",
+    "phone": "256703618040",
+    "category": "Retail Shops",
+    "fcNo": "B1.039",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 604,
+    "name": "Owen Kasimba",
+    "nin": "CM77009106UU0n",
+    "phone": "256772932674",
+    "category": "New Clothes",
+    "fcNo": "A2 005",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 605,
+    "name": "Turyahikayo benjamin",
+    "nin": 772470436,
+    "phone": "256772470436",
+    "category": "Retail Shops",
+    "fcNo": "B1-020",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 606,
+    "name": "Akankwasa Sophia",
+    "nin": "CF70009107T4Tg",
+    "phone": "256772624115",
+    "category": "Saloon",
+    "fcNo": "AX-21F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 607,
+    "name": "KANGABE ENID",
+    "nin": "CF77018101HCKg",
+    "phone": "256782253112",
+    "category": "Food Stuff",
+    "fcNo": "A1080",
+    "monthlyPay": 110000
+  },
+  {
+    "id": 608,
+    "name": "TWINOMUJUNI ALEX  CENTRAL MKT2",
+    "nin": "CM69037100PK4J",
+    "phone": "256782981399",
+    "category": "Retail Shops",
+    "fcNo": "AX-015F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 609,
+    "name": "Kobugabe Justine Ainebyona Mor",
+    "nin": "CF750091086T2f",
+    "phone": "256779406207",
+    "category": "New Clothes",
+    "fcNo": "A2 033",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 610,
+    "name": "Tumuheise Olivia st 330",
+    "nin": null,
+    "phone": "256779076318",
+    "category": "Vegetables",
+    "fcNo": "St 330",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 611,
+    "name": "Kezangye Goratte stall 294",
+    "nin": "CF774404648XXX",
+    "phone": "256774404648",
+    "category": "Vegetables",
+    "fcNo": "Stall 294",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 612,
+    "name": "Kyasiimire Medius stall 221",
+    "nin": null,
+    "phone": "256753631858",
+    "category": "Vegetables",
+    "fcNo": "Stall 221",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 613,
+    "name": "Tugumisirize Samuel stall 207",
+    "nin": null,
+    "phone": "256775720582",
+    "category": "Vegetables",
+    "fcNo": "Stall 207",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 614,
+    "name": "Ampeire Diana B1 048",
+    "nin": null,
+    "phone": "256775419416",
+    "category": "Retail Shops",
+    "fcNo": "B1048",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 615,
+    "name": "Orishaba Prudence stall 181",
+    "nin": null,
+    "phone": "256779218994",
+    "category": "Vegetables",
+    "fcNo": "stall 181",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 616,
+    "name": "Kobutungi Immaculate stall 012",
+    "nin": null,
+    "phone": "256761899186",
+    "category": "Vegetables",
+    "fcNo": "12",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 617,
+    "name": "Arinaitwe Marion stall 013",
+    "nin": null,
+    "phone": "256763659155",
+    "category": "Vegetables",
+    "fcNo": "13",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 618,
+    "name": "Musiime Hope stall 55",
+    "nin": null,
+    "phone": "256784977261",
+    "category": "Vegetables",
+    "fcNo": "stall 55",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 619,
+    "name": "Naturinda Doreen stall 58",
+    "nin": 785009835,
+    "phone": "256785009835",
+    "category": "Vegetables",
+    "fcNo": "stall 58",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 620,
+    "name": "Asiimwe peace stall 323",
+    "nin": null,
+    "phone": "256783634227",
+    "category": "Vegetables",
+    "fcNo": "Stall 323",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 621,
+    "name": "Tumusiime Harriet stall 252",
+    "nin": null,
+    "phone": "256777650675",
+    "category": "Vegetables",
+    "fcNo": "Stall252",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 622,
+    "name": "Tugumisirize Rosemary stall 23",
+    "nin": "CF71055103C7EK",
+    "phone": "256775979907",
+    "category": "Vegetables",
+    "fcNo": "Stall235",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 623,
+    "name": "Batamuriza Jane and Kyankundir",
+    "nin": null,
+    "phone": "256781459303",
+    "category": "Food Stuff",
+    "fcNo": "PT014",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 624,
+    "name": "HELLEN KABARIGA KABARIGA DAVID",
+    "nin": "CF530091007WMK",
+    "phone": "256779411655",
+    "category": "Food Stuff",
+    "fcNo": "ST-009",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 625,
+    "name": "AHIMBISIBWE JAMES-MATOOKE-17",
+    "nin": null,
+    "phone": "256784497737",
+    "category": "Food Stuff",
+    "fcNo": "PT-17",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 626,
+    "name": "ARIHO IMMACULATE-MATOOKE-46",
+    "nin": 785286320,
+    "phone": "256785286320",
+    "category": "Food Stuff",
+    "fcNo": "PT-46",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 627,
+    "name": "Turyahebwa Faustine and Tumuhe",
+    "nin": null,
+    "phone": "256771825924",
+    "category": "Food Stuff",
+    "fcNo": "PT039",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 628,
+    "name": "TUMUHEIRWE ROSEMARY-MATOOKE-59",
+    "nin": null,
+    "phone": "256779899411",
+    "category": "Food Stuff",
+    "fcNo": "PT-59",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 629,
+    "name": "Asiimwe Rose and Nyamurungi Ag",
+    "nin": null,
+    "phone": "256776149283",
+    "category": "Food Stuff",
+    "fcNo": "PT040",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 630,
+    "name": "KYARISIIMA MAURINE-DRY PRODUCE",
+    "nin": null,
+    "phone": "256778854664",
+    "category": "Food Stuff",
+    "fcNo": "ST-31",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 631,
+    "name": "TWINOBUSINGYE TEOPISTA-DRY PRO",
+    "nin": null,
+    "phone": "256781763301",
+    "category": "Food Stuff",
+    "fcNo": "ST-32",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 632,
+    "name": "BABUKIIKA PEACE",
+    "nin": "CF58009107NZKl",
+    "phone": "256772657793",
+    "category": "Retail Shops",
+    "fcNo": "A1-012",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 633,
+    "name": "Martin Twinamasiko",
+    "nin": "CM90009101J24L",
+    "phone": "256782820765",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 634,
+    "name": "KABWIMUKANA PEACE",
+    "nin": "CF560091051E3G",
+    "phone": "256776223609",
+    "category": "Others",
+    "fcNo": "AX-41G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 635,
+    "name": "Byarugaba mustafa- and twinomu",
+    "nin": 772695314,
+    "phone": "256772695314",
+    "category": "Butcher",
+    "fcNo": "B1 073",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 636,
+    "name": "ATUZARIRWE MOSES-CENTRAL MKT20",
+    "nin": "CM79051103HRPJ",
+    "phone": "256782432454",
+    "category": "Retail Shops",
+    "fcNo": "No.B1 033",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 637,
+    "name": "Arinaitwe Brendah",
+    "nin": "CF9101510237Mk",
+    "phone": "256781941868",
+    "category": "Others",
+    "fcNo": "AX-06F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 638,
+    "name": "Kiconco mdius and katushabe Be",
+    "nin": "CF86009107LL6A",
+    "phone": "256785708066",
+    "category": "Food Stuff",
+    "fcNo": "St 341",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 639,
+    "name": "Korugyendo phabius and Tusasib",
+    "nin": null,
+    "phone": "256771340171",
+    "category": "Vegetables",
+    "fcNo": "Stall 299",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 640,
+    "name": "Kesiime Juliet stall 293",
+    "nin": null,
+    "phone": "256760855466",
+    "category": "Vegetables",
+    "fcNo": "Stall 293",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 641,
+    "name": "ALINAITWE IMMACULATE",
+    "nin": "CF90009109E4Ec",
+    "phone": "256785008001",
+    "category": "New Clothes",
+    "fcNo": "A2 082",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 642,
+    "name": "Ahimbisibwe Ezra stall",
+    "nin": null,
+    "phone": "256789648288",
+    "category": "Vegetables",
+    "fcNo": "Stall 190",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 643,
+    "name": "kyarimpa Penlope stall 102",
+    "nin": null,
+    "phone": "256783390799",
+    "category": "Vegetables",
+    "fcNo": "stall 102",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 644,
+    "name": "Busingye Gaudensia stall 004",
+    "nin": null,
+    "phone": "256772634924",
+    "category": "Vegetables",
+    "fcNo": "stall 004",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 645,
+    "name": "Kamusiime Maureen stall 048",
+    "nin": null,
+    "phone": "256788913586",
+    "category": "Vegetables",
+    "fcNo": "stall 048",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 646,
+    "name": "Ahimbisibwe Judith stall 92",
+    "nin": null,
+    "phone": "256774843344",
+    "category": "Vegetables",
+    "fcNo": "stall 92",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 647,
+    "name": "Arinaitwe Deus stall 270",
+    "nin": null,
+    "phone": "256774068978",
+    "category": "Vegetables",
+    "fcNo": "Stall 270",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 648,
+    "name": "Tugumisirize Subiman and Ambuk",
+    "nin": 789657464,
+    "phone": "256789657464",
+    "category": "Fish",
+    "fcNo": "DF018",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 649,
+    "name": "KAMURASI YUSUF",
+    "nin": "CM8900910PRJJG",
+    "phone": "256779694756",
+    "category": "Food Stuff",
+    "fcNo": "ST-002",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 650,
+    "name": "Koburungi Annah and Kyarisiima",
+    "nin": null,
+    "phone": "256784124282",
+    "category": "Food Stuff",
+    "fcNo": "PT025",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 651,
+    "name": "BEYANGA ABDULLAH-MATOOKE-49",
+    "nin": null,
+    "phone": "256774700892",
+    "category": "Food Stuff",
+    "fcNo": "PT-49",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 652,
+    "name": "AHARIMPSYA REHEMA-MATOOKE-69",
+    "nin": null,
+    "phone": "256788897575",
+    "category": "Food Stuff",
+    "fcNo": "PT-69",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 653,
+    "name": "KYAKUNZIRE FLORENCE-35-MATOOKE",
+    "nin": null,
+    "phone": "256760759739",
+    "category": "Food Stuff",
+    "fcNo": "ST-35-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 654,
+    "name": "KALETTE ANNAH",
+    "nin": "CF96009104YLLF",
+    "phone": "256787983694",
+    "category": "Retail Shops",
+    "fcNo": "No.B1004",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 655,
+    "name": "NYIRAMATABARO DONATERA",
+    "nin": "CF6300910Q78Qg",
+    "phone": "256786529902",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 656,
+    "name": "BYAMUGISHA WILSON",
+    "nin": "CM68009104F9qD",
+    "phone": "256772554967",
+    "category": "Food Stuff",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 657,
+    "name": "Atuhairwe martha",
+    "nin": "CF0776593670AM",
+    "phone": "256776593670",
+    "category": "Retail Shops",
+    "fcNo": "B2 006",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 658,
+    "name": "Tushabe Ruth",
+    "nin": "CF810551022XEk",
+    "phone": "256778988446",
+    "category": "New Clothes",
+    "fcNo": "AX- 50F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 659,
+    "name": "IKIRIZA KELLEN",
+    "nin": "CF6300910JZWUd",
+    "phone": "256782306104",
+    "category": "Food Stuff",
+    "fcNo": "A1077",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 660,
+    "name": "Jenifer Ainebyona",
+    "nin": "CF79009106HPQG",
+    "phone": "256775742635",
+    "category": "Food Stuff",
+    "fcNo": "A1076",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 661,
+    "name": "Jonath Ndyamuhaki",
+    "nin": "Cf98009108G2LE",
+    "phone": "256770984952",
+    "category": "New Clothes",
+    "fcNo": "A2 026",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 662,
+    "name": "Tiyeitu Eless Rubuga Nancy",
+    "nin": "CF690091011PXa",
+    "phone": "256782192713",
+    "category": "New Clothes",
+    "fcNo": "A2 045",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 663,
+    "name": "Alice natukunda",
+    "nin": "CF710621036XJC",
+    "phone": "256777364725",
+    "category": "New Clothes",
+    "fcNo": "A2 081",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 664,
+    "name": "Patrick Birungi",
+    "nin": "CM6800910C422a",
+    "phone": "256772347388",
+    "category": "New Clothes",
+    "fcNo": "A2 069",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 665,
+    "name": "Tukahirwa Fabisi and kyampaire",
+    "nin": 789022190,
+    "phone": "256789022190",
+    "category": "Vegetables",
+    "fcNo": "Stall 218",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 666,
+    "name": "Kyarikunda Alice stall 184",
+    "nin": null,
+    "phone": "256760537186",
+    "category": "Vegetables",
+    "fcNo": "Stall 184",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 667,
+    "name": "Kyoheirwe Allen stall 183",
+    "nin": null,
+    "phone": "256772058851",
+    "category": "Vegetables",
+    "fcNo": "Stall 183",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 668,
+    "name": "Natuhwera Elizabeth stall 160",
+    "nin": null,
+    "phone": "25677270112",
+    "category": "Vegetables",
+    "fcNo": "Stall 160",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 669,
+    "name": "Kakuru Molly iboneire stall 12",
+    "nin": null,
+    "phone": "256783882909",
+    "category": "Vegetables",
+    "fcNo": "stall 123",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 670,
+    "name": "Sunday Ephraim stall 043",
+    "nin": null,
+    "phone": "256772047087",
+    "category": "Vegetables",
+    "fcNo": "43",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 671,
+    "name": "Nyamushana Lilian stall 018",
+    "nin": null,
+    "phone": "256776262605",
+    "category": "Vegetables",
+    "fcNo": "stall  018",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 672,
+    "name": "Tukamushaba Alice and Aharimps",
+    "nin": null,
+    "phone": "256778572494",
+    "category": "Vegetables",
+    "fcNo": "Stall 255",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 673,
+    "name": "Niwagaba Philipo stall 257",
+    "nin": null,
+    "phone": "256774153211",
+    "category": "Vegetables",
+    "fcNo": "Stall 257",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 674,
+    "name": "AKANYIJUKA SIMON-CH19-21",
+    "nin": null,
+    "phone": "256781448369",
+    "category": "Birds",
+    "fcNo": "CH19-21",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 675,
+    "name": "Turyasingura Charity and Tumuh",
+    "nin": null,
+    "phone": "256785561242",
+    "category": "Food Stuff",
+    "fcNo": "PT034",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 676,
+    "name": "NATUKUNDA ALICE-MATOOKE-42",
+    "nin": null,
+    "phone": "256777364725",
+    "category": "Food Stuff",
+    "fcNo": "PT-42",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 677,
+    "name": "KATUSHABE MOREEN-DRY PRODUCE-S",
+    "nin": null,
+    "phone": "256756419982",
+    "category": "Food Stuff",
+    "fcNo": "ST-39",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 678,
+    "name": "Julient A1011 Nabaasa",
+    "nin": "CF0783558722XX",
+    "phone": "256783558722",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 679,
+    "name": "MUSINGUZI SIMEI",
+    "nin": "CM730091096ANH",
+    "phone": "256770862449",
+    "category": "General Merchandise",
+    "fcNo": "AX-10G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 680,
+    "name": "KYARIKUNDA JULIET",
+    "nin": "CF81037101DXFE",
+    "phone": "256774307446",
+    "category": "Retail Shops",
+    "fcNo": "AX-18G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 681,
+    "name": "Silver Begambagye",
+    "nin": "CM5700910JALHe",
+    "phone": "256772584464",
+    "category": "Food Stuff",
+    "fcNo": "A1038",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 682,
+    "name": "NDAMWESIGA JUSTINE",
+    "nin": "CF7400910C8K6a",
+    "phone": "256779802935",
+    "category": "New Clothes",
+    "fcNo": "A2 036",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 683,
+    "name": "MABWEIJANO SYLVESTER",
+    "nin": "CM3100910DREEa",
+    "phone": "256784314050",
+    "category": "New Clothes",
+    "fcNo": "A2 044",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 684,
+    "name": "Tushabomwe jeninah St 338",
+    "nin": null,
+    "phone": "256787353060",
+    "category": "Vegetables",
+    "fcNo": "St 338",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 685,
+    "name": "Ahimbisibwe Mary stall 296",
+    "nin": 785813224,
+    "phone": "256785813224",
+    "category": "Vegetables",
+    "fcNo": "Stall 296",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 686,
+    "name": "Kyarisiima Elizabeth stall 191",
+    "nin": 774842947,
+    "phone": "256774842947",
+    "category": "Vegetables",
+    "fcNo": "Stall 191",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 687,
+    "name": "Harrient Twinomujuni",
+    "nin": null,
+    "phone": "256770756869",
+    "category": "Food Stuff",
+    "fcNo": "A1 034",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 688,
+    "name": "Musiimenta MOREEN stall 166",
+    "nin": null,
+    "phone": "256773004182",
+    "category": "Vegetables",
+    "fcNo": "Stall 166",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 689,
+    "name": "Kiconco Owen Stall 139",
+    "nin": null,
+    "phone": "256772536514",
+    "category": "Vegetables",
+    "fcNo": "stall 139",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 690,
+    "name": "Buregyeya Mpirirwe Fellie stal",
+    "nin": "CF0772673333XX",
+    "phone": "256772673333",
+    "category": "Vegetables",
+    "fcNo": "stall 130",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 691,
+    "name": "Ninsiima Hope stall 125",
+    "nin": "CF80037104ELJh",
+    "phone": "256779822912",
+    "category": "Vegetables",
+    "fcNo": "stall 125",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 692,
+    "name": "Muhumuza Alex stall 101",
+    "nin": null,
+    "phone": "256784289161",
+    "category": "Vegetables",
+    "fcNo": "stall 101",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 693,
+    "name": "Ahimbisibwe Sheila stall 011",
+    "nin": null,
+    "phone": "256787665206",
+    "category": "Vegetables",
+    "fcNo": "11",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 694,
+    "name": "Nabasa Silvia stall 027",
+    "nin": null,
+    "phone": "256756824910",
+    "category": "Vegetables",
+    "fcNo": "28",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 695,
+    "name": "Kamuhanda Francis stall 035",
+    "nin": null,
+    "phone": "256777352712",
+    "category": "Vegetables",
+    "fcNo": "35",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 696,
+    "name": "Akampurira Stephen and Talemwa",
+    "nin": "CM786122016XXX",
+    "phone": "256786122016",
+    "category": "Fish",
+    "fcNo": "DF020",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 697,
+    "name": "Muheirwe Harriet stall 276",
+    "nin": "CF5900910DGYYF",
+    "phone": "256773933594",
+    "category": "Vegetables",
+    "fcNo": "Stall276",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 698,
+    "name": "BUGIGI MANKARIO RWAMIRA-CH25-2",
+    "nin": null,
+    "phone": "256779552348",
+    "category": "Birds",
+    "fcNo": "CH25-27",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 699,
+    "name": "Twinomujuni Medius and Twijuky",
+    "nin": null,
+    "phone": "256786999645",
+    "category": "Food Stuff",
+    "fcNo": "PT-010",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 700,
+    "name": "TUKAHIRWA SYLVIA-PRODUCE STALL",
+    "nin": null,
+    "phone": "256777001338",
+    "category": "Food Stuff",
+    "fcNo": "ST-008",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 701,
+    "name": "AINEMBABAZI LOYCE-MATOOKE-011",
+    "nin": 777123174,
+    "phone": "256777123174",
+    "category": "Food Stuff",
+    "fcNo": "PT-011",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 702,
+    "name": "NATURINDA ROBBINAH-MATOOKE-45",
+    "nin": null,
+    "phone": "256786537035",
+    "category": "Food Stuff",
+    "fcNo": "PT-45",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 703,
+    "name": "TUGENEYO PRUDENCE-MATOOKE-61",
+    "nin": null,
+    "phone": "256779227734",
+    "category": "Food Stuff",
+    "fcNo": "PT-61",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 704,
+    "name": "MBABAZI NULIYAT-MATOOKE-31",
+    "nin": null,
+    "phone": "256785342662",
+    "category": "Food Stuff",
+    "fcNo": "PT-31",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 705,
+    "name": "ELIYASI-PRODUCE-ST-13 EKYARIMP",
+    "nin": "CF8500910ATXYD",
+    "phone": "256784978622",
+    "category": "Food Stuff",
+    "fcNo": "ST-13",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 706,
+    "name": "KYAMPAIRE KELLEN AND MUKANDUTI",
+    "nin": null,
+    "phone": "256780293408",
+    "category": "Food Stuff",
+    "fcNo": "ST-38",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 707,
+    "name": "ZENO MBISHINZIMANA",
+    "nin": null,
+    "phone": "256783926028",
+    "category": "General Merchandise",
+    "fcNo": "B2 069",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 708,
+    "name": "ROBERT KWEYUNGA",
+    "nin": "CM870341060DQK",
+    "phone": "256764750417",
+    "category": "General Merchandise",
+    "fcNo": "AX-14G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 709,
+    "name": "TURYATUNGA NARIS",
+    "nin": "CM59009107L1LF",
+    "phone": "256779595810",
+    "category": "Retail Shops",
+    "fcNo": "B1.044",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 710,
+    "name": "BYAMUKAMA PAUL",
+    "nin": "CM82009102EU7E",
+    "phone": "256782548933",
+    "category": "Others",
+    "fcNo": "AX-45G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 711,
+    "name": "NAMARA CHRISTINE",
+    "nin": "CF73009102KRJJ",
+    "phone": "256782391262",
+    "category": "Retail Shops",
+    "fcNo": "B2-014",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 712,
+    "name": "KAKWAYA GODFREY JACK",
+    "nin": "CM7000910C1G4F",
+    "phone": "256783385474",
+    "category": "Cereal Produce",
+    "fcNo": "AX-61G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 713,
+    "name": "OSHABAHEEBWA RONALD",
+    "nin": "CM9700910L1M6K",
+    "phone": "256760128088",
+    "category": "New Clothes",
+    "fcNo": "AX-12F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 714,
+    "name": "NIWAMANYA DOREEN",
+    "nin": "CF91037104CGXC",
+    "phone": "256772545034",
+    "category": "Others",
+    "fcNo": "AX-27F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 715,
+    "name": "ENTWAREYAMUGIRI OTHADI",
+    "nin": "CM940091078GCh",
+    "phone": "256772659691",
+    "category": "New Clothes",
+    "fcNo": "A2 035",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 716,
+    "name": "ATUHAIRE TWEBAZE",
+    "nin": "CF730091074ATj",
+    "phone": "256772963287",
+    "category": "Tailoring and Textile",
+    "fcNo": "A2 052",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 717,
+    "name": "Kyampeire Anna stall 313",
+    "nin": null,
+    "phone": "256777062338",
+    "category": "Vegetables",
+    "fcNo": "Stall 313",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 718,
+    "name": "NATUKUNDA JUDITH",
+    "nin": "CF87061105GPFg",
+    "phone": "256784828267",
+    "category": "New Clothes",
+    "fcNo": "A2 076",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 719,
+    "name": "Tuheirwe polly stall 321",
+    "nin": null,
+    "phone": "256783311344",
+    "category": "Vegetables",
+    "fcNo": "Stall 321",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 720,
+    "name": "Ninsiima Catherine B1 49",
+    "nin": "CF89009102DKJ",
+    "phone": "256785827589",
+    "category": "Retail Shops",
+    "fcNo": "B1 049",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 721,
+    "name": "NIWAHA YERALD",
+    "nin": "CM9400910618Dj",
+    "phone": "256779732562",
+    "category": "New Clothes",
+    "fcNo": "A2 080",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 722,
+    "name": "Natukunda Zaudia stall 172",
+    "nin": null,
+    "phone": "256775220500",
+    "category": "Vegetables",
+    "fcNo": "stall 172",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 723,
+    "name": "Tirwomwe Emmanuel stall 150",
+    "nin": 784202187,
+    "phone": "256784202187",
+    "category": "Vegetables",
+    "fcNo": "Stall 150",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 724,
+    "name": "Ahereza Joshua stall 144",
+    "nin": null,
+    "phone": "256789199115",
+    "category": "Vegetables",
+    "fcNo": "Stall 144",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 725,
+    "name": "Niyonzima George Wlliam stall",
+    "nin": null,
+    "phone": "256772560610",
+    "category": "Vegetables",
+    "fcNo": "stall136",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 726,
+    "name": "Kihembo kedress stall 112",
+    "nin": null,
+    "phone": "256788760186",
+    "category": "Vegetables",
+    "fcNo": "stall 112",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 727,
+    "name": "Atuhurira Elizabeth Natukunda",
+    "nin": null,
+    "phone": "256774068517",
+    "category": "Vegetables",
+    "fcNo": "stall 110",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 728,
+    "name": "Karenzi Medard stall 027",
+    "nin": 786749056,
+    "phone": "256786749056",
+    "category": "Vegetables",
+    "fcNo": "27",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 729,
+    "name": "Katushabe medius stall 050",
+    "nin": "CF79009102UCUc",
+    "phone": "256782911867",
+    "category": "Vegetables",
+    "fcNo": "50",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 730,
+    "name": "Bagumira Dennis stall 008",
+    "nin": null,
+    "phone": "256782829523",
+    "category": "Vegetables",
+    "fcNo": "stall 008",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 731,
+    "name": "Byaruhanga Vicent stall 042",
+    "nin": null,
+    "phone": "256775721023",
+    "category": "Vegetables",
+    "fcNo": "stall 042",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 732,
+    "name": "BAGAMUHUNDA CHARLES",
+    "nin": "CM4800910519Th",
+    "phone": "256704542003",
+    "category": "Others",
+    "fcNo": "AX - 48G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 733,
+    "name": "Tumwine Ketty DF016",
+    "nin": null,
+    "phone": "256779171563",
+    "category": "Fish",
+    "fcNo": "DF016",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 734,
+    "name": "Kiiza Alexander DF015",
+    "nin": null,
+    "phone": "256782009402",
+    "category": "Fish",
+    "fcNo": "DF015",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 735,
+    "name": "KEMIGISHA SARAH",
+    "nin": "CF9300910C6ELK",
+    "phone": "256783588556",
+    "category": "Retail Shops",
+    "fcNo": "Lock up no.21",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 736,
+    "name": "Turyakira john stall 278",
+    "nin": null,
+    "phone": "256783676925",
+    "category": "Vegetables",
+    "fcNo": "Stall 278",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 737,
+    "name": "Ainebyoona Desire stall 251",
+    "nin": null,
+    "phone": "256760078197",
+    "category": "Vegetables",
+    "fcNo": "Stall 251",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 738,
+    "name": "Twikirize Anna stall 227",
+    "nin": "CF772537562",
+    "phone": "256772537562",
+    "category": "Vegetables",
+    "fcNo": "Stall227",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 739,
+    "name": "KATOROBO JACK-MATOOKE-008",
+    "nin": null,
+    "phone": "256782050900",
+    "category": "Food Stuff",
+    "fcNo": "PT-008",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 740,
+    "name": "NKUNZI JOVIA-MATOOKE-75",
+    "nin": null,
+    "phone": "256786317827",
+    "category": "Food Stuff",
+    "fcNo": "PT-75",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 741,
+    "name": "BYARUHANGA LOY AND AKAMPWERA D",
+    "nin": null,
+    "phone": "256782884135",
+    "category": "Food Stuff",
+    "fcNo": "PT-043",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 742,
+    "name": "GOMUSHANA TOMASI-DRY PRODUCE-S",
+    "nin": "CF0788908670KP",
+    "phone": "256788908670",
+    "category": "Food Stuff",
+    "fcNo": "ST-23",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 743,
+    "name": "NAMANYA VANGILISTA",
+    "nin": "CF880091041X6G",
+    "phone": "256785300308",
+    "category": "Retail Shops",
+    "fcNo": "No.11",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 744,
+    "name": "Byamugisha Dick central mkt202",
+    "nin": "CM785913013XXX",
+    "phone": "256785913013",
+    "category": "Retail Shops",
+    "fcNo": "B2 008",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 745,
+    "name": "Muheki Jotham-centralmkt2024",
+    "nin": null,
+    "phone": "256762523489",
+    "category": "Retail Shops",
+    "fcNo": "No.b1-026",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 746,
+    "name": "Stidia Kyomugisha",
+    "nin": "CF91009106PD6e",
+    "phone": "256774222441",
+    "category": "Food Stuff",
+    "fcNo": "A1033",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 747,
+    "name": "KESIIME LYDIA",
+    "nin": "CF67009100PX1g",
+    "phone": "256774066700",
+    "category": "Others",
+    "fcNo": "AX -25F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 748,
+    "name": "HABASA KATE",
+    "nin": "CF65009100MAWh",
+    "phone": "256774556650",
+    "category": "Food Stuff",
+    "fcNo": "A1075",
+    "monthlyPay": 110000
+  },
+  {
+    "id": 749,
+    "name": "ARINAITWE ANNET B1-027 CENTRAL",
+    "nin": null,
+    "phone": "256782321278",
+    "category": "Retail Shops",
+    "fcNo": "B1 027",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 750,
+    "name": "Komugisha strafing St 339",
+    "nin": null,
+    "phone": "256774202652",
+    "category": "Vegetables",
+    "fcNo": "St 339",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 751,
+    "name": "Kyomugisha pross stall 289",
+    "nin": null,
+    "phone": "256773997097",
+    "category": "Vegetables",
+    "fcNo": "Stall 289",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 752,
+    "name": "TUGAINEYO JOY",
+    "nin": "CF56037101AR6J",
+    "phone": "256774047615",
+    "category": "New Clothes",
+    "fcNo": "A2 061",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 753,
+    "name": "Tibita Angellina stall 212",
+    "nin": null,
+    "phone": "256783822460",
+    "category": "Vegetables",
+    "fcNo": "Stall 212",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 754,
+    "name": "Naturinda Darious and Atuheirw",
+    "nin": null,
+    "phone": "256777446145",
+    "category": "Vegetables",
+    "fcNo": "Stall 205",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 755,
+    "name": "Ainembabazi Elon and Sayuni Ev",
+    "nin": null,
+    "phone": "256771983087",
+    "category": "Vegetables",
+    "fcNo": "Stall 186",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 756,
+    "name": "Tumusiime Annet 170",
+    "nin": null,
+    "phone": "256740757905",
+    "category": "Vegetables",
+    "fcNo": "Stall 170",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 757,
+    "name": "Tumukunde Frederick stall 155",
+    "nin": "CM80009102JP7l",
+    "phone": "256774962911",
+    "category": "Vegetables",
+    "fcNo": "Stall 155",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 758,
+    "name": "Turyasingura Richard stall 153",
+    "nin": null,
+    "phone": "256781221399",
+    "category": "Vegetables",
+    "fcNo": "Stall 153",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 759,
+    "name": "Twebaze Jackline stall 124",
+    "nin": null,
+    "phone": "256757088985",
+    "category": "Vegetables",
+    "fcNo": "stall 124",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 760,
+    "name": "Kyampaire Loy Katushabe stall",
+    "nin": null,
+    "phone": "256773717445",
+    "category": "Vegetables",
+    "fcNo": "stall 116",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 761,
+    "name": "Tumusiime Harriet stall 041",
+    "nin": null,
+    "phone": "256776777742",
+    "category": "Vegetables",
+    "fcNo": "41",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 762,
+    "name": "Kyomugisha Fradiha stall 59",
+    "nin": null,
+    "phone": "256787022454",
+    "category": "Vegetables",
+    "fcNo": "stall 59",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 763,
+    "name": "Kahirita Joy Keitumba stall 69",
+    "nin": null,
+    "phone": "256773007551",
+    "category": "Vegetables",
+    "fcNo": "stall 69",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 764,
+    "name": "Tindimwebwa Alice stall 072",
+    "nin": null,
+    "phone": "256788091858",
+    "category": "Vegetables",
+    "fcNo": "stall 072",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 765,
+    "name": "Niwezirwe Jane stall 224",
+    "nin": null,
+    "phone": "256772803702",
+    "category": "Vegetables",
+    "fcNo": "Stall 224",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 766,
+    "name": "Mbabazi Chrismary DF003",
+    "nin": null,
+    "phone": "256760480186",
+    "category": "Fish",
+    "fcNo": "DF003",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 767,
+    "name": "ORIGUMISIRIZA ENID-PRODUCE-STA",
+    "nin": null,
+    "phone": "256765494526",
+    "category": "Food Stuff",
+    "fcNo": "ST-007",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 768,
+    "name": "Turyashemererwa Pross and Tumw",
+    "nin": null,
+    "phone": "256787244748",
+    "category": "Food Stuff",
+    "fcNo": "PT012",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 769,
+    "name": "Asiimwe Nice and Namanya Sarah",
+    "nin": null,
+    "phone": "256781752448",
+    "category": "Food Stuff",
+    "fcNo": "PT017",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 770,
+    "name": "NUWAGABA CHRISTINE-MATOOKE-12",
+    "nin": null,
+    "phone": "256781364781",
+    "category": "Food Stuff",
+    "fcNo": "PT-12",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 771,
+    "name": "GAMPU LOYDAH-MATOOKE-60",
+    "nin": null,
+    "phone": "256775437941",
+    "category": "Food Stuff",
+    "fcNo": "PT-60",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 772,
+    "name": "NAKALEMA GETU-MATOOKE-74",
+    "nin": 775464449,
+    "phone": "256775464449",
+    "category": "Food Stuff",
+    "fcNo": "PT-74",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 773,
+    "name": "KYASIIMIRE NAOME, ORIKIRIZA PR",
+    "nin": null,
+    "phone": "256786735573",
+    "category": "Food Stuff",
+    "fcNo": "PT-042",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 774,
+    "name": "KESAFARI SYLVIA ST-33-MATOOKE",
+    "nin": null,
+    "phone": "256783715117",
+    "category": "Food Stuff",
+    "fcNo": "ST-33-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 775,
+    "name": "KUKUNDAKWE OLIVIA,NABAASA ABAI",
+    "nin": null,
+    "phone": "256788476557",
+    "category": "Food Stuff",
+    "fcNo": "PT-008",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 776,
+    "name": "IZAARA CHARLES",
+    "nin": "CM51055100GCEE",
+    "phone": "256772560266",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 777,
+    "name": "MAYANJA BENJAMIN",
+    "nin": "CM57037106UZGk",
+    "phone": "256776242530",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 778,
+    "name": "MUKAMAKUZA ESTER",
+    "nin": "CF6101810992Dg",
+    "phone": "256772872105",
+    "category": "Retail Shops",
+    "fcNo": "NULL",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 779,
+    "name": "TAMARE STEPHEN",
+    "nin": "CM77062103HP1E",
+    "phone": "256782646452",
+    "category": "Retail Shops",
+    "fcNo": "B1.040",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 780,
+    "name": "WASWA JOHNSON",
+    "nin": "CM7503410800XE",
+    "phone": "256772879003",
+    "category": "Others",
+    "fcNo": "AX-49G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 781,
+    "name": "KOMUGISHA SUZAN",
+    "nin": "CF74009100DUWE",
+    "phone": "256772969813",
+    "category": "Cereal Produce",
+    "fcNo": "AX-57G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 782,
+    "name": "Twikirize wine Twikirize Wine",
+    "nin": "CF7700910FXNWD",
+    "phone": "256781717891",
+    "category": "Vegetables",
+    "fcNo": "St 345",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 783,
+    "name": "Kishiki Enid St 337",
+    "nin": null,
+    "phone": "256781561831",
+    "category": "Vegetables",
+    "fcNo": "St 337",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 784,
+    "name": "Nteziyaremye Austine stall 307",
+    "nin": null,
+    "phone": "256784796734",
+    "category": "Vegetables",
+    "fcNo": "Stall 307",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 785,
+    "name": "Kinkuheire Gorret stall 194",
+    "nin": null,
+    "phone": "256782605480",
+    "category": "Vegetables",
+    "fcNo": "Stall 194",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 786,
+    "name": "ATUSASIIRE JUDITH",
+    "nin": "CF9300910D3L1E",
+    "phone": "256786323109",
+    "category": "Retail Shops",
+    "fcNo": "B1055",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 787,
+    "name": "Namanya Dacun 159",
+    "nin": null,
+    "phone": "256788373180",
+    "category": "Vegetables",
+    "fcNo": "Stall 159",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 788,
+    "name": "Tusiime Sauda stall 019",
+    "nin": null,
+    "phone": "256784632346",
+    "category": "Vegetables",
+    "fcNo": "19",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 789,
+    "name": "Tushemereirwe Winnie stall 036",
+    "nin": null,
+    "phone": "256781617961",
+    "category": "Vegetables",
+    "fcNo": "36",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 790,
+    "name": "Arinaitwe Marion and Akampurir",
+    "nin": null,
+    "phone": "256783575305",
+    "category": "Vegetables",
+    "fcNo": "stall 83",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 791,
+    "name": "BYARUHANGA KENNETH",
+    "nin": "CM8000910CZJ8k",
+    "phone": "256782370177",
+    "category": "Saloon",
+    "fcNo": "AX - 052F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 792,
+    "name": "Akakisiima Amon stall 247",
+    "nin": null,
+    "phone": "256787811445",
+    "category": "Vegetables",
+    "fcNo": "Stall 247",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 793,
+    "name": "Ariho Jovia stall 263",
+    "nin": null,
+    "phone": "256775664882",
+    "category": "Vegetables",
+    "fcNo": "Stall 263",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 794,
+    "name": "TUMUBWINE SYLVIA-MATOOKE-51",
+    "nin": 775516395,
+    "phone": "256775516395",
+    "category": "Food Stuff",
+    "fcNo": "PT-51",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 795,
+    "name": "PAMELLA KICONCO PAMELLA-STALL",
+    "nin": "CF9600910KFWKh",
+    "phone": "256780291659",
+    "category": "Food Stuff",
+    "fcNo": "ST-006",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 796,
+    "name": "AISHA-MATOOKE-004 ABARIGYE",
+    "nin": "CF920091044WVJ",
+    "phone": "256789042336",
+    "category": "Food Stuff",
+    "fcNo": "ST-004",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 797,
+    "name": "KESAFARI CHRISTINE-MATOOKE-20",
+    "nin": null,
+    "phone": "256775273681",
+    "category": "Food Stuff",
+    "fcNo": "PT-20",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 798,
+    "name": "Nduhukire Annet- ST-005 Charco",
+    "nin": null,
+    "phone": "256788402227",
+    "category": "Food Stuff",
+    "fcNo": "ST-005 Charcoal stoves",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 799,
+    "name": "ATUHEIRE SPECIOZA ST-50-MATOOK",
+    "nin": null,
+    "phone": "256781663690",
+    "category": "Food Stuff",
+    "fcNo": "ST-50-MATOOKE",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 800,
+    "name": "NAMBI SARAH AND NASASIRA DESTI",
+    "nin": "CF8908310ACOYH",
+    "phone": "256784209566",
+    "category": "Retail Shops",
+    "fcNo": "No.Ax-14F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 801,
+    "name": "Tibyabakwe Adson",
+    "nin": "CM46009101VUAd",
+    "phone": "256702580012",
+    "category": "Cereal Produce",
+    "fcNo": "AX-50G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 802,
+    "name": "Ruhangariyo Daphine central mk",
+    "nin": null,
+    "phone": "256783202818",
+    "category": "Retail Shops",
+    "fcNo": "B1-022",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 803,
+    "name": "Ainembabazi Charity",
+    "nin": "CF87009107L2Ca",
+    "phone": "256774618080",
+    "category": "Saloon",
+    "fcNo": "AX-26F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 804,
+    "name": "Nankinga Juliet",
+    "nin": "CF89036107T96g",
+    "phone": "256787134431",
+    "category": "Saloon",
+    "fcNo": "AX-39X",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 805,
+    "name": "ARINAITWE BRUTUS",
+    "nin": "CM8800910H03Ch",
+    "phone": "256782446354",
+    "category": "Others",
+    "fcNo": "AX-66F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 806,
+    "name": "Ahumuza Nicolous stall 291",
+    "nin": "CM0771613317XX",
+    "phone": "256771613317",
+    "category": "Vegetables",
+    "fcNo": "Stall no 291",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 807,
+    "name": "Kekirabo Leticia stall 256",
+    "nin": "CF0778519692KL",
+    "phone": "256778519692",
+    "category": "Vegetables",
+    "fcNo": "Stall 256",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 808,
+    "name": "BANYEZAKI CLEMENT",
+    "nin": "CM85009103LHFG",
+    "phone": "256779410122",
+    "category": "New Clothes",
+    "fcNo": "A2 060",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 809,
+    "name": "Birungi Afisah stall 213",
+    "nin": null,
+    "phone": "256764154088",
+    "category": "Vegetables",
+    "fcNo": "Stall 213",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 810,
+    "name": "Kyarimpa Mary Betty b1 052",
+    "nin": null,
+    "phone": "256774027939",
+    "category": "Retail Shops",
+    "fcNo": "B1 052",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 811,
+    "name": "KATOOMA TIMOTHY",
+    "nin": "CM5800910HGGMF",
+    "phone": "256772311569",
+    "category": "Retail Shops",
+    "fcNo": "B1068",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 812,
+    "name": "Niwamanya Olivia stall 180",
+    "nin": null,
+    "phone": "256752844175",
+    "category": "Vegetables",
+    "fcNo": "stall 180",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 813,
+    "name": "Nshekanabo Jenifer and Murungi",
+    "nin": null,
+    "phone": "256774988678",
+    "category": "Vegetables",
+    "fcNo": "Stall 143",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 814,
+    "name": "Agaba Micheal stall 137",
+    "nin": "CM0778176079AM",
+    "phone": "256778176079",
+    "category": "Vegetables",
+    "fcNo": "stall 137",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 815,
+    "name": "Byomuhangi Pascal and Byaruhan",
+    "nin": null,
+    "phone": "256774967162",
+    "category": "Vegetables",
+    "fcNo": "stall 005",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 816,
+    "name": "Kiheeka Peace stall 017",
+    "nin": null,
+    "phone": "256787537050",
+    "category": "Vegetables",
+    "fcNo": "stall 017",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 817,
+    "name": "Ayebare Ivan stall 053",
+    "nin": null,
+    "phone": "256742217277",
+    "category": "Vegetables",
+    "fcNo": "stall 053",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 818,
+    "name": "Twesigye Jessica stall 266",
+    "nin": null,
+    "phone": "256779822143",
+    "category": "Vegetables",
+    "fcNo": "Stall 266",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 819,
+    "name": "Natukunda Getrude and Namara E",
+    "nin": null,
+    "phone": "256779417978",
+    "category": "Food Stuff",
+    "fcNo": "PT011",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 820,
+    "name": "Safari Eunice and Tushemerirwe",
+    "nin": "CF780091078HDL",
+    "phone": "256784766117",
+    "category": "Food Stuff",
+    "fcNo": "PT026",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 821,
+    "name": "ASIIMWE DENIS-MATOOKE-43",
+    "nin": null,
+    "phone": "256784433058",
+    "category": "Food Stuff",
+    "fcNo": "PT-43",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 822,
+    "name": "AINEMBABAZI PRIZE-MATOOKE-38",
+    "nin": null,
+    "phone": "256777877536",
+    "category": "Food Stuff",
+    "fcNo": "PT-38",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 823,
+    "name": "TUMUHIMBISE JACKLINE AND KYENS",
+    "nin": null,
+    "phone": "256772210043",
+    "category": "Food Stuff",
+    "fcNo": "ST-34",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 824,
+    "name": "TURYARUHUKWA STELLA AND KENEMA",
+    "nin": null,
+    "phone": "256788079651",
+    "category": "Food Stuff",
+    "fcNo": "ST-37",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 825,
+    "name": "Ruzayo Benon and Simpson Ariba",
+    "nin": null,
+    "phone": "256764534751",
+    "category": "Butcher",
+    "fcNo": "Lock up no.37",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 826,
+    "name": "MUSINGUZI SIMEI",
+    "nin": "CM730091096ANH",
+    "phone": "256770862449",
+    "category": "General Merchandise",
+    "fcNo": "AX-10G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 827,
+    "name": "KYOMUGISHA SHALLON-MATOOKE-41",
+    "nin": null,
+    "phone": "256778821039",
+    "category": "Food Stuff",
+    "fcNo": "PT-41",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 828,
+    "name": "Fred Zirihehi",
+    "nin": "CM6300910D6NCL",
+    "phone": "256752901126",
+    "category": "Tailoring and Textile",
+    "fcNo": "NULL",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 829,
+    "name": "Birwomumeisho peace b1 047",
+    "nin": null,
+    "phone": "256772653051",
+    "category": "Retail Shops",
+    "fcNo": "B1 047",
+    "monthlyPay": 120000
+  },
+  {
+    "id": 830,
+    "name": "Agness Kengazi",
+    "nin": "CF48112102CW2H",
+    "phone": "256772693488",
+    "category": "Food Stuff",
+    "fcNo": "A1082",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 831,
+    "name": "KESAFARI SYLVIA-MATOOKE-33",
+    "nin": null,
+    "phone": "256783715117",
+    "category": "Food Stuff",
+    "fcNo": "PT-33",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 832,
+    "name": "Besigye Tumwebaze James stall",
+    "nin": null,
+    "phone": "256789927650",
+    "category": "Vegetables",
+    "fcNo": "Stall 169",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 833,
+    "name": "Turyashemererwa Hadijah stall",
+    "nin": null,
+    "phone": "256788760086",
+    "category": "Vegetables",
+    "fcNo": "stall 007",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 834,
+    "name": "ASIIMWE DENIS-MATOOKE-43",
+    "nin": null,
+    "phone": "256784433058",
+    "category": "Food Stuff",
+    "fcNo": "PT-43",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 835,
+    "name": "Kobusingye Gift stall 131",
+    "nin": null,
+    "phone": "256763976196",
+    "category": "Vegetables",
+    "fcNo": "stall 131",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 836,
+    "name": "KYAMPAIRE KELLEN AND MUKANDUTI",
+    "nin": null,
+    "phone": "256780293408",
+    "category": "Food Stuff",
+    "fcNo": "ST-38",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 837,
+    "name": "Beinowabo faustina- matooke 73",
+    "nin": 754406769,
+    "phone": "256754406769",
+    "category": "Food Stuff",
+    "fcNo": "73-matooke",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 838,
+    "name": "MUCUNGUZI PEACE-MATOOKE-29",
+    "nin": null,
+    "phone": "256785622101",
+    "category": "Food Stuff",
+    "fcNo": "PT-29",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 839,
+    "name": "TUGUMISIRIZE JANE",
+    "nin": "CF5600910JC46j",
+    "phone": "256779090112",
+    "category": "New Clothes",
+    "fcNo": "A2 047",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 840,
+    "name": "ARIGABA AGATHA",
+    "nin": "CF640341067VNd",
+    "phone": "256772939087",
+    "category": "New Clothes",
+    "fcNo": "A2 063",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 841,
+    "name": "Ainebyoona Issah stall 259",
+    "nin": null,
+    "phone": "256781254183",
+    "category": "Vegetables",
+    "fcNo": "Stall 259",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 842,
+    "name": "TUMUHIMBISE JACKLINE DRY PRODU",
+    "nin": null,
+    "phone": "256772210043",
+    "category": "Food Stuff",
+    "fcNo": "ST-34",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 843,
+    "name": "Richard Mugisha",
+    "nin": "CM820091010LMa",
+    "phone": "256786888029",
+    "category": "New Clothes",
+    "fcNo": "A2 056",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 844,
+    "name": "NEVERINE TUSASIIBWE",
+    "nin": "CF89009104VEQE",
+    "phone": "256775820587",
+    "category": "Retail Shops",
+    "fcNo": "AX-03G",
+    "monthlyPay": 150000
+  },
+  {
+    "id": 845,
+    "name": "TUMUHIMBISE JACKLINE AND KYENS",
+    "nin": null,
+    "phone": "256772210043",
+    "category": "Food Stuff",
+    "fcNo": "ST-34",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 846,
+    "name": "KYAKUNZIRE FLORENCE-MATOOKE-35",
+    "nin": null,
+    "phone": "256760759739",
+    "category": "Food Stuff",
+    "fcNo": "PT-35",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 847,
+    "name": "Tindimwebwa Shallon & Kyomukam",
+    "nin": "CF7900910Q4DPj",
+    "phone": "256760698315",
+    "category": "Saloon",
+    "fcNo": "AX-31F",
+    "monthlyPay": 100000
+  },
+  {
+    "id": 848,
+    "name": "kyomugisha phiona-matooke-36",
+    "nin": null,
+    "phone": "256784939655",
+    "category": "Food Stuff",
+    "fcNo": "PT-36",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 849,
+    "name": "NKUNZI JOVIA-MATOOKE-75",
+    "nin": null,
+    "phone": "256786317827",
+    "category": "Food Stuff",
+    "fcNo": "PT-75",
+    "monthlyPay": 15000
+  },
+  {
+    "id": 850,
+    "name": "KIBAHENDA EMILY PROSS-MATOOKE-",
+    "nin": null,
+    "phone": "256787092405",
+    "category": "Food Stuff",
+    "fcNo": "PT-25",
+    "monthlyPay": 15000
+  }
+]

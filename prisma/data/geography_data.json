@@ -1,0 +1,50 @@
+{
+  "geolocations": [
+    {
+      "id": "g1",
+      "name": "Uganda",
+      "code": "UG",
+      "country": "Uganda",
+      "countryCode": "UG",
+      "timezone": "Africa/Kampala",
+      "currency": "UGX",
+      "language": "en"
+    },
+    {
+      "name": "South Western Region",
+      "code": "UG-SW",
+      "country": "Uganda",
+      "countryCode": "UG",
+      "timezone": "Africa/Kampala",
+      "currency": "UGX",
+      "language": "en",
+      "regionType": "REGION"
+    }
+  ],
+  "districts": [
+    {
+      "geolocationCode": "UG",
+      "name": "Kampala District",
+      "code": "KLA-DIST"
+    },
+    {
+      "geolocationCode": "UG-SW",
+      "name": "Kabale District",
+      "code": "KBL-DIST",
+      "districtType": "MUNICIPALITY_DISTRICT"
+    }
+  ],
+  "cities": [
+    {
+      "districtCode": "KLA-DIST",
+      "name": "Kampala",
+      "code": "KLA"
+    },
+    {
+      "districtCode": "KBL-DIST",
+      "name": "Kabale",
+      "code": "KBL-CITY",
+      "cityType": "MUNICIPALITY"
+    }
+  ]
+}

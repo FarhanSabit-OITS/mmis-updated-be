@@ -1,0 +1,51 @@
+{
+  "markets": [
+    {
+      "id": "m1",
+      "name": "Nakasero Market",
+      "uniqueCode": "NAK-001",
+      "address": "Nakasero, Kampala",
+      "marketType": "PERMANENT",
+      "categories": ["FOOD", "GENERAL"]
+    },
+    {
+      "id": "m2",
+      "name": "Owino Market",
+      "uniqueCode": "OWI-001",
+      "address": "Downtown Kampala",
+      "marketType": "PERMANENT",
+      "categories": ["CLOTHING", "GENERAL"]
+    }
+  ],
+  "users": [
+    {
+      "email": "nakasero.manager@marketmaster.com",
+      "phone": "+256700000102",
+      "firstName": "Nakasero",
+      "lastName": "Manager",
+      "country": "Uganda",
+      "role": "MarketMaster",
+      "marketId": "m1",
+      "passwordPlain": "market123"
+    },
+    {
+      "email": "owino.manager@marketmaster.com",
+      "phone": "+256700000103",
+      "firstName": "Owino",
+      "lastName": "Manager",
+      "country": "Uganda",
+      "role": "MarketMaster",
+      "marketId": "m2",
+      "passwordPlain": "market123"
+    },
+    {
+      "email": "gate@marketmaster.com",
+      "phone": "+256700000104",
+      "firstName": "Gate",
+      "lastName": "Counter",
+      "country": "Uganda",
+      "role": "GateCounter",
+      "passwordPlain": "gate123"
+    }
+  ]
+}
