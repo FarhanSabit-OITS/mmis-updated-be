@@ -28,6 +28,8 @@ import {
   KycStatus,
   UserStatus,
   MfaType,
+  PermissionResource,
+  PermissionAction,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -151,7 +153,61 @@ const FTS_ROWS: FtsRow[] = [
 
 async function main() {
   console.log("DB URL:", process.env.DATABASE_URL);
-  console.log("🌱  Starting seed (Kabale Central Market)…\n");
+  console.log("🌱  Starting seed (Markets & RBAC Initialization)…\n");
+
+  // ── 0. RBAC System Roles & Permissions ──────────────────────────────────────
+  console.log("🔐  System Roles & Permissions…");
+
+  const roles = [
+    { name: "SUPER_ADMIN", level: AdminLevel.SUPER_ADMIN, desc: "Total system control" },
+    { name: "MARKET_MASTER", level: AdminLevel.MARKET_MASTER, desc: "Market management" },
+    { name: "GATE_OPERATOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Market Entry/Exit Counter" },
+    { name: "STOCK_COUNTER", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Goods and Delivery Verification Counter" },
+    { name: "REVENUE_COLLECTOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Taxes and fees" },
+    { name: "HEALTH_INSPECTOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Sanitation and compliance" },
+    { name: "VENDOR", desc: "Facility operators" },
+    { name: "SUPPLIER", desc: "Wholesale logistics" },
+  ];
+
+  for (const r of roles) {
+    const role = await prisma.role.upsert({
+      where: { name: r.name },
+      update: { description: r.desc, level: r.level || null },
+      create: { name: r.name, description: r.desc, level: r.level || null, isSystem: true },
+    });
+
+    // Simple permission mapping for seed
+    const resources = [PermissionResource.MARKET, PermissionResource.SHOP, PermissionResource.STALL, PermissionResource.GATE, PermissionResource.PAYMENT];
+    for (const res of resources) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_resource_action: { roleId: role.id, resource: res, action: PermissionAction.READ } },
+        update: {},
+        create: {
+          roleId: role.id,
+          resource: res,
+          action: PermissionAction.READ,
+          metadata: { notes: "Global READ for system roles" },
+        },
+      });
+    }
+
+    // Market Master specific MANAGE permissions
+    if (r.name === "MARKET_MASTER") {
+      const manageResources = [PermissionResource.SHOP, PermissionResource.STALL, PermissionResource.GATE, PermissionResource.KYC];
+      for (const res of manageResources) {
+        await prisma.rolePermission.upsert({
+          where: { roleId_resource_action: { roleId: role.id, resource: res, action: PermissionAction.UPDATE } },
+          update: {},
+          create: {
+            roleId: role.id,
+            resource: res,
+            action: PermissionAction.UPDATE,
+            conditions: { marketId: "${user.marketId}" }, // ABAC rule
+          },
+        });
+      }
+    }
+  }
 
   // ── 1. Geography ────────────────────────────────────────────────────────────
 
@@ -190,6 +246,52 @@ async function main() {
       districtId: district.id,
       name: "Kabale",
       code: "KBL-CITY",
+      cityType: "MUNICIPALITY",
+    },
+  });
+
+  console.log("📍  Geography (Mbarara)…");
+  const d_mbarara = await prisma.district.upsert({
+    where: { code: "MBR-DIST" },
+    update: {},
+    create: {
+      geolocationId: geolocation.id,
+      name: "Mbarara District",
+      code: "MBR-DIST",
+      districtType: "MUNICIPALITY_DISTRICT",
+    },
+  });
+
+  const c_mbarara = await prisma.city.upsert({
+    where: { code: "MBR-CITY" },
+    update: {},
+    create: {
+      districtId: d_mbarara.id,
+      name: "Mbarara City",
+      code: "MBR-CITY",
+      cityType: "MUNICIPALITY",
+    },
+  });
+
+  console.log("📍  Geography (Gulu)…");
+  const d_gulu = await prisma.district.upsert({
+    where: { code: "GLU-DIST" },
+    update: {},
+    create: {
+      geolocationId: geolocation.id,
+      name: "Gulu District",
+      code: "GLU-DIST",
+      districtType: "MUNICIPALITY_DISTRICT",
+    },
+  });
+
+  const c_gulu = await prisma.city.upsert({
+    where: { code: "GLU-CITY" },
+    update: {},
+    create: {
+      districtId: d_gulu.id,
+      name: "Gulu City",
+      code: "GLU-CITY",
       cityType: "MUNICIPALITY",
     },
   });
@@ -267,6 +369,68 @@ async function main() {
     },
   });
 
+  console.log("👩‍💼  Market master (Mbarara)…");
+  const mm_mbarara = await prisma.user.upsert({
+    where: { email: "sarah.namubiru@mbararamarket.ug" },
+    update: {},
+    create: {
+      email: "sarah.namubiru@mbararamarket.ug",
+      passwordHash: DEV_PASSWORD,
+      phone: "+256700000101",
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      mfaType: MfaType.NONE,
+      profile: {
+        create: {
+          firstName: "Sarah",
+          lastName: "Namubiru",
+          primaryPhone: "+256700000101",
+          primaryEmail: "sarah.namubiru@mbararamarket.ug",
+          country: "Uganda",
+          verificationLevel: "FULL",
+        },
+      },
+      admin: {
+        create: {
+          adminLevel: AdminLevel.MARKET_MASTER,
+          employeeId: "EMP-0101",
+          assignedByAdminId: superAdminRecord.id,
+        },
+      },
+    },
+  });
+
+  console.log("👨‍💼  Market master (Gulu)…");
+  const mm_gulu = await prisma.user.upsert({
+    where: { email: "david.otim@gulumarket.ug" },
+    update: {},
+    create: {
+      email: "david.otim@gulumarket.ug",
+      passwordHash: DEV_PASSWORD,
+      phone: "+256700000201",
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      mfaType: MfaType.NONE,
+      profile: {
+        create: {
+          firstName: "David",
+          lastName: "Otim",
+          primaryPhone: "+256700000201",
+          primaryEmail: "david.otim@gulumarket.ug",
+          country: "Uganda",
+          verificationLevel: "FULL",
+        },
+      },
+      admin: {
+        create: {
+          adminLevel: AdminLevel.MARKET_MASTER,
+          employeeId: "EMP-0201",
+          assignedByAdminId: superAdminRecord.id,
+        },
+      },
+    },
+  });
+
   // ── 4. Market ────────────────────────────────────────────────────────────────
 
   console.log("🏪  Kabale Central Market…");
@@ -288,6 +452,68 @@ async function main() {
       contactPhone: "+256700000099",
       createdByAdminId: superAdminRecord.id,
     },
+  });
+
+  // Market master row (needs marketId)
+  const mmAdmin_kabale = await prisma.admin.findUniqueOrThrow({ where: { userId: marketMasterUser.id } });
+  await prisma.marketMaster.upsert({
+    where: { adminId: mmAdmin_kabale.id },
+    update: {},
+    create: { adminId: mmAdmin_kabale.id, marketId: market.id },
+  });
+
+  console.log("🏪  Mbarara Central Market…");
+  const m_mbarara = await prisma.market.upsert({
+    where: { uniqueCode: "MKT-MBARARA" },
+    update: {},
+    create: {
+      cityId: c_mbarara.id,
+      name: "Mbarara Central Market",
+      uniqueCode: "MKT-MBARARA",
+      displayName: "Mbarara Central Market",
+      address: "Mbarara High Street",
+      marketType: MarketType.PERMANENT,
+      categories: ["FOOD", "CLOTHING", "RETAIL", "GENERAL"],
+      totalFacilities: 0,
+      openingTime: "06:30",
+      closingTime: "19:30",
+      contactPhone: "+256700000199",
+      createdByAdminId: superAdminRecord.id,
+    },
+  });
+
+  const mmAdmin_mbr = await prisma.admin.findUniqueOrThrow({ where: { userId: mm_mbarara.id } });
+  await prisma.marketMaster.upsert({
+    where: { adminId: mmAdmin_mbr.id },
+    update: {},
+    create: { adminId: mmAdmin_mbr.id, marketId: m_mbarara.id },
+  });
+
+  console.log("🏪  Gulu Main Market…");
+  const m_gulu = await prisma.market.upsert({
+    where: { uniqueCode: "MKT-GULU" },
+    update: {},
+    create: {
+      cityId: c_gulu.id,
+      name: "Gulu Main Market",
+      uniqueCode: "MKT-GULU",
+      displayName: "Gulu Main Market",
+      address: "Gulu Gulu Avenue",
+      marketType: MarketType.PERMANENT,
+      categories: ["FOOD", "CLOTHING", "RETAIL", "GENERAL"],
+      totalFacilities: 0,
+      openingTime: "07:00",
+      closingTime: "19:00",
+      contactPhone: "+256700000299",
+      createdByAdminId: superAdminRecord.id,
+    },
+  });
+
+  const mmAdmin_glu = await prisma.admin.findUniqueOrThrow({ where: { userId: mm_gulu.id } });
+  await prisma.marketMaster.upsert({
+    where: { adminId: mmAdmin_glu.id },
+    update: {},
+    create: { adminId: mmAdmin_glu.id, marketId: m_gulu.id },
   });
 
   // Market master row (needs marketId)
@@ -599,7 +825,8 @@ async function main() {
   for (let i = 0; i < FTS_ROWS.length; i++) {
     const row = FTS_ROWS[i];
     const email = `vendor.${toEmailLocal(row.name, row.id)}@kabalemarket.ug`;
-    const phone = normalisePhone(row.phone, `+2567010${String(i + 100).padStart(5, "0")}`);
+    // Force absolute uniqueness for phone to avoid constraint issues during development seeding
+    const phone = `+256708${String(i).padStart(6, "0")}`; 
     const nameParts = row.name.split(/\s+/);
     const firstName = nameParts[0] ?? "Vendor";
     const lastName  = nameParts[1] ?? String(row.id);

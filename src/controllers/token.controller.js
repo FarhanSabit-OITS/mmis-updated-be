@@ -121,12 +121,18 @@ exports.generateEntryToken = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Token generated successfully',
+            message: 'Token generated successfully. Paper printout and Email payloads available.',
             data: {
                 id: token.id,
                 shortCode: token.shortCode,
                 visitorName: token.visitorName,
-                expiresAt: token.expiresAt
+                expiresAt: token.expiresAt,
+                // Print and Email augmented payloads
+                printUrl: `/api/market/tokens/${token.id}/print`,
+                emailPayload: {
+                    subject: 'Your Market Gate Entry Token',
+                    body: `Hello ${tokenData.visitorName},\n\nYour Gate Entry Token is ${token.shortCode}.\nShow this QR code at the gate.`
+                }
             }
         });
 
@@ -275,10 +281,90 @@ exports.recordExit = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Exit recorded successfully'
+            message: 'Exit recorded successfully, token invalidated'
         });
     } catch (err) {
         console.error('recordExit error:', err);
         return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
+
+/**
+ * POST /api/market/tokens/tax
+ * Record VAT/Tax collection
+ */
+exports.recordTax = async (req, res) => {
+    try {
+        const { tokenId, taxAmount } = req.body;
+        const { userId: staffUserId, marketId } = req.user;
+
+        const gate = await getOrCreateGate(marketId, staffUserId);
+        await prisma.gateOperation.create({
+            data: {
+                gateId: gate.id,
+                operationType: 'TAX_COLLECTED',
+                tokenId,
+                recordedById: staffUserId,
+                amount: taxAmount
+            }
+        });
+
+        return res.status(200).json({ success: true, message: 'Tax recorded successfully' });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
+ * POST /api/market/tokens/parking
+ * Assign vehicle to a parking or unloading zone
+ */
+exports.recordParking = async (req, res) => {
+    try {
+        const { tokenId, zoneId } = req.body;
+        const { userId: staffUserId, marketId } = req.user;
+
+        const gate = await getOrCreateGate(marketId, staffUserId);
+        await prisma.gateOperation.create({
+            data: {
+                gateId: gate.id,
+                operationType: 'PARKING_ASSIGNED',
+                tokenId,
+                recordedById: staffUserId,
+                inspectionNotes: `Assigned to zone ${zoneId}`
+            }
+        });
+
+        return res.status(200).json({ success: true, message: 'Parking assigned successfully' });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
+ * POST /api/market/tokens/receipt
+ * Authorize delivery receipt by Vendor/Stock Counter
+ */
+exports.recordStockReceipt = async (req, res) => {
+    try {
+        const { tokenId, itemsReceived } = req.body;
+        const { userId: staffUserId, marketId } = req.user;
+
+        const gate = await getOrCreateGate(marketId, staffUserId);
+        await prisma.gateOperation.create({
+            data: {
+                gateId: gate.id,
+                operationType: 'STOCK_RECEIPT',
+                tokenId,
+                goodsDescription: JSON.stringify(itemsReceived),
+                recordedById: staffUserId,
+                status: 'COMPLETED'
+            }
+        });
+
+        return res.status(200).json({ success: true, message: 'Stock receipt verified' });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+

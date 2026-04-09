@@ -8,10 +8,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // If you want Postgres extensions (optional; see note below), keep this:
-  // extensions = [citext(), pg_trgm()]
+  // Connection URL is configured in prisma.config.ts (Prisma v7+)
 }
+
 
 enum UserStatus {
   ACTIVE
@@ -613,7 +612,8 @@ model Market {
 
   scannerDevices ScannerDevice[] @relation("MarketScannerDevices")
 
-  invitations Invitation[] @relation("MarketInvitations")
+  invitations   Invitation[]   @relation("MarketInvitations")
+  requisitions  Requisition[]
 
   @@unique([cityId, name])
   @@index([cityId])
@@ -853,7 +853,8 @@ model Vendor {
 
   taxPayments TaxPayment[]
 
-  invitations Invitation[]
+  invitations   Invitation[]
+  requisitions  Requisition[]
 
   @@index([businessName])
   @@map("vendors")
@@ -879,6 +880,7 @@ model Supplier {
   invoices   SupplierInvoice[]
 
   invitations Invitation[]
+  bids        SupplierBid[]
 
   @@index([businessName])
   @@map("suppliers")
@@ -2658,4 +2660,75 @@ model HandshakeCode {
   @@index([code])
   @@index([invitationId])
   @@map("handshake_codes")
+}
+
+// ============================================================
+// VENDOR-SUPPLIER JUNCTION: Requisitions & Bidding
+// ============================================================
+
+model Requisition {
+  id       String @id @default(uuid())
+  vendorId String
+  marketId String?
+
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  deadline    DateTime
+  budget      Decimal? @db.Decimal(15, 2)
+
+  status String @default("OPEN") @db.VarChar(30)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market Market? @relation(fields: [marketId], references: [id])
+
+  items RequisitionItem[]
+  bids  SupplierBid[]
+
+  @@index([vendorId])
+  @@index([marketId])
+  @@index([status])
+  @@index([deadline])
+  @@map("requisitions")
+}
+
+model RequisitionItem {
+  id             String  @id @default(uuid())
+  requisitionId  String
+  name           String  @db.VarChar(200)
+  quantity       Decimal @db.Decimal(10, 2)
+  unit           String  @db.VarChar(50)
+  specifications String? @db.Text
+
+  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+
+  @@index([requisitionId])
+  @@map("requisition_items")
+}
+
+model SupplierBid {
+  id            String @id @default(uuid())
+  requisitionId String
+  supplierId    String
+
+  amount       Decimal  @db.Decimal(15, 2)
+  deliveryDate DateTime
+  notes        String?  @db.Text
+
+  aiTrustScore Int @default(0)
+
+  status String @default("PENDING") @db.VarChar(20)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  supplier    Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([requisitionId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("supplier_bids")
 }

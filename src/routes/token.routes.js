@@ -7,6 +7,9 @@ const authMiddleware = require('../middleware/auth.middleware');
 router.post('/entry', authMiddleware, tokenController.generateEntryToken);
 router.get('/:code', authMiddleware, tokenController.getTokenDetails);
 router.post('/dispatch', authMiddleware, tokenController.recordStockDispatch);
+router.post('/tax', authMiddleware, tokenController.recordTax);
+router.post('/parking', authMiddleware, tokenController.recordParking);
+router.post('/receipt', authMiddleware, tokenController.recordStockReceipt);
 router.post('/exit', authMiddleware, tokenController.recordExit);
 
 module.exports = router;

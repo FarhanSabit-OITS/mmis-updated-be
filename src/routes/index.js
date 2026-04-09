@@ -9,6 +9,7 @@ const tokenRoutes = require('./token.routes');
 const marketRoutes = require('./market.route')
 const facilityRoutes = require("./facility.routes")
 const adminOnboardingRoutes = require('./admin.onboarding.routes');
+const requisitionRoutes = require('./requisition.route');
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
@@ -20,6 +21,7 @@ const configureRouter = (app)=>{
     app.use('/api/superadmin/vendors', vendorRoutes);
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
+    app.use('/api/requisitions', requisitionRoutes);
     app.use('/api', paymentRoutes);
     app.use('/api/markets', marketRoutes)
     app.use('/api/facilities', facilityRoutes)
