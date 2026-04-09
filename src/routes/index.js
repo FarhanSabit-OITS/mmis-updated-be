@@ -8,6 +8,7 @@ const staffRoutes = require('./staff.routes');
 const tokenRoutes = require('./token.routes');
 const marketRoutes = require('./market.route')
 const facilityRoutes = require("./facility.routes")
+const adminOnboardingRoutes = require('./admin.onboarding.routes');
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
@@ -23,6 +24,7 @@ const configureRouter = (app)=>{
     app.use('/api/markets', marketRoutes)
     app.use('/api/facilities', facilityRoutes)
     app.use('/api/shops', facilityRoutes) // Add backward compatibility alias
+    app.use('/api/admin/onboarding', adminOnboardingRoutes);
 }
 
 module.exports = configureRouter

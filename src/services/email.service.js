@@ -73,7 +73,32 @@ async function sendPasswordResetEmail(to, resetUrl, options = {}) {
   return info;
 }
 
+async function sendAdminInvitationEmail({ email, name, token, tempPassword, expiresAt }) {
+  const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5174'}/auth/password-setup?token=${token}`;
+  
+  const html = renderEmailTemplate({
+    name,
+    actionUrl: loginUrl,
+    actionText: 'Initialize Administrative Account',
+    heroTitle: 'Official MMIS Administrator Invitation',
+    intro: `You have been appointed as an administrator for the MMIS platform. \n\nYour temporary credentials are:\nEmail: ${email}\nPassword: ${tempPassword}`,
+    outro: `IMPORTANT SECURITY NOTICE: Your account is currently in a PROVISIONAL state. After setting your permanent password, you must visit a Market Authority personnel physically to complete the Trust-Handshake verification. \n\nThis invitation expires on ${new Date(expiresAt).toLocaleString()}.`,
+    ctaTag: 'Secure Enrollment'
+  });
+
+  const text = `Admin Invitation: ${loginUrl}\nTemporary Password: ${tempPassword}`;
+  
+  return await getTransporter().sendMail({
+    from: SMTP_FROM || SMTP_USER,
+    to: email,
+    subject: 'Official Administrative Appointment - MMIS Gateway',
+    text,
+    html
+  });
+}
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendAdminInvitationEmail
 };
