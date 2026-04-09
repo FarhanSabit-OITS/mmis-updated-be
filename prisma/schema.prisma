@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // <-- UNCOMMENT / ADD THIS LINE
+  url      = env("DATABASE_URL")
   // If you want Postgres extensions (optional; see note below), keep this:
   // extensions = [citext(), pg_trgm()]
 }
@@ -559,12 +559,8 @@ model Market {
   marketType MarketType @default(PERMANENT)
   categories String[]
 
-  totalLevels    Int  @default(1)
-  totalSections  Int  @default(0)
-  totalShops     Int  @default(0)
-  totalStalls    Int  @default(0)
-  occupiedShops  Int  @default(0)
-  occupiedStalls Int  @default(0)
+  totalFacilities    Int  @default(0)
+  occupiedFacilities Int  @default(0)
   maxCapacity    Int?
 
   openingTime     String   @default("06:00") @db.VarChar(10)
@@ -637,9 +633,8 @@ model MarketLevel {
   hasRestrooms Boolean @default(true)
   hasParking   Boolean @default(false)
 
-  totalSections Int @default(0)
-  totalShops    Int @default(0)
-  totalStalls   Int @default(0)
+  totalSections  Int @default(0)
+  totalFacilities Int @default(0)
 
   wheelchairAccess Boolean @default(false)
   emergencyExits   Int     @default(2)
@@ -679,10 +674,8 @@ model MarketSection {
   locationCode String? @db.VarChar(10)
   entranceGate String? @db.VarChar(50)
 
-  totalShops     Int  @default(0)
-  totalStalls    Int  @default(0)
-  occupiedShops  Int  @default(0)
-  occupiedStalls Int  @default(0)
+  totalFacilities    Int  @default(0)
+  occupiedFacilities Int  @default(0)
   maxCapacity    Int?
 
   hasAirConditioning Boolean @default(false)

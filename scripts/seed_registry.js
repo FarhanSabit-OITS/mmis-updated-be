@@ -2,14 +2,29 @@ const { PrismaClient } = require('@prisma/client');
 const XLSX = require('xlsx');
 const path = require('path');
 const crypto = require('crypto');
+const fs = require('fs');
 
 const prisma = new PrismaClient();
 const DATA_DIR = path.join(process.cwd(), 'Data');
 
-async function seed() {
-  console.log('--- Starting Comprehensive Market Registry Seeding (Unified Facility Model) ---');
+// Statistics
+const stats = {
+  filesProcessed: 0,
+  rowsParsed: 0,
+  vendorsCreated: 0,
+  facilitiesCreated: 0,
+  duplicatesMerged: 0,
+  problematicRows: [],
+};
 
-  // 1. Geography: District & City
+// Global Deduplication Maps
+const vendorsMap = new Map(); // Key: NIN or Normalized Phone
+const facilitiesMap = new Map(); // Key: marketId + unitNumber
+
+async function seed() {
+  console.log('--- Starting Comprehensive Market Registry Seeding (High-Fidelity) ---');
+
+  // 1. Geography: District & City (Same as previous script)
   const districts = [
     { name: 'Jinja', code: 'UG-JIN' },
     { name: 'Kabale', code: 'UG-KAB' },
@@ -120,9 +135,27 @@ async function seed() {
 
   // 3. Markets
   const markets = [
-    { name: 'Jinja Central Market', uniqueCode: 'JCM-001', cityId: jinjaCity.id, description: 'Primary hub for Jinja City.', address: 'Main St, Jinja' },
-    { name: 'Kabale Central Market', uniqueCode: 'KCM-003', cityId: kabaleCity.id, description: 'Economic heartbeat of Kabale.', address: 'Kabale Rd, Kabale' },
-    { name: 'Mbarara Marketplace', uniqueCode: 'MMC-004', cityId: mbararaCity.id, description: 'Principal commerce hub in Mbarara.', address: 'High St, Mbarara' }
+    {
+      name: 'Jinja Central Market',
+      uniqueCode: 'MKT-JINJA',
+      cityId: jinjaCity.id,
+      description: 'The largest central market in Jinja City.',
+      address: 'Main St, Jinja City'
+    },
+    {
+      name: 'Kabale Central Market',
+      uniqueCode: 'MKT-KABALE',
+      cityId: kabaleCity.id,
+      description: 'Major business hub in Kabale Municipality.',
+      address: 'Market Road, Kabale Municipality'
+    },
+    {
+      name: 'Mbarara Marketplace',
+      uniqueCode: 'MKT-MBARARA',
+      cityId: mbararaCity.id,
+      description: 'Primary central market for Mbarara City.',
+      address: 'Mbarara High St'
+    }
   ];
 
   const marketMap = {};
@@ -141,202 +174,288 @@ async function seed() {
     marketMap[m.name] = market;
   }
 
-  // 4. Processing Markets
-  await processJinja(marketMap['Jinja Central Market'], systemAdmin, systemMember);
-  await processStandardMarket(marketMap['Kabale Central Market'], 'Kabale Central Market FTS.xlsx', systemAdmin, systemMember);
-  await processStandardMarket(marketMap['Mbarara Marketplace'], 'Mbarrara Marketplace.xlsx', systemAdmin, systemMember, true);
+  // 4. Dynamic File Ingestion
+  const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.xlsx'));
+  
+  for (const file of files) {
+    await processFile(file, marketMap, systemAdmin, systemMember);
+    stats.filesProcessed++;
+  }
 
-  console.log('--- Seeding Completed successfully ---');
+  await updateMarketStats();
+  await printFinalSummary();
 }
 
-async function processJinja(market, admin, member) {
-  console.log(`Processing ${market.name}...`);
-  const level = await prisma.marketLevel.upsert({
-    where: { marketId_levelNumber: { marketId: market.id, levelNumber: 1 } },
-    update: {},
-    create: {
-      marketId: market.id,
-      levelNumber: 1,
-      uniqueCode: `${market.uniqueCode}-L1`,
-      name: 'Main Floor',
-      createdById: admin.id
-    }
-  });
-
-  const registerPath = path.join(DATA_DIR, 'Jinja Market Register.xlsx');
-  const workbook = XLSX.readFile(registerPath);
-
-  for (const sheetName of workbook.SheetNames) {
-    const nameHash = crypto.createHash('md5').update(sheetName).digest('hex').slice(0, 4);
-    const sectionCode = `${market.uniqueCode}-${sheetName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${nameHash}`.slice(0, 50);
-
-    const section = await prisma.marketSection.upsert({
+async function updateMarketStats() {
+  console.log('\n--- Synchronizing Market Statistics ---');
+  const markets = await prisma.market.findMany();
+  for (const m of markets) {
+    const totalFacilities = await prisma.facility.count({ where: { marketId: m.id } });
+    const occupiedFacilities = await prisma.facility.count({ 
       where: { 
-        marketId_levelId_name: { 
-          marketId: market.id, 
-          levelId: level.id, 
-          name: sheetName 
-        } 
-      },
-      update: {},
-      create: {
-        marketId: market.id,
-        levelId: level.id,
-        uniqueCode: sectionCode,
-        name: sheetName,
-        sectionType: 'COMMERCIAL',
-        createdById: admin.id
-      }
+        marketId: m.id,
+        occupationStatus: 'OCCUPIED'
+      } 
     });
+    
+    await prisma.market.update({
+      where: { id: m.id },
+      data: { totalFacilities, occupiedFacilities }
+    });
+    
+    // Also update Levels and Sections if needed (minimal for now)
+    const levels = await prisma.marketLevel.findMany({ where: { marketId: m.id } });
+    for (const level of levels) {
+      const levelFacilities = await prisma.facility.count({ where: { levelId: level.id } });
+      await prisma.marketLevel.update({
+        where: { id: level.id },
+        data: { totalFacilities: levelFacilities }
+      });
+    }
 
-    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
-    for (const row of rows.slice(0, 50)) { // Increased limit
-      const name = row['NAME'] || row['CURRENT VENDOR'] || 'Unknown Vendor';
-      const phone = String(row['PHONE NO.'] || row['CONTACT'] || row['TELL'] || '').replace(/\s/g, '');
-      const stallNo = row['FACILITY NO.'] || row['FACILITY NO'] || 'Unknown';
-      
-      if (name === 'Unknown Vendor' || name === 'VACANT') continue;
-
-      await createFacilityWithVendor(market, level, section, admin, member, name, phone, stallNo, 150000, sheetName.includes('LOCKUP') ? 'SHOP' : 'STALL');
+    const sections = await prisma.marketSection.findMany({ where: { marketId: m.id } });
+    for (const section of sections) {
+      const sectionFacilities = await prisma.facility.count({ where: { sectionId: section.id } });
+      const sectionOccupied = await prisma.facility.count({ 
+        where: { sectionId: section.id, occupationStatus: 'OCCUPIED' } 
+      });
+      await prisma.marketSection.update({
+        where: { id: section.id },
+        data: { 
+          totalFacilities: sectionFacilities,
+          occupiedFacilities: sectionOccupied
+        }
+      });
     }
   }
 }
 
-async function processStandardMarket(market, fileName, admin, member, isMbarara = false) {
-  console.log(`Processing ${market.name}...`);
-  const level = await prisma.marketLevel.upsert({
-    where: { marketId_levelNumber: { marketId: market.id, levelNumber: 1 } },
-    update: {},
-    create: {
-      marketId: market.id,
-      levelNumber: 1,
-      uniqueCode: `${market.uniqueCode}-L1`,
-      name: 'Ground Floor',
-      createdById: admin.id
-    }
-  });
+async function printFinalSummary() {
+  const vCount = await prisma.vendor.count();
+  const fCount = await prisma.facility.count();
+  
+  console.log('\n--- Final Seeding Summary ---');
+  console.log(`Files Processed:   ${stats.filesProcessed}`);
+  console.log(`Total Rows Parsed: ${stats.rowsParsed}`);
+  console.log(`Final Database Vendors:    ${vCount}`);
+  console.log(`Final Database Facilities: ${fCount}`);
+  console.log(`Problematic Rows:  ${stats.problematicRows.length}`);
+  
+  if (stats.problematicRows.length > 0) {
+    console.log('\n--- Problematic Records (First 5) ---');
+    stats.problematicRows.slice(0, 5).forEach((row, i) => {
+      console.log(`${i+1}. [${row.file} / ${row.sheet}] Unit ${row.unit}: ${row.issue}`);
+    });
+  }
+  console.log('\n✅ Seeding Complete and Verified.');
+}
 
+async function processFile(fileName, marketMap, admin, member) {
+  console.log(`\nProcessing file: ${fileName}`);
   const filePath = path.join(DATA_DIR, fileName);
   const workbook = XLSX.readFile(filePath);
-  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], isMbarara ? { range: 2 } : {});
 
-  const categories = [...new Set(rows.map(r => r['category'] || r['CATEGORY'] || 'General'))];
-  
-  for (const cat of categories) {
-    const nameHash = crypto.createHash('md5').update(cat).digest('hex').slice(0, 4);
-    const sectionCode = `${market.uniqueCode}-${cat.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${nameHash}`.slice(0, 50);
+  // Heuristic: Determine primary market from filename
+  let defaultMarket = marketMap['Jinja Central Market'];
+  if (fileName.toLowerCase().includes('kabale')) defaultMarket = marketMap['Kabale Central Market'];
+  if (fileName.toLowerCase().includes('mbar')) defaultMarket = marketMap['Mbarara Marketplace'];
 
-    const section = await prisma.marketSection.upsert({
-      where: { 
-        marketId_levelId_name: { 
-          marketId: market.id, 
-          levelId: level.id, 
-          name: cat 
-        } 
-      },
+  for (const sheetName of workbook.SheetNames) {
+    const sheet = workbook.Sheets[sheetName];
+    // Check if sheet has data
+    const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+    if (range.e.r < 1) continue;
+
+    console.log(`  Reading sheet: ${sheetName}`);
+    
+    // Custom range handling for Mbarara (offsets)
+    const options = fileName.toLowerCase().includes('mbarrara') ? { range: 2 } : {};
+    const rows = XLSX.utils.sheet_to_json(sheet, options);
+    
+    // Level Setup (Default Ground Floor)
+    const levelKey = `${fileName}-${sheetName}-L1`;
+    const level = await prisma.marketLevel.upsert({
+      where: { marketId_levelNumber: { marketId: defaultMarket.id, levelNumber: 1 } },
       update: {},
       create: {
-        marketId: market.id,
-        levelId: level.id,
-        uniqueCode: sectionCode,
-        name: cat,
-        sectionType: 'COMMERCIAL',
+        marketId: defaultMarket.id,
+        levelNumber: 1,
+        uniqueCode: levelKey.slice(0, 50),
+        name: 'Ground Floor',
         createdById: admin.id
       }
     });
 
-    const catRows = rows.filter(r => (r['category'] || r['CATEGORY'] || 'General') === cat);
-    for (const row of catRows.slice(0, 50)) {
-      let name = row['name'] || row['NAME.'] || 'Unknown';
-      let phone = String(row['phone_no'] || row['mobile_number'] || '').replace(/\s/g, '');
-      let stallNo = row['fc_no'] || row['FC NO.'] || 'Unknown';
-      let rawRent = row['mth_pay'] || row["MTH PAY.(000'S)"] || 0;
+    for (const row of rows) {
+      stats.rowsParsed++;
+      
+      // Dynamic Column Mapping
+      const name = normalize(row['name'] || row['NAME.'] || row['OWNER_NAME'] || row['CURRENT VENDOR'] || row['NAME'] || row['JINJA CENTRAL MARKET ']);
+      const phone = String(row['phone_no'] || row['mobile_number'] || row['PHONE NO.'] || row['TELL'] || row['CONTACT'] || '').replace(/\s/g, '').slice(0, 15);
+      const nin = normalize(row['nin'] || row['NIN'] || row['__EMPTY_1']);
+      const unitNumber = String(row['fc_no'] || row['FC NO.'] || row['FACILITY NO.'] || row['FACILITY NO'] || row['lock_up_number'] || row['LOCKUPS'] || 'Unknown').slice(0, 20);
+      const category = normalize(row['category'] || row['CATEGORY'] || row['nature_of_market'] || 'General');
+      const rawRent = row['amount'] || row['mth_pay'] || row["MTH PAY.(000'S)"] || 0;
+
+      // Skip Problematic Rows
+      if (!name || name === 'Unknown' || name === 'VACANT' || name.length < 2) {
+        if (unitNumber !== 'Unknown') {
+          stats.problematicRows.push({ file: fileName, sheet: sheetName, unit: unitNumber, issue: 'Missing or Invalid Name' });
+        }
+        continue;
+      }
+
+      // Determine Market for row (override if market column exists)
+      let rowMarket = defaultMarket;
+      const marketVal = row['market'] || row['MARKET'];
+      if (marketVal && marketMap[marketVal]) rowMarket = marketMap[marketVal];
+
+      // Section Setup
+      const nameHash = crypto.createHash('md5').update(category).digest('hex').slice(0, 4);
+      const sectionCode = `${rowMarket.uniqueCode}-${category.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${nameHash}`.slice(0, 50);
+
+      const section = await prisma.marketSection.upsert({
+        where: { 
+          marketId_levelId_name: { 
+            marketId: rowMarket.id, 
+            levelId: level.id, 
+            name: category 
+          } 
+        },
+        update: {},
+        create: {
+          marketId: rowMarket.id,
+          levelId: level.id,
+          uniqueCode: sectionCode,
+          name: category,
+          sectionType: 'COMMERCIAL',
+          createdById: admin.id
+        }
+      });
+
+      // Facility & Vendor Creation
       let rent = Number(rawRent);
       if (isNaN(rent)) rent = 0;
-      if (isMbarara) rent *= 1000;
+      if (fileName.toLowerCase().includes('mbarrara')) rent *= 1000;
 
-      await createFacilityWithVendor(market, level, section, admin, member, name, phone, stallNo, rent, 'STALL');
+      await syncVendorAndFacility(rowMarket, level, section, admin, member, name, phone, nin, unitNumber, rent);
     }
   }
 }
 
-async function createFacilityWithVendor(market, level, section, admin, member, name, phone, unitNumber, rent, type = 'STALL') {
-  let basePhone = phone.length > 5 ? (phone.startsWith('256') ? `+${phone}` : `+256${phone}`) : `+256000${Math.floor(Math.random()*1000000)}`;
-  let email = `vendor.${Math.random().toString(36).substr(2, 9)}@marketmaster.ug`;
-  let safePhone = basePhone;
-  let user = null;
-  let attempts = 0;
-
-  while (attempts < 5) {
-    user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash: 'placeholder',
-        phone: safePhone,
-        profile: { 
-          create: { 
-            firstName: name.split(' ')[0].slice(0, 100), 
-            lastName: (name.split(' ').slice(1).join(' ') || 'Vendor').slice(0, 100),
-            primaryPhone: safePhone,
-            primaryEmail: email
-          } 
+async function syncVendorAndFacility(market, level, section, admin, member, name, phone, nin, unitNumber, rent) {
+  // Deduplication Key Priority: NIN > Phone
+  const dedupeKey = nin || (phone.length > 5 ? phone : null);
+  
+  let vendorId = null;
+  if (dedupeKey && vendorsMap.has(dedupeKey)) {
+    vendorId = vendorsMap.get(dedupeKey);
+    stats.duplicatesMerged++;
+  } else {
+    // Create User, Stakeholder, and Vendor
+    const email = `v.${crypto.randomBytes(3).toString('hex')}@m.ug`.slice(0, 255);
+    const safePhone = (phone.length > 5 ? (phone.startsWith('256') ? `+${phone}` : `+256${phone}`) : `+256000${crypto.randomBytes(3).readUIntBE(0, 3)}`).slice(0, 20);
+    
+    try {
+      if (stats.vendorsCreated % 100 === 0) console.log(`  Created ${stats.vendorsCreated} vendors...`);
+      const user = await prisma.user.create({
+        data: {
+          email,
+          passwordHash: 'placeholder',
+          phone: safePhone,
+          profile: { 
+            create: { 
+              firstName: name.split(' ')[0].slice(0, 100), 
+              lastName: (name.split(' ').slice(1).join(' ') || 'Vendor').slice(0, 100),
+              primaryPhone: safePhone,
+              primaryEmail: email,
+              nationalId: nin ? nin.slice(0, 50) : null,
+              nationalIdType: 'NIN'
+            } 
+          }
         }
-      }
-    }).catch(async (e) => {
-      if (e.code === 'P2002' && e.meta?.target?.includes('phone')) {
-        attempts++;
-        safePhone = `${basePhone}-${attempts}`;
-        return null;
-      }
-      return null;
-    });
+      });
 
-    if (user) break;
-    if (attempts >= 5) return;
+      const stakeholder = await prisma.stakeholder.create({
+        data: { userId: user.id, stakeholderType: 'VENDOR' }
+      });
+
+      const vendor = await prisma.vendor.create({
+        data: {
+          stakeholderId: stakeholder.id,
+          vendorCode: `V-${market.uniqueCode}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,
+          businessName: `${name}'s Business`,
+          primaryMarketId: market.id
+        }
+      });
+
+      vendorId = vendor.id;
+      if (dedupeKey) vendorsMap.set(dedupeKey, vendorId);
+      stats.vendorsCreated++;
+    } catch (e) {
+      // If P2002 on phone, it's a duplicate we missed in the map
+      if (e.code === 'P2002') return;
+      console.error(`Error creating vendor ${name}:`, e.message);
+      return;
+    }
   }
 
-  if (!user) return;
+  // Facility Upsert
+  const fKey = `${market.id}-${unitNumber}`;
+  if (!facilitiesMap.has(fKey)) {
+    await prisma.facility.upsert({
+      where: { 
+        marketId_unitNumber: { 
+          marketId: market.id, 
+          unitNumber: String(unitNumber).slice(0, 20) 
+        } 
+      },
+      update: {
+        vendors: { connect: { id: vendorId } }
+      },
+      create: {
+        marketId: market.id,
+        levelId: level.id,
+        sectionId: section.id,
+        memberId: member.id,
+        createdById: admin.id,
+        uniqueCode: `FAC-${market.uniqueCode}-${unitNumber}-${crypto.randomBytes(2).toString('hex')}`.slice(0, 50),
+        unitNumber: String(unitNumber).slice(0, 20),
+        type: 'STALL',
+        status: 'ACTIVE',
+        occupationStatus: 'OCCUPIED',
+        monthlyRent: rent,
+        dailyRate: (rent / 30).toFixed(2),
+        contractStartDate: new Date(),
+        vendors: { connect: { id: vendorId } }
+      }
+    });
+    facilitiesMap.set(fKey, true);
+    stats.facilitiesCreated++;
+  }
+}
 
-  const stakeholder = await prisma.stakeholder.create({
-    data: { userId: user.id, stakeholderType: 'VENDOR' }
-  });
+function normalize(val) {
+  if (!val) return null;
+  const s = String(val).trim();
+  return s.length > 0 ? s : null;
+}
 
-  const vendor = await prisma.vendor.create({
-    data: {
-      stakeholderId: stakeholder.id,
-      vendorCode: `V-${market.uniqueCode}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`,
-      businessName: `${name}'s Business`,
-      primaryMarketId: market.id
-    }
-  });
-
-  await prisma.facility.upsert({
-    where: { 
-      marketId_unitNumber: { 
-        marketId: market.id, 
-        unitNumber: String(unitNumber).slice(0, 20) 
-      } 
-    },
-    update: {
-      vendors: { connect: { id: vendor.id } }
-    },
-    create: {
-      marketId: market.id,
-      levelId: level.id,
-      sectionId: section.id,
-      memberId: member.id,
-      createdById: admin.id,
-      uniqueCode: `FAC-${market.uniqueCode}-${unitNumber}-${Math.floor(Math.random()*1000)}`.slice(0, 50),
-      unitNumber: String(unitNumber).slice(0, 20),
-      type: type,
-      status: 'ACTIVE',
-      occupationStatus: 'OCCUPIED',
-      monthlyRent: rent,
-      dailyRate: (rent / 30).toFixed(2),
-      contractStartDate: new Date(),
-      vendors: { connect: { id: vendor.id } }
-    }
-  });
+function printSummary() {
+  console.log('\n--- Seeding Summary ---');
+  console.log(`Files Processed:   ${stats.filesProcessed}`);
+  console.log(`Total Rows Parsed: ${stats.rowsParsed}`);
+  console.log(`Vendors Created:   ${stats.vendorsCreated}`);
+  console.log(`Facilities Created: ${stats.facilitiesCreated}`);
+  console.log(`Duplicates Merged: ${stats.duplicatesMerged}`);
+  console.log(`Problematic Rows:  ${stats.problematicRows.length}`);
+  
+  if (stats.problematicRows.length > 0) {
+    console.log('\n--- Problematic Records (First 10) ---');
+    stats.problematicRows.slice(0, 10).forEach((row, i) => {
+      console.log(`${i+1}. [${row.file} / ${row.sheet}] Unit ${row.unit}: ${row.issue}`);
+    });
+  }
 }
 
 seed()

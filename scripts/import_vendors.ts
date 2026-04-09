@@ -1,5 +1,5 @@
 
-import { PrismaClient, UserStatus, StakeholderType, KycStatus, ShopType, StallType, Gender } from '@prisma/client';
+import { PrismaClient, UserStatus, StakeholderType, KycStatus, FacilityType, FacilityStatus, OccupationStatus, Gender } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -193,180 +193,71 @@ async function main() {
                 });
             }
 
-            // C. Create Shop or Stall
-            /*
-                fc_type analysis from inspection (if we had it):
-                We will assume 'LCK' or similar is SHOP, else STALL.
-                But based on schema, both are physically different tables.
-                Let's use a heuristic: if rent > 100,000 it might be a Shop?
-                Actually, let's look at `fc_type` in the Excel inspection.
-                Wait, I can't inspect it interactively.
-                I will assume everything is a Stall unless map says otherwise.
-                Actually, the plan said: "If fc_type implies built structure... Assumption: LCK = Lockup (Shop)"
-            */
+            let facilityId: string | null = null;
 
+            // C. Create Facility
+            // Heuristic for FacilityType
             const isShop = (row.fc_type || "").toUpperCase().includes("LCK") || (row.fc_type || "").toUpperCase().includes("SHOP");
+            const facilityType = isShop ? FacilityType.SHOP : FacilityType.STALL;
 
-            let shopId: string | null = null;
-            let stallId: string | null = null;
+            // Check if facility exists
+            let facility = await prisma.facility.findUnique({
+                where: { uniqueCode: `FAC-${cleanFcNo}` }
+            });
 
-            if (isShop) {
-                // Upsert Shop
-                let shop = await prisma.shop.findUnique({
-                    where: { marketId_shopNumber: { marketId: market.id, shopNumber: cleanFcNo } }
-                });
+            if (!facility) {
+                // Need a Member ID for Facility creation (Schema requires memberId)
+                // Solution: Create a generic "Kabale Municipal Council" Member to own these facilities.
 
-                if (!shop) {
-                    // Start: Need a Member ID for Shop creation (Schema requires memberId)
-                    // In our schema, Member is a stakeholder type. A user can be a Member AND a Vendor?
-                    // Or is Member == Landlord?
-                    // Schema: Shop -> memberId (Member).
-                    // This implies the Shop is OWNED by a Member.
-                    // If the User is a Vendor (Tenant), who is the Member (Landlord)?
-                    // If the market is government owned, maybe there is a default "Council" Member?
+                let councilUser = await prisma.user.findFirst({ where: { email: "council@kabale.go.ug" } });
+                if (!councilUser) {
+                    councilUser = await prisma.user.create({
+                        data: {
+                            email: "council@kabale.go.ug",
+                            passwordHash: hashedPassword,
+                            status: UserStatus.ACTIVE
+                        }
+                    });
+                    const sHolder = await prisma.stakeholder.create({
+                        data: { userId: councilUser.id, stakeholderType: StakeholderType.MEMBER }
+                    });
+                    await prisma.member.create({
+                        data: {
+                            stakeholderId: sHolder.id,
+                            membershipNumber: "KMC-001",
+                            businessName: "Kabale Municipal Council",
+                            registrationNumber: "KMC-REG-001"
+                        }
+                    });
+                }
+                const councilMember = await prisma.member.findFirstOrThrow({ where: { businessName: "Kabale Municipal Council" } });
 
-                    // CHECK: memberId is required in Shop.
-                    // Solution: Create a generic "Kabale Municipal Council" Member to own these shops.
-
-                    let councilUser = await prisma.user.findFirst({ where: { email: "council@kabale.go.ug" } });
-                    if (!councilUser) {
-                        councilUser = await prisma.user.create({
-                            data: {
-                                email: "council@kabale.go.ug",
-                                passwordHash: hashedPassword,
-                                status: UserStatus.ACTIVE
-                            }
-                        });
-                        const sHolder = await prisma.stakeholder.create({
-                            data: { userId: councilUser.id, stakeholderType: StakeholderType.MEMBER }
-                        });
-                        await prisma.member.create({
-                            data: {
-                                stakeholderId: sHolder.id,
-                                membershipNumber: "KMC-001",
-                                businessName: "Kabale Municipal Council",
-                                registrationNumber: "KMC-REG-001"
-                            }
-                        });
+                facility = await prisma.facility.create({
+                    data: {
+                        marketId: market.id,
+                        memberId: councilMember.id, // Council owns the facility
+                        unitNumber: cleanFcNo,
+                        uniqueCode: `FAC-${cleanFcNo}`,
+                        facilityName: `${isShop ? 'Shop' : 'Stall'} ${cleanFcNo}`,
+                        type: facilityType,
+                        monthlyRent: monthlyRent,
+                        dailyRate: Math.round(monthlyRent / 26),
+                        contractStartDate: new Date(),
+                        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                        status: FacilityStatus.ACTIVE,
+                        occupationStatus: OccupationStatus.VACANT,
+                        createdById: user.id
                     }
-                    const councilMember = await prisma.member.findFirstOrThrow({ where: { businessName: "Kabale Municipal Council" } });
-
-                    shop = await prisma.shop.create({
-                        data: {
-                            marketId: market.id,
-                            memberId: councilMember.id, // Council owns the shop
-                            shopNumber: cleanFcNo,
-                            uniqueCode: `SHOP-${cleanFcNo}`,
-                            shopName: `Shop ${cleanFcNo}`,
-                            shopType: ShopType.RETAIL,
-                            monthlyRent: monthlyRent,
-                            contractStartDate: new Date(),
-                            contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)), // 1 year default
-                            createdById: user.id // Self-created? or System? Ideally Admin ID.
-                        }
-                    });
-                }
-                shopId = shop.id;
-            } else {
-                // Upsert Stall
-                // Stall requires `shopId`. Wait.
-                // Schema: Stall -> shopId.
-                // Does this mean a Stall MUST be inside a Shop?
-                // Or can a Stall be standalone?
-                // Looking at schema: `stallId String @id` ... `shopId String`.
-                // It seems Stalls are sub-units of Shops? Or is there a "Main Market Shop" that contains open stalls?
-
-                // If the schema enforces Stall -> Shop, we need a "General Market Floor" Shop to hold these stalls.
-                let generalShop = await prisma.shop.findFirst({ where: { marketId: market.id, shopNumber: "GENERAL-FLOOR" } });
-                if (!generalShop) {
-                    // We need that Council Member again
-                    const councilMember = await prisma.member.findFirstOrThrow({ where: { businessName: "Kabale Municipal Council" } });
-
-                    generalShop = await prisma.shop.create({
-                        data: {
-                            marketId: market.id,
-                            memberId: councilMember.id,
-                            shopNumber: "GENERAL-FLOOR",
-                            uniqueCode: "KAB-GEN",
-                            shopName: "General Market Floor",
-                            monthlyRent: 0,
-                            contractStartDate: new Date(),
-                            contractEndDate: new Date(),
-                            createdById: user.id // Using Current User is risky if it's the first loop.
-                            // Better to fetch an Admin. But for script simplicity, we use the user or a hardcoded ID?
-                            // Schema says `CreatedBy User`. We can use the first user created.
-                        }
-                    });
-                }
-
-                let stall = await prisma.stall.findUnique({
-                    where: { shopId_stallNumber: { shopId: generalShop.id, stallNumber: cleanFcNo } }
                 });
-
-                if (!stall) {
-                    stall = await prisma.stall.create({
-                        data: {
-                            shopId: generalShop.id,
-                            marketId: market.id, // Added this field in recent schema review if it exists? 
-                            // Wait, looking at schema provided earlier:
-                            // computed lines 1117: `marketId String`
-                            // computed lines 1121: `shop Shop`
-                            // computed lines 1122: `vendor Vendor` (Required!)
-                            vendorId: vendor.id,
-                            stallNumber: cleanFcNo,
-                            uniqueCode: `STALL-${cleanFcNo}`,
-                            stallType: StallType.PERMANENT,
-                            category: row.category || "General",
-                            dailyRate: 0,
-                            monthlyRate: monthlyRent,
-                            contractStartDate: new Date(),
-                            createdById: user.id
-                        }
-                    });
-                }
-                stallId = stall.id;
             }
+            facilityId = facility.id;
 
             // D. Rent Contract
-            // Required for payment module.
-            // Schema: RentContract -> shopId, landlordId (Member), tenantId (Vendor).
-
-            // If it's a Stall, does it have a RentContract?
-            // Schema: Stall doesn't have RentContract relation directly, Shop does.
-            // But `RentContract` has `shopId`.
-            // If a vendor rents a Stall, how is that recorded?
-            // Maybe `RentContract` is only for Shops?
-            // Check Schema Line 2306: `shopId String`.
-            // Check Schema Line 1057: `rentContracts RentContract[]`.
-            // Stall does NOT have rent contracts?
-            // Line 1100: `agreementTerms Json?` in Stall.
-            // Line 1122: `vendor Vendor` is directly on Stall.
-
-            // CONCLUSION:
-            // Shops are rented via `RentContract`.
-            // Stalls are assigned via direct `vendorId` link and have `monthlyRate` on the Stall record itself.
-            // So if it's a Stall, we don't make a RentContract (or the schema doesn't support it well).
-            // BUT the Payment Module needs to track payments.
-            // `RentPayment` links to `RentContract`.
-            // If Stalls don't have Contracts, how do they pay rent?
-            // Maybe we create a "Dummy Shop" for the Stall to link a Contract?
-
-            // OR we assume `RentContract` can point to that "General Market Floor" shop, but we distinguish by Tenant?
-            // Yes, multiple contracts can point to the same Shop?
-            // `@@index([shopId])` - not unique.
-            // So we can create a RentContract for the "General Floor" Shop, assigned to this Vendor.
-
-            if (stallId && !shopId) {
-                // It's a stall. Use General Shop.
-                const generalShop = await prisma.shop.findFirstOrThrow({ where: { shopNumber: "GENERAL-FLOOR" } });
-                shopId = generalShop.id;
-            }
-
-            if (shopId) {
+            if (facilityId) {
                 // Check if contract exists
                 const activeContract = await prisma.rentContract.findFirst({
                     where: {
-                        shopId: shopId,
+                        facilityId: facilityId,
                         tenantId: vendor.id,
                         status: "ACTIVE"
                     }
@@ -377,7 +268,7 @@ async function main() {
 
                     await prisma.rentContract.create({
                         data: {
-                            shopId: shopId,
+                            facilityId: facilityId,
                             landlordId: councilMember.id,
                             tenantId: vendor.id,
                             contractNumber: `CTR-${cleanFcNo}-${Date.now()}`,
