@@ -71,7 +71,8 @@ module.exports = {
     new ApiResponse({
         statusCode: 200,
         success: true,
-        data: result,
+        data: result.markets,
+        pagination: result.pagination,
         message: "Market list is fetched successfully"
     })
     );
