@@ -275,8 +275,7 @@ const getAllVendorsWithDetails = async (filters, {page =1, limit=20}) => {
         return sh.vendor ? base : null;
     }))).filter(Boolean);
 
-    const totalPages = Math.ceil(totalCount / safeLimit);
-    const pagination = new PaginationResponse(totalPages, page, limit)
+    const pagination = new PaginationResponse(totalCount, page, limit)
 
     return {
         vendors: mappedResults, // Keep key 'vendors' for frontend compatibility
