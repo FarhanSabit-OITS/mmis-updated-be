@@ -97,8 +97,30 @@ async function sendAdminInvitationEmail({ email, name, token, tempPassword, expi
   });
 }
 
+async function sendGenericNotificationEmail(to, title, message, actionUrl = null, options = {}) {
+  const { name = 'User' } = options;
+  const html = renderEmailTemplate({
+    name,
+    actionUrl,
+    actionText: 'View Details',
+    intro: message,
+    heroTitle: title,
+    ctaTag: 'System Alert'
+  });
+  const text = `${title}: ${message}${actionUrl ? `\nView here: ${actionUrl}` : ''}`;
+  const info = await getTransporter().sendMail({
+    from: SMTP_FROM || SMTP_USER,
+    to,
+    subject: title,
+    text,
+    html,
+  });
+  return info;
+}
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
-  sendAdminInvitationEmail
+  sendAdminInvitationEmail,
+  sendGenericNotificationEmail
 };

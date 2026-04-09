@@ -159,14 +159,16 @@ async function main() {
   console.log("🔐  System Roles & Permissions…");
 
   const roles = [
-    { name: "SUPER_ADMIN", level: AdminLevel.SUPER_ADMIN, desc: "Total system control" },
-    { name: "MARKET_MASTER", level: AdminLevel.MARKET_MASTER, desc: "Market management" },
-    { name: "GATE_OPERATOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Market Entry/Exit Counter" },
-    { name: "STOCK_COUNTER", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Goods and Delivery Verification Counter" },
-    { name: "REVENUE_COLLECTOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Taxes and fees" },
-    { name: "HEALTH_INSPECTOR", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Sanitation and compliance" },
-    { name: "VENDOR", desc: "Facility operators" },
-    { name: "SUPPLIER", desc: "Wholesale logistics" },
+    { name: "SuperAdmin", level: AdminLevel.SUPER_ADMIN, desc: "Total system control" },
+    { name: "MarketMaster", level: AdminLevel.MARKET_MASTER, desc: "Market management" },
+    { name: "GateCounter", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Market Entry/Exit Counter" },
+    { name: "StockCounter", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Goods and Delivery Verification Counter" },
+    { name: "RevenueCollector", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Taxes and fees" },
+    { name: "HealthInspector", level: AdminLevel.PSEUDO_MARKET_ADMIN, desc: "Sanitation and compliance" },
+    { name: "Vendor", desc: "Facility operators" },
+    { name: "Supplier", desc: "Wholesale logistics" },
+    { name: "Guest", desc: "Registered but unverified user" },
+    { name: "Customer", desc: "Market visitor/shopper" },
   ];
 
   for (const r of roles) {

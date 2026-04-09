@@ -93,16 +93,23 @@ module.exports = {
 
   /**
    * POST /api/requisitions/:requisitionId/accept-bid
-   * Vendor accepts a supplier's bid → requisition moves to AWARDED.
+   * Vendor accepts a supplier's bid → requisition moves to AWARDED and a PurchaseOrder is generated.
    */
   acceptBid: asyncHandler(async (req, res) => {
-    
     const { requisitionId } = req.params;
-    const { bidId } = req.body;
+    const { bidId, paymentTerms, expectedDate } = req.body;
+    const notificationService = require('./notification.service'); // In-controller import to avoid circular dep if any
 
     const bid = await prisma.supplierBid.findUnique({
       where: { id: bidId },
-      include: { requisition: true }
+      include: { 
+        requisition: {
+          include: { items: true }
+        },
+        supplier: {
+          include: { stakeholder: true }
+        }
+      }
     });
 
     if (!bid || bid.requisitionId !== requisitionId) {
@@ -112,10 +119,41 @@ module.exports = {
       return res.status(409).json(new ApiResponse({ statusCode: 409, success: false, message: `Bid is already ${bid.status}.` }));
     }
 
-    // Accept chosen bid, reject others
-    const [acceptedBid, updatedReq] = await prisma.$transaction([
-      prisma.supplierBid.update({ where: { id: bidId }, data: { status: 'ACCEPTED' } }),
-      prisma.requisition.update({ where: { id: requisitionId }, data: { status: 'AWARDED' } }),
+    // 1. Calculate VAT (18%)
+    const amount = parseFloat(bid.amount);
+    const vatRate = 0.18;
+    const totalExclVat = amount / (1 + vatRate);
+    const vatAmount = amount - totalExclVat;
+    const totalInclVat = amount;
+
+    // 2. Generate PO Number
+    const poNumber = `PO-${Math.random().toString(36).substring(2, 7).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+    // 3. Accept chosen bid, reject others, and create PO in transaction
+    const [acceptedBid, updatedReq, purchaseOrder] = await prisma.$transaction([
+      prisma.supplierBid.update({ 
+        where: { id: bidId }, 
+        data: { status: 'ACCEPTED' } 
+      }),
+      prisma.requisition.update({ 
+        where: { id: requisitionId }, 
+        data: { status: 'AWARDED' } 
+      }),
+      prisma.purchaseOrder.create({
+        data: {
+          poNumber,
+          marketId: bid.requisition.marketId,
+          vendorId: bid.requisition.vendorId,
+          supplierId: bid.supplierId,
+          bidId: bid.id,
+          totalExclVat,
+          vatAmount,
+          totalInclVat,
+          paymentTerms: paymentTerms || bid.supplier.paymentTerms || 'NET30',
+          expectedDate: expectedDate ? new Date(expectedDate) : bid.deliveryDate,
+          status: 'PENDING'
+        }
+      })
     ]);
 
     // Reject all other pending bids on this requisition
@@ -124,11 +162,23 @@ module.exports = {
       data: { status: 'REJECTED' }
     });
 
+    // 4. Notify Supplier
+    if (bid.supplier.stakeholder.userId) {
+      await notificationService.notify({
+        userId: bid.supplier.stakeholder.userId,
+        title: 'New Purchase Order Awarded',
+        message: `Your bid for "${bid.requisition.title}" has been accepted. PO Number: ${poNumber}`,
+        type: 'SUCCESS',
+        sendEmail: true,
+        actionUrl: `/supplier/orders/${purchaseOrder.id}`
+      });
+    }
+
     return res.status(200).json(new ApiResponse({
       statusCode: 200,
       success: true,
-      data: { requisition: updatedReq, acceptedBid },
-      message: 'Bid accepted. Supplier notified to prepare delivery.'
+      data: { requisition: updatedReq, acceptedBid, purchaseOrder },
+      message: 'Bid accepted and Purchase Order generated. Supplier has been notified.'
     }));
   }),
 
@@ -199,7 +249,35 @@ module.exports = {
       return res.status(409).json(new ApiResponse({ statusCode: 409, success: false, message: 'You have already placed a bid on this requisition.' }));
     }
 
-    const aiTrustScore = Math.floor(Math.random() * (98 - 70 + 1)) + 70; // TODO: Replace with real AI service
+    // Calculate AI Trust Score based on history (Heuristic)
+    const stats = await prisma.purchaseOrder.aggregate({
+      where: { supplierId: supplier.id },
+      _count: { id: true }
+    });
+
+    const successCount = await prisma.purchaseOrder.count({
+      where: { supplierId: supplier.id, status: 'DELIVERED' }
+    });
+
+    const supplierProfile = await prisma.supplier.findUnique({
+      where: { id: supplier.id },
+      select: { averageRating: true, isVerified: true }
+    });
+
+    // Score components: Success Rate (40%), Rating (40%), Verified Status (20%)
+    let score = 70; // Base score
+    if (stats._count.id > 0) {
+      const successRate = (successCount / stats._count.id) * 40;
+      const ratingWeight = ((supplierProfile.averageRating || 0) / 5) * 40;
+      const verifiedWeight = supplierProfile.isVerified ? 20 : 0;
+      score = Math.floor(successRate + ratingWeight + verifiedWeight);
+    } else {
+      // New supplier logic
+      score = supplierProfile.isVerified ? 85 : 75;
+    }
+    
+    // Clamp between 70 and 98 as per requirement
+    const aiTrustScore = Math.max(70, Math.min(98, score));
 
     const [bid] = await prisma.$transaction([
       prisma.supplierBid.create({

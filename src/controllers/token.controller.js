@@ -143,6 +143,75 @@ exports.generateEntryToken = async (req, res) => {
 };
 
 /**
+ * POST /api/market/tokens/supplier-delivery
+ * Generate a token for a specific Supplier Delivery
+ */
+exports.generateSupplierDeliveryToken = async (req, res) => {
+    try {
+        const { deliveryId, gateId } = req.body;
+        const { userId: staffUserId, marketId } = req.user;
+
+        const delivery = await prisma.delivery.findUnique({
+            where: { id: deliveryId },
+            include: { supplier: { include: { stakeholder: true } } }
+        });
+
+        if (!delivery) {
+            return res.status(404).json({ success: false, message: 'Delivery note not found' });
+        }
+
+        const tokenCode = crypto.randomBytes(16).toString('hex');
+        const shortCode = await generateShortCode(marketId);
+
+        const token = await prisma.marketToken.create({
+            data: {
+                tokenCode,
+                tokenType: 'SUPPLIER_DELIVERY',
+                shortCode,
+                marketId,
+                userId: delivery.supplier.stakeholder.userId,
+                visitorName: delivery.supplier.businessName,
+                vehicleNumber: delivery.vehicleNumber,
+                createdById: staffUserId,
+                expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours
+                status: 'ACTIVE',
+                metadata: {
+                    deliveryId: delivery.id,
+                    orderId: delivery.orderId,
+                    driverName: delivery.driverName,
+                    driverPhone: delivery.driverPhone
+                }
+            }
+        });
+
+        // Log operation
+        const gate = gateId ? await prisma.marketGate.findUnique({ where: { id: gateId } }) : await getOrCreateGate(marketId, staffUserId);
+        
+        await prisma.gateOperation.create({
+            data: {
+                gateId: gate.id,
+                operationType: 'ENTRY',
+                tokenId: token.id,
+                entityType: 'SUPPLIER',
+                entityName: delivery.supplier.businessName,
+                vehicleNumber: delivery.vehicleNumber,
+                recordedById: staffUserId
+            }
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: 'Supplier delivery token generated',
+            data: token
+        });
+
+    } catch (err) {
+        console.error('generateSupplierDeliveryToken error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
  * GET /api/market/tokens/:code
  * Get token details by shortCode
  */
@@ -183,7 +252,7 @@ exports.getTokenDetails = async (req, res) => {
 
 /**
  * POST /api/market/tokens/dispatch
- * Record stock dispatch (sale of goods)
+ * Record stock dispatch (sale of goods) with VAT calculation
  */
 exports.recordStockDispatch = async (req, res) => {
     try {
@@ -198,6 +267,16 @@ exports.recordStockDispatch = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid or expired token' });
         }
 
+        // Get Market VAT Rate (Default to 18% as per user request)
+        const market = await prisma.market.findUnique({
+            where: { id: marketId },
+            select: { vatRate: true }
+        });
+        const vatRate = market?.vatRate || 18;
+
+        const totalExclVat = parseFloat(totalPrice) / (1 + (vatRate / 100));
+        const vatAmount = parseFloat(totalPrice) - totalExclVat;
+
         await prisma.$transaction(async (tx) => {
             // 1. Create GateOperation for dispatch
             const gate = await getOrCreateGate(marketId, staffUserId);
@@ -208,22 +287,39 @@ exports.recordStockDispatch = async (req, res) => {
                     tokenId: token.id,
                     goodsDescription: items.join(', '),
                     recordedById: staffUserId,
+                    amount: totalPrice,
                     status: 'COMPLETED'
                 }
             });
 
-            // 2. Update Token status
+            // 2. Create Tax Record log
+            await tx.gateOperation.create({
+                data: {
+                    gateId: gate.id,
+                    operationType: 'TAX_COLLECTED',
+                    tokenId: token.id,
+                    recordedById: staffUserId,
+                    amount: vatAmount,
+                    inspectionNotes: `VAT collected at ${vatRate}%`
+                }
+            });
+
+            // 3. Update Token status & Metadata
             await tx.marketToken.update({
                 where: { id: token.id },
                 data: {
-                    status: 'ACTIVE', // Keep active for exit, but we can store it was dispatched in metadata
+                    status: 'ACTIVE',
                     tokenType: 'STOCK_DISPATCH',
                     amount: totalPrice,
                     metadata: {
                         ...(token.metadata || {}),
                         dispatched: true,
                         dispatchTime: new Date(),
-                        totalPrice
+                        totalPrice,
+                        vatRate,
+                        vatAmount: vatAmount.toFixed(2),
+                        totalExclVat: totalExclVat.toFixed(2),
+                        currency: 'UGX'
                     }
                 }
             });
@@ -231,7 +327,12 @@ exports.recordStockDispatch = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Stock dispatch recorded successfully'
+            message: 'Stock dispatch and VAT recorded successfully',
+            receipt: {
+                totalPrice,
+                vatAmount: vatAmount.toFixed(2),
+                vatRate
+            }
         });
 
     } catch (err) {

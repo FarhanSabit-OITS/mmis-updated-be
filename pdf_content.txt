@@ -1,0 +1,252 @@
+SYSTEM ARCHITECTURE & COMPLETE SPECIFICATION
+LAYERED-HIERARCHICHAL-CATAGORICAL:
+Hierarchical Entity Extension:
+Geographical Hierarchy
+Parent-child relationships from Geolocation → District → City → Market
+Enables precise location-based queries and administration
+User Hierarchy
+Inheritance Model: Users→ Admin → Member/Vendor → Supplier
+Admin User Hierarchy: Super Admin → URA → City Admin → Market Master → Pseudo
+Market Master → Counter
+User Inheritance Model
+Admin Branch: System management roles with increasing specialization
+Stakeholder Branch: Market participants with commercial interests
+Single User table with specialized extensions
+Pseudo Admin Specializations
+1. Revenue Collector - Payment processing & revenue reporting
+2. Health Inspector - Sanitation & compliance inspections
+3. Security Admin - CCTV monitoring & incident response
+4. Gate Counter Staff - Vehicle entry/exit logging
+5. Stock Counter Staff - Inventory management & tracking
+6. VAT Payment Counter - Tax collection & processing
+MARKET TYPES:
+By Scale:
+By Size:
+Large-scale (hundreds of vendors, thousands of visitors)
+Medium-scale (dozens to hundreds of vendors)
+Small-scale (few vendors, limited visitors)
+By Duration:
+Permanent markets (year-round)
+Temporary markets (weekly, seasonal)
+One-time event markets
+By Ownership:
+Government-owned & Private markets
+Public-private partnership markets
+By Specialization:
+General merchandise markets
+Fresh produce markets
+Clothing and textile markets
+Electronics markets
+Specialty markets (crafts, antiques)
+Universal Category System
+Single Category table with category_type field
+Polymorphic CategoryAssignment for flexible entity tagging
+Supports hierarchical categories through parent_id
+🏗 ARCHITECTURAL HIGHLIGHTS:
+Core Business Domains:
+Hierarchical Location Management: (City→Area→Market→Gate→Level→Shop)
+User Management: Unified user system with RBAC & KYC
+Vendor Ecosystem: Complete vendor lifecycle from registration to operations
+Product Flow: End-to-end product tracking from gate intake to point of sale
+Financial System: Comprehensive tax and payment management
+Inventory Control: Real-time stock management with audit trails
+Scalability & Extensibility:
+Flexible Relationships
+Relation table for generic entity-to-entity connections
+Support for many-to-many relationships between any entities
+Supporting Entities
+Audit logging with full change tracking
+Digital assets & Document categorization
+Notification system with multiple channels
+QR/Token system for various purposes
+Form management & categorization
+📊Business Impacts:
+For Local Government:
+Centralized Management, Revenue Optimization & Operational Efficiency
+Digitalized market operations and vendor management
+Compliance: Regulatory requirement enforcement and audit trails
+For Vendors/Shop Owners:
+Business Management Control, Financial Transparency with Clear payment tracking and tax
+calculations
+📋 MODULE-WISE COMPLETE FEATURES LIST
+Module 1: User Management & Authentication
+Multi-level RBAC with hierarchical permissions
+TOTP two-factor authentication
+Session management & device tracking
+User Registration Link Management
+User profile management & KYC
+User activity monitoring & Logging
+Customer profile management
+Password policy enforcement
+Account lockout action mechanism
+Bulk user operations
+Module 2: Market & Shop Management
+Market configuration & Level-shop management
+Market facility oversight
+Multi-market hierarchy support
+Visual floor plan management
+Market performance analytics
+Shop allocation and rental management
+Shop vacancy & status tracking
+Shop rent billing system
+Rental rate management
+Facility maintenance scheduling
+Module 3: Notification & Communication System
+Multi-channel delivery (Email, SMS, Push, In-App)
+Template management with dynamic variables
+Delivery tracking with read receipts
+Subscription management
+Priority-based notification system
+Scheduled notifications
+Bulk messaging capabilities
+Notification analytics
+Quiet hours management
+Cross-platform compatibility
+Module 4: Document Management System
+Multi-format document support
+Version control system
+Advanced access control
+OCR text extraction
+Full-text search capabilities
+Automated watermarking
+Document compression
+Retention policy management
+Bulk document operations
+Document sharing and collaboration
+Module 5: QR Code Engine & Token Management
+Dynamic QR code generation
+Real-time validation system
+Batch QR code creation
+Scan analytics and tracking
+Anti-tampering security
+Template-based branding
+Token expiration management
+Blacklist functionality
+Bulk token operations
+Digital signature support
+Module 6: Gate Management & Logistics
+Vehicle entry/exit tracking
+License plate recognition
+Real-time token validation
+CCTV integration
+Traffic analytics
+Blacklist management
+Emergency protocols
+Gate scheduling
+Vehicle type management
+Driver profile tracking
+Module 7: Revenue Management System
+Automated billing system
+Multi-payment gateway integration
+VAT/tax calculation engine
+Invoice generation
+Payment reconciliation
+Revenue reporting
+Tax configuration management
+Refund processing
+Payment plan management
+Financial analytics
+Module 8: Inventory & Stock Management
+Real-time stock tracking
+Supplier management portal
+Barcode/RFID integration
+Stock alert system
+Inventory valuation
+Batch tracking
+Stock movement history
+Warehouse management
+Purchase order management
+Stock reconciliation
+Module 9: Point of Sale (POS) System
+Multi-payment method support
+Offline capability with cloud sync
+Receipt generation
+Inventory synchronization
+Customer loyalty programs
+Tax computation
+Discount management
+Sales analytics
+Module 10: Payment Gateway Integration
+Unified payment processing
+Multiple gateway support
+Transaction monitoring
+Reconciliation system
+Webhook handling
+Fee calculation
+Refund management
+Gateway health monitoring
+Security compliance
+Settlement tracking
+Module 12: IoT & CCTV Management
+Device management system
+Alert generation
+Video storage management
+Maintenance scheduling
+Device health monitoring
+Access control integration
+Live video streaming
+Motion detection
+Face recognition
+Object tracking
+Module 13: Analytics & Reporting
+Real-time dashboard & Custom report builder
+Data visualization & Predictive analytics
+Automated reporting & Export functionality
+Data caching & Performance monitoring
+KPI tracking & Trend analysis
+🔍 Extensible Modules & Features Identified
+Supporting Functionalities & Features
+1. Search & Filtering Functionality
+a. Search Bar & Filtering with multiple criteria
+2. Backup & Data Recovery Module:
+a. Data backup scheduling
+b. Data validation and cleanup 
+3. System Administration Panel:
+a. System performance metrics
+b. Real-time system health dashboard
+c. API & Gateway Management
+4. Compliance & Public Health Monitoring
+5. Data/Doc Import/Export & Management
+a. Data/Doc Processing & Management
+6. Bulk Operations Management:
+a. Bulk user creation/management
+b. Batch processing functionality
+7. Disaster & Risk Management
+a. Risk assessment & Incident reporting system
+b. Loss Calculation, Compensation & claim processing
+c. Disaster Preparation, Recovery & Alert System
+📋
+📋 FUNCTIONAL REQUIREMENTS
+High-Priority Features
+FR-001: Link based User Registration Process
+Link Generation & Management
+User Onboarding & Link Status
+Auth, Validation, Verification, Session
+KYC, RBAC, MFA, DOC Management
+FR-002: Multi-Role Authentication
+Secure login with role-based permissions
+Password recovery mechanism
+Session timeout management
+FR-003: Gate Management System
+Vehicle entry/exit tracking
+Token generation and validation
+Customer/supplier registration
+FR-004: Stock Processing
+Purchase and delivery stock entry
+VAT calculation automation
+Inventory level tracking
+FR-005: Revenue Collection
+VAT payment processing
+Rent collection management
+Financial reporting
+FR-006: Market Administration
+Shop allocation and management
+Member/vendor services
+Market configuration
+📊 SUCCESS METRICS
+Key Performance Indicators
+Revenue collection efficiency
+Transaction processing time
+User adoption rates
+System uptime and reliability
+Customer satisfaction scores

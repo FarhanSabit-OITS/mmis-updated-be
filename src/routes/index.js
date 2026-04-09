@@ -10,9 +10,19 @@ const marketRoutes = require('./market.route')
 const facilityRoutes = require("./facility.routes")
 const adminOnboardingRoutes = require('./admin.onboarding.routes');
 const requisitionRoutes = require('./requisition.route');
+const bulkRoutes = require('./bulk.routes');
+const assetRoutes = require('./asset.routes');
+const supportRoutes = require('./support.routes');
+const orderRoutes = require('./order.route');
+const deliveryRoutes = require('./delivery.route');
+const documentRoutes = require('./document.routes');
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
+    app.use('/api/bulk', bulkRoutes);
+    app.use('/api/documents', documentRoutes);
+    app.use('/api/assets', assetRoutes);
+    app.use('/api/support', supportRoutes);
     app.use('/api/dashboard', dashboardRoutes);
     app.use('/api/vendors', vendorRoutes); 
     app.use('/api/vendors', productRoutes); 
@@ -27,6 +37,8 @@ const configureRouter = (app)=>{
     app.use('/api/facilities', facilityRoutes)
     app.use('/api/shops', facilityRoutes) // Add backward compatibility alias
     app.use('/api/admin/onboarding', adminOnboardingRoutes);
+    app.use('/api/orders', orderRoutes);
+    app.use('/api/deliveries', deliveryRoutes);
 }
 
 module.exports = configureRouter

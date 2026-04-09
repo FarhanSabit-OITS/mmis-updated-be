@@ -10,6 +10,7 @@ router.post('/dispatch', authMiddleware, tokenController.recordStockDispatch);
 router.post('/tax', authMiddleware, tokenController.recordTax);
 router.post('/parking', authMiddleware, tokenController.recordParking);
 router.post('/receipt', authMiddleware, tokenController.recordStockReceipt);
+router.post('/supplier-delivery', authMiddleware, tokenController.generateSupplierDeliveryToken);
 router.post('/exit', authMiddleware, tokenController.recordExit);
 
 module.exports = router;

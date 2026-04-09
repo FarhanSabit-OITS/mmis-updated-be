@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // Connection URL is configured in prisma.config.ts (Prisma v7+)
+  url      = env("DATABASE_URL")
 }
 
 
@@ -143,6 +143,11 @@ enum DocumentType {
   SUPPLIER_CERTIFICATE
   QUALITY_CERTIFICATE
   INSURANCE_POLICY
+  INVOICE
+  RECEIPT
+  GATE_TOKEN
+  SHOP_CONTRACT
+  SYSTEM_REPORT
   OTHER
 }
 
@@ -318,6 +323,8 @@ model User {
   sentInvitations         Invitation[]            @relation("InvitationSenderUser")
   acceptedInvitations     Invitation[]            @relation("InvitationAccepter")
   sponsoredGuests         Guest[]                 @relation("GuestSponsor")
+  createdTickets          SupportTicket[]         @relation("CreatedTickets")
+  assignedTickets         SupportTicket[]         @relation("AssignedTickets")
   createdInventoryRecords InventoryRecord[]       @relation("InventoryRecordRecorder")
   createdSales            Sale[]                  @relation("SaleCreator")
   createdProducts         Product[]               @relation("ProductCreator")
@@ -577,6 +584,7 @@ model Market {
   averageRent           Decimal? @db.Decimal(12, 2)
   securityDeposit       Decimal? @db.Decimal(12, 2)
   monthlyMaintenanceFee Decimal? @db.Decimal(10, 2)
+  vatRate               Decimal @default(18.00) @db.Decimal(5, 2)
 
   status            String    @default("ACTIVE") @db.VarChar(50)
   establishmentDate DateTime?
@@ -594,6 +602,7 @@ model Market {
   sections   MarketSection[]
   facilities Facility[]      @relation("MarketFacilities")
   gates      MarketGate[]
+  assets     Asset[]
 
   marketMasters MarketMaster[]
   pseudoAdmins  PseudoMarketAdmin[]
@@ -614,6 +623,7 @@ model Market {
 
   invitations   Invitation[]   @relation("MarketInvitations")
   requisitions  Requisition[]
+  purchaseOrders PurchaseOrder[]
 
   @@unique([cityId, name])
   @@index([cityId])
@@ -855,6 +865,8 @@ model Vendor {
 
   invitations   Invitation[]
   requisitions  Requisition[]
+  purchaseOrders PurchaseOrder[]
+  supplierRatings SupplierRating[]
 
   @@index([businessName])
   @@map("vendors")
@@ -873,6 +885,9 @@ model Supplier {
   minimumOrder     Decimal? @db.Decimal(10, 2)
   paymentTerms     String?  @default("NET30") @db.VarChar(50)
 
+  isVerified    Boolean @default(false)
+  averageRating Float?  @default(0)
+
   stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
 
   products   Product[]
@@ -881,6 +896,8 @@ model Supplier {
 
   invitations Invitation[]
   bids        SupplierBid[]
+  orders      PurchaseOrder[]
+  ratings     SupplierRating[]
 
   @@index([businessName])
   @@map("suppliers")
@@ -1686,6 +1703,7 @@ model Document {
   verificationDate   DateTime?
   verificationStatus String    @default("PENDING") @db.VarChar(50)
   verificationNotes  String?   @db.Text
+  expiryDate         DateTime?
 
   metadata     Json?
   uploadedById String
@@ -2628,8 +2646,11 @@ model Delivery {
   verifiedBy User?    @relation("DeliveryVerifier", fields: [verifiedById], references: [id])
   createdBy  User     @relation("DeliveryCreator", fields: [createdById], references: [id])
 
-  // Delivery Items
   deliveryItems DeliveryItem[]
+
+  // Relation to PurchaseOrder
+  orderId String?
+  order   PurchaseOrder? @relation(fields: [orderId], references: [id])
 
   // Indexes
   @@index([supplierId])
@@ -2724,11 +2745,118 @@ model SupplierBid {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
-  supplier    Supplier    @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  requisition Requisition     @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  supplier    Supplier        @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  order       PurchaseOrder?
 
   @@index([requisitionId])
   @@index([supplierId])
   @@index([status])
   @@map("supplier_bids")
+}
+
+model PurchaseOrder {
+  id String @id @default(uuid())
+
+  poNumber String @unique @db.VarChar(50) // e.g., PO-XXXXX
+  marketId String
+
+  vendorId   String
+  supplierId String
+  bidId      String @unique
+
+  totalExclVat Decimal @db.Decimal(15, 2)
+  vatAmount    Decimal @db.Decimal(15, 2)
+  totalInclVat Decimal @db.Decimal(15, 2)
+
+  paymentTerms   String? @db.VarChar(50)
+  expectedDate   DateTime?
+  status         String  @default("PENDING") @db.VarChar(30) // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus  String  @default("UNPAID") @db.VarChar(30)
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   Vendor      @relation(fields: [vendorId], references: [id])
+  supplier Supplier    @relation(fields: [supplierId], references: [id])
+  bid      SupplierBid @relation(fields: [bidId], references: [id])
+  market   Market      @relation(fields: [marketId], references: [id])
+
+  deliveries Delivery[]
+
+  @@index([poNumber])
+  @@index([vendorId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model SupplierRating {
+  id String @id @default(uuid())
+
+  supplierId String
+  vendorId   String
+  orderId    String @unique
+
+  rating      Int      @db.Integer // 1 to 5
+  quality     Int?     @db.Integer
+  timeliness  Int?     @db.Integer
+  comment     String?  @db.Text
+  
+  status      String   @default("PUBLISHED") @db.VarChar(20)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+
+  @@index([supplierId])
+  @@index([rating])
+  @@map("supplier_ratings")
+}
+
+model Asset {
+  id         String  @id @default(uuid())
+  uniqueCode String  @unique @db.VarChar(50)
+  name       String  @db.VarChar(200)
+  type       String  @db.VarChar(50) // CCTV, VEHICLE, EQUIPMENT, FURNITURE
+  status     String  @default("ACTIVE") @db.VarChar(20)
+  streamUrl  String? @db.VarChar(500) // For CCTV real-time feed
+  marketId   String
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id])
+
+  @@index([marketId])
+  @@index([type])
+  @@map("assets")
+}
+
+model SupportTicket {
+  id           String @id @default(uuid())
+  ticketNumber String @unique @db.VarChar(20)
+  subject      String @db.VarChar(255)
+  description  String @db.Text
+  priority     String @default("MEDIUM") @db.VarChar(20)
+  status       String @default("OPEN") @db.VarChar(20)
+  category     String @db.VarChar(50)
+  
+  creatorId    String
+  assignedToId String?
+  resolution   String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator    User  @relation("CreatedTickets", fields: [creatorId], references: [id])
+  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  @@index([creatorId])
+  @@index([status])
+  @@map("support_tickets")
 }
