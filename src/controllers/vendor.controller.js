@@ -8,6 +8,7 @@
 const vendorService = require('../services/vendor.service');
 const emailService = require('../services/email.service');
 const prisma = require('../prisma');
+const { asyncHandler, ApiResponse } = require('../utils');
 
 /**
  * GET /api/superadmin/vendors
@@ -23,9 +24,8 @@ const prisma = require('../prisma');
  * - sortBy: Sort field (createdAt, businessName, vendorCode)
  * - order: Sort order (asc/desc)
  */
-exports.getAllVendors = async (req, res) => {
-    try {
-        const {
+exports.getAllVendors = asyncHandler(async( req, res)=>{
+    const {
             page,
             limit,
             search,
@@ -87,19 +87,15 @@ exports.getAllVendors = async (req, res) => {
         // Get vendors data
         const result = await vendorService.getAllVendorsWithDetails(filters, pagination);
 
-        return res.status(200).json({
+        return res.status(200).json(
+            new ApiResponse({
+            statusCode: 200,
             success: true,
-            data: result
-        });
-    } catch (err) {
-        console.error('Get all vendors error:', err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error. Please try again later.',
-            error: process.env.NODE_ENV === 'development' ? err.message : undefined
-        });
-    }
-};
+            data: result.vendors,
+            pagination: result.pagination
+        })
+        )
+})
 
 /**
  * POST /api/superadmin/vendors
