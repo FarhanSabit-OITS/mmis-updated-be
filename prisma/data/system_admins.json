@@ -1,0 +1,20 @@
+[
+  {
+    "email": "superadmin@marketmaster.com",
+    "passwordPlain": "superadmin123",
+    "phone": "+256700000100",
+    "firstName": "System",
+    "lastName": "Admin",
+    "country": "Uganda",
+    "employeeId": "EMP-SYS-1"
+  },
+  {
+    "email": "superadmin@super.com",
+    "passwordPlain": "superadmin1234",
+    "phone": "+256700000101",
+    "firstName": "Legacy",
+    "lastName": "Admin",
+    "country": "Uganda",
+    "employeeId": "EMP-SYS-2"
+  }
+]
