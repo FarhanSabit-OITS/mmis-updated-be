@@ -78,4 +78,15 @@ module.exports = {
     );
   }
   ),
+  getMarketNameList: asyncHandler(async (req, res)=>{
+    const result = await marketService.getMarketNameList()
+    return res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: result,
+        message: "Market list is feched successfully"
+      })
+    )
+  })
 };

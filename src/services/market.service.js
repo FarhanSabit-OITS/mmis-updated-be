@@ -25,6 +25,7 @@ module.exports = {
   getMarket: async (marketId) => {
     return await marketRepository.getMarketById(marketId);
   },
+  getMarketNameList: async()=> await marketRepository.getMarketNameList(),
   getMarketList: async (query) => {
     const page = parseInt(query.page) || 1;
     const limit = parseInt(query.limit) || 10;
@@ -35,7 +36,6 @@ module.exports = {
       search: query.search,
       cityId: query.cityId,
     });
-    
   }
   
 };
