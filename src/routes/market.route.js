@@ -15,7 +15,8 @@ router.get(
   "/",
   validate(getMarketListSchema),
   marketController.getMarketList
-);
+)
+router.get("/market-name-list", marketController.getMarketNameList)
 router.post("/", validate(createMarketSchema), marketController.createMarket);
 
 router.patch("/:marketId/general", validate(updateGeneralSchema), marketController.updateGeneralInfo);

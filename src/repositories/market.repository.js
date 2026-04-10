@@ -17,11 +17,11 @@ module.exports = {
     return await prisma.market.findUnique({
       where: { id: marketId },
       include: {
-        levels: true,
-        sections: true,
-        shops: true,
-        stalls: true,
-        gates: true,
+        // levels: true,
+        // sections: true,
+        // shops: true,
+        // stalls: true,
+        // gates: true,
       },
     });
   },
@@ -51,5 +51,16 @@ module.exports = {
     return {markets, pagination: new PaginationResponse(total, page, limit)}
   },
   findMarketByName: async (name) =>
-    await prisma.market.findUnique({ where: { name } })
+    await prisma.market.findUnique({ where: { name } }),
+  getMarketNameList: async () => {
+    return await prisma.market.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+  },
 };
