@@ -10,7 +10,9 @@ class ApiResponse {
     this.success = success;
     this.message = message;
     this.data = data;
-    this.pagination = pagination
+    if (pagination){
+      this.pagination = pagination
+    }
   }
 }
 
