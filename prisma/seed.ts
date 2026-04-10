@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+
 import { seedGeography } from './seeds/00_geography_setup';
 import { seedRoles } from './seeds/01_roles_setup';
 import { seedSystemAdmins } from './seeds/02_system_admins_setup';
@@ -25,24 +26,44 @@ async function main() {
     // 3. Nakasero & Owino Setup
     await seedNakaseroOwino(prisma, roleMap, cityMap['KLA']);
 
-    // 4. Kabale Central Market Infrastructure Setup
-    const { market, marketMasterRecord, marketMasterUser, levelMap, sectionMap } = await seedKabaleInfrastructure(prisma, superAdminUser1.id, cityMap['KBL-CITY']);
+    // 4. Kabale Infrastructure Setup
+    const {
+      market,
+      marketMasterRecord,
+      marketMasterUser,
+      levelMap,
+      sectionMap
+    } = await seedKabaleInfrastructure(
+      prisma,
+      superAdminUser1.id,
+      cityMap['KBL-CITY']
+    );
 
-    // 5. Kabale Market Vendors/Members
-    const { stakeholderMap } = await seedKabaleVendors(prisma);
+    // 5. Kabale Vendors / Members
+    const { memberRecords } = await seedKabaleVendors(
+      prisma,
+      market.id
+    );
 
-    // 6. Kabale Market Shops
-    await seedKabaleShops(prisma, market.id, marketMasterRecord.id, marketMasterUser.id, levelMap, sectionMap, stakeholderMap);
+    // 6. Kabale Shops (NOW ENABLED)
+    await seedKabaleShops(
+      prisma,
+      market.id,
+      marketMasterRecord.id,
+      marketMasterUser.id,
+      levelMap,
+      sectionMap,
+      memberRecords
+    );
 
     console.log('\n=======================================');
     console.log('✅ ALL SEEDS COMPLETED SUCCESSFULLY');
     console.log('=======================================');
     console.log('Test Accounts:');
-    console.log('  superadmin@marketmaster.com / superadmin123 (SuperAdmin)');
-    console.log('  superadmin@kabalemarket.ug  / Password@123 (SuperAdmin - Kabale)');
-    console.log('  nakasero.manager@marketmaster.com / market123 (Nakasero Master)');
-    console.log('  owino.manager@marketmaster.com / market123 (Owino Master)');
-    console.log('  marketmaster@kabalemarket.ug / Password@123 (Kabale Master)');
+    console.log('  superadmin@marketmaster.com / superadmin123');
+    console.log('  superadmin@kabalemarket.ug / Password@123');
+    console.log('  nakasero.manager@marketmaster.com / market123');
+    console.log('  owino.manager@marketmaster.com / market123');
     console.log('=======================================\n');
 
   } catch (error) {

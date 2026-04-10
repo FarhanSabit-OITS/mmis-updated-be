@@ -1,13 +1,61 @@
-import { PrismaClient, StakeholderType, KycStatus, UserStatus, MfaType } from "@prisma/client";
+import {
+  PrismaClient,
+  StakeholderType,
+  KycStatus,
+  UserStatus,
+  MfaType,
+} from "@prisma/client";
 import { hash } from "bcryptjs";
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from "fs";
+import * as path from "path";
 
-function normalisePhone(raw: number | string | null, fallback: string): string {
-  if (!raw) return fallback;
-  const s = String(raw).replace(/\D/g, "");
-  if (s.length >= 9) return `+${s}`;
-  return fallback;
+// ─────────────────────────────────────────────
+// GLOBAL PHONE REGISTRY (IMPORTANT)
+// ─────────────────────────────────────────────
+
+const usedPhones = new Set<string>();
+
+// ─── types ────────────────────────────────────
+
+type VendorRow = {
+  id: number;
+  name: string;
+  nin: string | number | null;
+  phone: string | number;
+  category: string;
+  fcNo: string;
+  monthlyPay: number;
+};
+
+export type VendorRecord = { vendorId: string; row: VendorRow };
+export type MemberRecord = { memberId: string; row: VendorRow };
+
+// ─── helpers ──────────────────────────────────
+
+function normalisePhone(raw: string | number | null, fallbackBase: string): string {
+  let phone = "";
+
+  if (raw) {
+    phone = String(raw).replace(/\D/g, "");
+  }
+
+  if (!phone || phone.length < 9) {
+    phone = fallbackBase.replace(/\D/g, "");
+  }
+
+  phone = `+${phone}`;
+
+  // ensure uniqueness globally
+  let finalPhone = phone;
+  let counter = 1;
+
+  while (usedPhones.has(finalPhone)) {
+    finalPhone = `${phone}${counter}`;
+    counter++;
+  }
+
+  usedPhones.add(finalPhone);
+  return finalPhone;
 }
 
 function toEmailLocal(name: string, id: number): string {
@@ -21,79 +69,187 @@ function toEmailLocal(name: string, id: number): string {
   );
 }
 
-export async function seedKabaleVendors(prisma: PrismaClient) {
-  console.log('\n=======================================');
-  console.log('🌱 Seeding Kabale Vendors / Members...');
-  console.log('=======================================');
+function splitName(name: string, id: number) {
+  const parts = (name || "Vendor").trim().split(/\s+/);
+  return {
+    firstName: parts[0] ?? "Vendor",
+    lastName: parts.slice(1).join(" ") || String(id),
+  };
+}
 
-  const DEV_PASSWORD = await hash("Password@123", 10);
+// ─── VENDOR SEEDER ───────────────────────────
 
-  const jsonPath = path.join(__dirname, '../data/kabale_shops.json');
-  const rawData = fs.readFileSync(jsonPath, 'utf8');
-  const FTS_ROWS = JSON.parse(rawData);
+async function seedVendorRows(
+  prisma: PrismaClient,
+  rows: VendorRow[],
+  DEV_PASSWORD: string,
+  marketId: string,
+): Promise<VendorRecord[]> {
 
-  console.log(`Loaded ${FTS_ROWS.length} records. Creating vendor users...`);
-  const stakeholderMap: Record<number, string> = {};
+  console.log("🛒 Vendors...");
 
-  for (let i = 0; i < FTS_ROWS.length; i++) {
-    const row = FTS_ROWS[i];
-    const email = `member.${toEmailLocal(row.vendorName, row.id)}@kabalemarket.ug`;
-    const phone = normalisePhone(row.phone, `+256701${String(i).padStart(6, "0")}`);
-    
-    const nameParts = (row.vendorName || "Vendor").split(/\s+/);
-    const firstName = nameParts[0] || "Vendor";
-    const lastName  = nameParts.slice(1).join(" ") || String(row.id);
-    const pwHash = DEV_PASSWORD;
+  const vendorRecords: VendorRecord[] = [];
+
+  for (const row of rows) {
+    const email = `vendor.${toEmailLocal(row.name, row.id)}@kabalemarket.ug`;
+    const phone = normalisePhone(row.phone, `256701000${row.id}`);
+    const { firstName, lastName } = splitName(row.name, row.id);
 
     try {
-        const u = await prisma.user.upsert({
-            where: { email },
-            update: {},
+      const u = await prisma.user.upsert({
+        where: { email },
+        update: {},
+        create: {
+          email,
+          passwordHash: DEV_PASSWORD,
+          phone,
+          emailVerified: true,
+          status: UserStatus.ACTIVE,
+          mfaType: MfaType.NONE,
+          profile: {
             create: {
-              email,
-              passwordHash: pwHash,
-              phone,
-              emailVerified: true,
-              status: UserStatus.ACTIVE,
-              mfaType: MfaType.NONE,
-              profile: {
+              firstName,
+              lastName,
+              primaryPhone: phone,
+              primaryEmail: email,
+              occupation: row.category,
+            },
+          },
+          stakeholder: {
+            create: {
+              stakeholderType: StakeholderType.VENDOR,
+              kycStatus: KycStatus.VERIFIED,
+              kycVerifiedAt: new Date(),
+              vendor: {
                 create: {
-                  firstName: firstName.slice(0, 100),
-                  lastName: lastName.slice(0, 100),
-                  primaryPhone: phone,
-                  primaryEmail: email,
-                },
-              },
-              stakeholder: {
-                create: {
-                  stakeholderType: StakeholderType.MEMBER,
-                  kycStatus: KycStatus.VERIFIED,
-                  kycVerifiedAt: new Date(),
-                  member: {
-                      create: {
-                          membershipNumber: `MEM-KBL-${String(row.id).padStart(5, "0")}`,
-                          membershipType: "REGULAR",
-                          businessName: (row.shopName || '').slice(0, 200),
-                          businessType: row.category,
-                          registrationNumber: `REG-KBL-${String(row.id).padStart(6, "0")}`,
-                      }
-                  }
+                  vendorCode: `VND-KBL-${String(row.id).padStart(4, "0")}`,
+                  businessName: row.name.slice(0, 200),
+                  businessType: row.category,
+                  primaryMarketId: marketId,
+                  vatRegistered: false,
                 },
               },
             },
-          });
-      
-          const sh = await prisma.stakeholder.findUniqueOrThrow({ where: { userId: u.id }, include: { member: true } });
-          stakeholderMap[row.id] = sh.member!.id;
+          },
+        },
+      });
 
-          if (i > 0 && i % 100 === 0) {
-            console.log(`... seeded ${i} vendors.`);
-          }
+      const sh = await prisma.stakeholder.findUniqueOrThrow({
+        where: { userId: u.id },
+      });
+
+      const vn = await prisma.vendor.findUniqueOrThrow({
+        where: { stakeholderId: sh.id },
+      });
+
+      vendorRecords.push({ vendorId: vn.id, row });
+
     } catch (e) {
-        console.warn(`Error creating vendor ${row.id} (${row.vendorName}): ${(e as Error).message}`);
+      console.warn(`⚠️ Vendor ${row.id}: ${(e as Error).message}`);
     }
   }
 
-  console.log(`✅ Kabale Vendors Created!`);
-  return { stakeholderMap };
+  return vendorRecords;
+}
+
+// ─── MEMBER SEEDER  ────────
+
+async function seedMembers(
+  prisma: PrismaClient,
+  rows: VendorRow[],
+  DEV_PASSWORD: string,
+): Promise<MemberRecord[]> {
+
+  console.log("🏢 Members...");
+
+  const memberRecords: MemberRecord[] = [];
+
+  for (const row of rows) {
+    console.log(row)
+    const email = `${toEmailLocal(row.name, row.id)}@kabalemarket.ug`;
+    const phone = normalisePhone(row.phone, `256700000${row.id}`);
+    const { firstName, lastName } = splitName(row.name, row.id);
+
+    try {
+      const u = await prisma.user.upsert({
+        where: { email },
+        update: {},
+        create: {
+          email,
+          passwordHash: DEV_PASSWORD,
+          phone,
+          emailVerified: true,
+          status: UserStatus.ACTIVE,
+          mfaType: MfaType.NONE,
+          profile: {
+            create: {
+              firstName,
+              lastName,
+              primaryPhone: phone,
+              primaryEmail: email,
+            },
+          },
+          stakeholder: {
+            create: {
+              stakeholderType: StakeholderType.MEMBER,
+              kycStatus: KycStatus.VERIFIED,
+              kycVerifiedAt: new Date(),
+              member: {
+                create: {
+                  membershipNumber: `MEM-KBL-${String(row.id).padStart(4, "0")}`,
+                  membershipType: "REGULAR",
+                  businessName: row.name.slice(0, 200),
+                  businessType: row.category,
+                  registrationNumber: `REG-KBL-${String(row.id).padStart(6, "0")}`,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const sh = await prisma.stakeholder.findUniqueOrThrow({
+        where: { userId: u.id },
+      });
+
+      const mb = await prisma.member.findUniqueOrThrow({
+        where: { stakeholderId: sh.id },
+      });
+
+      memberRecords.push({
+        memberId: mb.id,
+        row,
+      });
+
+    } catch (e) {
+      console.warn(`⚠️ Member ${row.id}: ${(e as Error).message}`);
+    }
+  }
+
+  return memberRecords;
+}
+
+// ─── PUBLIC ENTRY ────────────────────────────
+
+export async function seedKabaleVendors(
+  prisma: PrismaClient,
+  marketId: string,
+): Promise<{
+  memberRecords: MemberRecord[];
+  vendorRecords: VendorRecord[];
+}> {
+
+  console.log("\n🌱 Seeding Kabale Vendors...");
+
+  const DEV_PASSWORD = await hash("Password@123", 10);
+
+  const jsonPath = path.join(__dirname, "../data/kabale_vendors.json");
+  const rows: VendorRow[] = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+
+  const memberRecords = await seedMembers(prisma, rows, DEV_PASSWORD);
+  const vendorRecords = await seedVendorRows(prisma, rows, DEV_PASSWORD, marketId);
+
+  console.log(`✅ Members: ${memberRecords.length}, Vendors: ${vendorRecords.length}`);
+
+  return { memberRecords, vendorRecords };
 }

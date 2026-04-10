@@ -1,39 +1,39 @@
-import { PrismaClient, AdminLevel, PseudoMarketRole, MarketType, UserStatus, MfaType } from "@prisma/client";
+import { PrismaClient, AdminLevel, MarketType, UserStatus, MfaType } from "@prisma/client";
 import { hash } from "bcryptjs";
-import * as fs from 'fs';
-import * as path from 'path';
 
-function toCategoryTag(cat: string): string {
-  switch (cat) {
-    case "Retail Shops":          return "RETAIL";
-    case "New Clothes":           return "CLOTHING";
-    case "Vegetables":
-    case "Food Stuff":
-    case "Fish":
-    case "Cereal Produce":
-    case "Butcher":
-    case "Birds":                 return "FOOD";
-    case "Saloon":
-    case "Tailoring and Textile": return "SERVICE";
-    case "Hardware":
-    case "General Merchandise":
-    default:                      return "GENERAL";
-  }
-}
+const SECTION_DEFS = [
+  { code: "SEC-RETAIL", name: "Retail & General Shops", type: "RETAIL" },
+  { code: "SEC-FOOD", name: "Food, Produce & Vegetables", type: "FOOD" },
+  { code: "SEC-CLOTHES", name: "Clothing & Textiles", type: "CLOTHING" },
+  { code: "SEC-SERVICE", name: "Services (Saloon, Tailoring)", type: "SERVICE" },
+  { code: "SEC-GENERAL", name: "General Merchandise", type: "GENERAL" },
+];
 
-export async function seedKabaleInfrastructure(prisma: PrismaClient, superAdminId: string, cityIdKBL: string) {
-  console.log('\n=======================================');
-  console.log('🌱 Seeding Kabale Infrastructure...');
-  console.log('=======================================');
+/**
+ * Seeds Kabale Central Market infrastructure:
+ *  - market master user + Admin + MarketMaster rows
+ *  - the market itself
+ *  - 1 market level  (levelMap key: "MAIN")
+ *  - 5 sections      (sectionMap key: type tag e.g. "FOOD", "RETAIL" …)
+ *
+ * Returns levelMap and sectionMap for use by downstream seeders.
+ */
+export async function seedKabaleInfrastructure(
+  prisma: PrismaClient,
+  superAdminId: string,
+  cityIdKBL: string,
+) {
+  console.log("\n=======================================");
+  console.log("🌱 Seeding Kabale Infrastructure...");
+  console.log("=======================================");
 
   const DEV_PASSWORD = await hash("Password@123", 10);
 
-  const superAdminRecord = await prisma.admin.findFirst({
+  const superAdminRecord = await prisma.admin.findFirstOrThrow({
     where: { userId: superAdminId },
   });
 
-  if (!superAdminRecord) throw new Error("SuperAdmin record not found");
-
+  // ── Market master ──────────────────────────────────────────────────────────
   const marketMasterUser = await prisma.user.upsert({
     where: { email: "marketmaster@kabalemarket.ug" },
     update: {},
@@ -62,6 +62,7 @@ export async function seedKabaleInfrastructure(prisma: PrismaClient, superAdminI
     },
   });
 
+  // ── Market ─────────────────────────────────────────────────────────────────
   const market = await prisma.market.upsert({
     where: { uniqueCode: "MKT-KBL-001" },
     update: {},
@@ -84,7 +85,7 @@ export async function seedKabaleInfrastructure(prisma: PrismaClient, superAdminI
   const marketMasterAdminRecord = await prisma.admin.findUniqueOrThrow({
     where: { userId: marketMasterUser.id },
   });
-  
+
   const marketMasterRecord = await prisma.marketMaster.upsert({
     where: { adminId: marketMasterAdminRecord.id },
     update: {},
@@ -93,18 +94,26 @@ export async function seedKabaleInfrastructure(prisma: PrismaClient, superAdminI
       marketId: market.id,
     },
   });
-  
-  const sectionDefs = [
-    { code: "SEC-RETAIL",  name: "Retail & General Shops",      type: "RETAIL"   },
-    { code: "SEC-FOOD",    name: "Food, Produce & Vegetables",   type: "FOOD"     },
-    { code: "SEC-CLOTHES", name: "Clothing & Textiles",          type: "CLOTHING" },
-    { code: "SEC-SERVICE", name: "Services (Saloon, Tailoring)", type: "SERVICE"  },
-    { code: "SEC-GENERAL", name: "General Merchandise",          type: "GENERAL"  },
-  ];
 
-  const sectionMap: Record<string, string> = {}; 
+  // ── Level — keyed "MAIN" so downstream seeders have a stable lookup key ───
+  const mainLevel = await prisma.marketLevel.upsert({
+    where: { uniqueCode: "MKT-KBL-001-LVL-1" },
+    update: {},
+    create: {
+      marketId: market.id,
+      levelNumber: 1,
+      uniqueCode: "MKT-KBL-001-LVL-1",
+      name: "Main Level",
+      createdById: superAdminId,
+    },
+  });
 
-  for (const sd of sectionDefs) {
+  const levelMap: Record<string, string> = { MAIN: mainLevel.id };
+
+  // ── Sections ───────────────────────────────────────────────────────────────
+  const sectionMap: Record<string, string> = {};
+
+  for (const sd of SECTION_DEFS) {
     const secCode = `MKT-KBL-001-${sd.code}`;
     const sec = await prisma.marketSection.upsert({
       where: { uniqueCode: secCode },
@@ -119,32 +128,16 @@ export async function seedKabaleInfrastructure(prisma: PrismaClient, superAdminI
       },
     });
     sectionMap[sd.type] = sec.id;
+    console.log(`  ✅ Section: ${sd.name}`);
   }
 
-  // Generate levels dynamically based on JSON
-  const jsonPath = path.join(__dirname, '../data/kabale_shops.json');
-  console.log(`Loading levels from ${jsonPath}...`);
-  const rawData = fs.readFileSync(jsonPath, 'utf8');
-  const FTS_ROWS = JSON.parse(rawData);
-  const levelMap: Record<string, string> = {};
+  console.log("✅ Kabale Infrastructure created (1 level, 5 sections)");
 
-  const mainLvl = await prisma.marketLevel.upsert({
-    where: { uniqueCode: 'MKT-KBL-001-LVL-1' },
-    update: {},
-    create: {
-      marketId: market.id,
-      levelNumber: 1,
-      uniqueCode: 'MKT-KBL-001-LVL-1',
-      name: 'Main Level',
-      createdById: superAdminId
-    }
-  });
-
-  // Map all raw fcNo strings to this single level
-  for (const rawLvl of Array.from(new Set(FTS_ROWS.map((r: any) => r.level || 'UNKNOWN')))) {
-    levelMap[rawLvl as string] = mainLvl.id;
-  }
-  console.log(`✅ Kabale Infrastructure Created! (1 Main Level)`);
-
-  return { market, marketMasterRecord, marketMasterUser, levelMap, sectionMap };
+  return {
+    market,
+    marketMasterRecord,
+    marketMasterUser,
+    levelMap,
+    sectionMap,
+  };
 }
