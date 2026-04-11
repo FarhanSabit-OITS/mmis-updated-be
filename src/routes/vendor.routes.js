@@ -13,8 +13,10 @@ const vendorController = require('../controllers/vendor.controller');
 const vendorOnboardingController = require('../controllers/vendor.onboarding.controller');
 
 const adminMiddleware = require('../middleware/admin.middleware');
+const scopeMiddleware = require('../middleware/scope.middleware');
 
 router.use(authMiddleware);
+router.use(scopeMiddleware);
 
 // =====================
 // Vendor Self-Onboarding

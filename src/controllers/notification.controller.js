@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+const prisma = require('../shared/prisma');
 
 exports.getNotifications = async (req, res) => {
     try {

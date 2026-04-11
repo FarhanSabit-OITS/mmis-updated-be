@@ -57,7 +57,7 @@ exports.getAllVendors = async (req, res) => {
         const filters = {
             search,
             kycStatus,
-            marketId: req.user.roleName === 'MarketMaster' ? req.user.marketId : marketId,
+            jurisdiction: req.jurisdiction, // Pass the scoping filter
             vatRegistered,
             sortBy,
             order

@@ -867,6 +867,81 @@ class PaymentService {
       };
     });
   }
+
+  /**
+   * Retrieves paginated revenue hub data with optimized select projections
+   * 
+   * @param {Object} options
+   * @param {string} [options.marketId]
+   * @param {string} [options.type]
+   * @param {number} [options.page=1]
+   */
+  async getRevenueHubPaginated({ marketId, type, page = 1 }) {
+    const limit = 20; // Hardcoded max 20 rows per page as per requirements
+    const skip = (Math.max(1, page) - 1) * limit;
+
+    const where = {
+      ...(marketId && { vendor: { primaryMarketId: marketId } }),
+      ...(type && { paymentType: type })
+    };
+
+    const [payments, totalCount] = await Promise.all([
+      prisma.payment.findMany({
+        where,
+        // PERF-3 FIX: Use select instead of deep include
+        select: {
+          id: true,
+          amount: true,
+          paymentType: true,
+          status: true,
+          paymentDate: true,
+          billingPeriod: true,
+          vendor: {
+            select: {
+              stakeholder: {
+                select: {
+                  user: {
+                    select: {
+                      profile: {
+                        select: {
+                          firstName: true,
+                          lastName: true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        orderBy: { paymentDate: 'desc' },
+        take: limit,
+        skip: skip
+      }),
+      prisma.payment.count({ where })
+    ]);
+
+    const formatted = payments.map(p => ({
+      id: p.id,
+      amount: p.amount,
+      type: p.paymentType,
+      status: p.status,
+      date: p.paymentDate,
+      vendor: `${p.vendor?.stakeholder?.user?.profile?.firstName || ''} ${p.vendor?.stakeholder?.user?.profile?.lastName || ''}`.trim() || 'Unknown',
+      period: p.billingPeriod
+    }));
+
+    return {
+      data: formatted,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    };
+  }
 }
 
 module.exports = new PaymentService();

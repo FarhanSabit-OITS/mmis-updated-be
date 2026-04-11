@@ -1,8 +1,8 @@
-const { PrismaClient } = require('@prisma/client');
+
 const emailService = require('./email.service');
 const socketService = require('./socket.service');
 
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 /**
  * Notification Service
@@ -100,8 +100,34 @@ async function getUserNotifications(userId, limit = 20) {
     });
 }
 
+/**
+ * Send a notification to all users in a specific market (e.g. all market admins/staff)
+ * @param {string} marketId - ID of the market to broadcast to
+ * @param {Object} params - Notification parameters (title, message, etc.)
+ */
+async function notifyMarket(marketId, params) {
+    const { title, message, type = 'INFO', actionUrl = null, metadata = {} } = params;
+
+    try {
+        // Emit real-time WebSocket event to the market room
+        socketService.emitToMarket(marketId, 'market_broadcast', {
+            title,
+            message,
+            type,
+            actionUrl,
+            metadata,
+            timestamp: new Date()
+        });
+
+        console.log(`[NotificationService] Market-wide broadcast sent to market_${marketId}`);
+    } catch (error) {
+        console.error('[NotificationService] Error broadcasting to market:', error);
+    }
+}
+
 module.exports = {
     notify,
+    notifyMarket,
     markAsRead,
     getUserNotifications
 };

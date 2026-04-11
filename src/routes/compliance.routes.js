@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const complianceController = require('../controllers/compliance.controller');
-// Assuming authMiddleware is available to verify Market Master role
-// const { protect, authorize } = require('../middleware/auth');
+const authMiddleware = require('../middleware/auth.middleware');
+const superAdminMiddleware = require('../middleware/superadmin.middleware');
 
-router.post('/audit', complianceController.triggerAudit);
+// All compliance routes require authentication
+router.use(authMiddleware);
+
+// Trigger a full compliance audit — SuperAdmin only
+router.post('/audit', superAdminMiddleware, complianceController.triggerAudit);
+
+// Dashboard accessible to all authenticated admins (MarketMaster + SuperAdmin)
 router.get('/dashboard', complianceController.getComplianceDashboard);
+
+// Audit log query — SuperAdmin only
+router.get('/audit-logs', superAdminMiddleware, complianceController.getAuditLogs);
+
+// NIN Verification
+router.post('/verify-nin', complianceController.verifyNin);
 
 module.exports = router;

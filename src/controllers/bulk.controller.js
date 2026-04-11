@@ -1,11 +1,11 @@
-const { PrismaClient } = require('@prisma/client');
+
 const bcrypt = require('bcryptjs');
 const { validateEmail } = require('../utils/validation');
 const { notify } = require('../services/notification.service');
 const xlsx = require('xlsx');
 const { parse } = require('csv-parse/sync');
 
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 /**
  * Parsing Helper

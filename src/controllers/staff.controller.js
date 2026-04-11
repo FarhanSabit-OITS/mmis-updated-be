@@ -11,15 +11,11 @@ exports.getAllStaff = async (req, res) => {
         const { roleName, marketId: managerMarketId } = req.user;
         const { marketId, role } = req.query;
 
-        let whereClause = {};
+        let whereClause = { ...req.jurisdiction };
 
-        // RBAC: MarketMaster can only see their own market
-        if (roleName === 'MarketMaster') {
-            whereClause.marketId = managerMarketId;
-        } else if (roleName === 'SuperAdmin') {
-            if (marketId) whereClause.marketId = marketId;
-        } else {
-            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        // Allow SuperAdmins to further filter by a specific market if they want
+        if (marketId && (roleName === 'SuperAdmin' || roleName === 'NATIONAL_ADMIN')) {
+            whereClause.marketId = marketId;
         }
 
         // Optional Role filter (e.g., SECURITY_ADMIN, HEALTH_INSPECTOR)
@@ -152,6 +148,10 @@ exports.updateStaff = async (req, res) => {
         const { id } = req.params;
         const { assignedSection, role } = req.body;
 
+        if (!['SuperAdmin', 'MarketMaster'].includes(req.user.userRoles?.[0]?.role?.name) && !['SuperAdmin', 'MarketMaster'].includes(req.user.roleName)) {
+            return res.status(403).json({ success: false, message: 'Forbidden: Requires SuperAdmin or MarketMaster role.' });
+        }
+
         const updated = await prisma.pseudoMarketAdmin.update({
             where: { id },
             data: { 
@@ -185,10 +185,14 @@ exports.deleteStaff = async (req, res) => {
         await prisma.$transaction(async (tx) => {
             await tx.pseudoMarketAdmin.delete({ where: { id } });
             await tx.admin.delete({ where: { id: staff.adminId } });
-            await tx.user.delete({ where: { id: staff.admin.userId } });
+            // ✅ Soft-delete: preserve user record for audit trail integrity
+            await tx.user.update({ 
+                where: { id: staff.admin.userId }, 
+                data: { status: 'INACTIVE' } 
+            });
         });
 
-        return res.status(200).json({ success: true, message: 'Staff removed' });
+        return res.status(200).json({ success: true, message: 'Staff member deactivated successfully' });
     } catch (err) {
         return res.status(500).json({ success: false, message: 'Error deleting staff' });
     }

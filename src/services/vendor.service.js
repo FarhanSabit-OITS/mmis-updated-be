@@ -128,8 +128,30 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
         where.kycStatus = filters.kycStatus;
     }
 
-    // 3. Market Filter (Complex: Vendor.primaryMarketId OR Supplier.invitation.metadata.marketId)
-    if (filters.marketId) {
+    // 3. Jurisdictional Scope Filter
+    if (filters.jurisdiction) {
+        let jurisdictionFilter = {};
+        
+        // Map Market fields to Vendor's primaryMarket relation
+        if (filters.jurisdiction.marketId) {
+            jurisdictionFilter.vendor = { primaryMarketId: filters.jurisdiction.marketId };
+        } else if (filters.jurisdiction.market) {
+            jurisdictionFilter.vendor = { primaryMarket: filters.jurisdiction.market };
+        }
+
+        if (Object.keys(jurisdictionFilter).length > 0) {
+            if (where.OR) {
+                where.AND = [
+                    { OR: where.OR },
+                    jurisdictionFilter
+                ];
+                delete where.OR;
+            } else {
+                Object.assign(where, jurisdictionFilter);
+            }
+        }
+    } else if (filters.marketId) {
+        // Fallback for direct marketId filter if provided
         const marketFilter = [
             { vendor: { primaryMarketId: filters.marketId } },
             {
@@ -148,7 +170,6 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
         ];
 
         if (where.OR) {
-            // Combine existing search OR with market OR using AND
             where.AND = [
                 { OR: where.OR },
                 { OR: marketFilter }
@@ -157,16 +178,14 @@ const getAllVendorsWithDetails = async (filters, pagination) => {
         } else {
             where.OR = marketFilter;
         }
-    } else {
-        // If no market filter, maybe just show all Vendors/Suppliers?
-        // But usually we only want Vendors/Suppliers, not Members/MarketAuthorities
-        if (!where.OR && !where.AND) {
-            where.stakeholderType = { in: ['VENDOR', 'SUPPLIER'] };
+    }
+
+    // Ensure we only show Vendors/Suppliers by default if no type filter
+    if (!where.stakeholderType && !where.AND?.some(a => a.stakeholderType)) {
+        if (where.AND) {
+            where.AND.push({ stakeholderType: { in: ['VENDOR', 'SUPPLIER'] } });
         } else {
-            where.AND = [
-                ...(where.AND || []),
-                { stakeholderType: { in: ['VENDOR', 'SUPPLIER'] } }
-            ];
+            where.stakeholderType = { in: ['VENDOR', 'SUPPLIER'] };
         }
     }
 

@@ -109,6 +109,19 @@ class PaymentController {
         actorUserId: req.user.userId,
         marketScopeId: req.user.roleName === 'MarketMaster' ? req.user.marketId : null,
       });
+
+      const complianceService = require('../services/compliance.service');
+      complianceService.logAudit({
+          action: 'RENT_PAYMENT_RECORDED',
+          entityType: 'RentPayment',
+          entityId: result.id || 'bulk-or-unknown',
+          newData: { ...req.body, status: result.status },
+          userId: req.user.userId,
+          ipAddress: req.ip,
+          endpoint: req.originalUrl,
+          httpMethod: req.method
+      });
+
       res.status(201).json({ success: true, message: 'Rent payment recorded successfully', data: result });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message || 'Failed to record rent payment' });
@@ -148,40 +161,72 @@ class PaymentController {
   }
 
   async sendPaymentReminder(req, res) {
-    res.json({ success: true, message: 'Reminder stub kept as-is for now' });
-  }
-
-  async getRevenueHub(req, res) {
     try {
-      const { type, marketId } = req.query;
-      const { roleName, marketId: managerMarketId } = req.user;
+      const { vendorId, amountDue, dueDate, description } = req.body;
 
-      let targetMarketId = roleName === 'MarketMaster' ? managerMarketId : marketId;
+      if (!vendorId || !amountDue) {
+        return res.status(400).json({ success: false, message: 'vendorId and amountDue are required' });
+      }
 
-      const where = {
-        ...(targetMarketId && { vendor: { primaryMarketId: targetMarketId } }),
-        ...(type && { paymentType: type }) // RENT, VAT_TAX, MISC
-      };
-
-      const payments = await prisma.payment.findMany({
-        where,
+      // Fetch vendor and user email
+      const vendor = await prisma.vendor.findUnique({
+        where: { id: vendorId },
         include: {
-          vendor: { include: { stakeholder: { include: { user: { include: { profile: true } } } } } }
-        },
-        orderBy: { paymentDate: 'desc' }
+          stakeholder: {
+            include: {
+              user: true
+            }
+          }
+        }
       });
 
-      const formatted = payments.map(p => ({
-        id: p.id,
-        amount: p.amount,
-        type: p.paymentType,
-        status: p.status,
-        date: p.paymentDate,
-        vendor: `${p.vendor?.stakeholder?.user?.profile?.firstName || ''} ${p.vendor?.stakeholder?.user?.profile?.lastName || ''}`.trim(),
-        period: p.billingPeriod
-      }));
+      if (!vendor || !vendor.stakeholder || !vendor.stakeholder.user || !vendor.stakeholder.user.email) {
+        return res.status(404).json({ success: false, message: 'Vendor email not found' });
+      }
 
-      return res.status(200).json({ success: true, data: formatted });
+      const emailService = require('../services/email.service');
+      const formattedDate = dueDate ? new Date(dueDate).toLocaleDateString() : 'immediately';
+      
+      await emailService.sendGenericNotificationEmail(
+        vendor.stakeholder.user.email,
+        'Payment Reminder: Outstanding Dues',
+        `This is a reminder that you have an outstanding balance of UGX ${amountDue.toLocaleString()} ${description ? 'for ' + description : ''} due ${formattedDate}. Please clear your dues at the earliest to avoid penalties.`,
+        null,
+        { name: vendor.stakeholder.user.profile?.firstName || 'Vendor', ctaTag: 'Accounts' }
+      );
+
+      res.status(200).json({ success: true, message: 'Payment reminder sent successfully' });
+    } catch (error) {
+      console.error('sendPaymentReminder Error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to send payment reminder' });
+    }
+  }
+
+  /**
+   * GET /api/payments/revenue-hub
+   * ✅ FIXED: Logic moved to service layer. Max 20 rows per page.
+   * Uses select projections instead of deep include chains.
+   */
+  async getRevenueHub(req, res) {
+    try {
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Admin access required' });
+      }
+
+      const { type, marketId, page, cursor } = req.query;
+      const { roleName, marketId: managerMarketId } = req.user;
+
+      // MarketMaster is always scoped to their own market — cannot override
+      const targetMarketId = roleName === 'MarketMaster' ? managerMarketId : (marketId || null);
+
+      const result = await paymentService.getRevenueHubPaginated({
+        marketId: targetMarketId,
+        type,
+        page: parseInt(page) || 1,
+        cursor,
+      });
+
+      return res.status(200).json({ success: true, ...result });
     } catch (error) {
       return res.status(500).json({ success: false, message: error.message });
     }
@@ -189,3 +234,4 @@ class PaymentController {
 }
 
 module.exports = new PaymentController();
+

@@ -224,9 +224,9 @@ exports.getTokenDetails = async (req, res) => {
             where: {
                 OR: [
                     { shortCode: code },
-                    { shortCode: { endsWith: code } } // Allow searching by last digits
+                    { shortCode: { endsWith: code } }
                 ],
-                marketId
+                ...req.jurisdiction
             },
             include: {
                 user: { include: { profile: true } },
@@ -577,10 +577,10 @@ exports.getParkingStatus = async (req, res) => {
     try {
         const { marketId } = req.user;
         
-        // Find all ACTIVE tokens for this market that have a vehicleNumber
+        // Find all ACTIVE tokens for this jurisdiction that have a vehicleNumber
         const activeVehicles = await prisma.marketToken.findMany({
             where: {
-                marketId,
+                ...req.jurisdiction,
                 status: 'ACTIVE',
                 vehicleNumber: { not: null }
             },
@@ -646,3 +646,111 @@ exports.getParkingStatus = async (req, res) => {
 };
 
 
+/**
+ * POST /api/market/tokens/verify-identity
+ * Trust Handshake: Verify identity by NIN or secondary identifier
+ */
+exports.verifyIdentity = async (req, res) => {
+    try {
+        const { identifier } = req.body;
+        const { marketId } = req.user;
+
+        if (!identifier) {
+            return res.status(400).json({ success: false, message: 'Identity identifier (NIN/ID) is required' });
+        }
+
+        // Search for the profile by nationalId, passportNumber, or taxIdNumber
+        const profile = await prisma.userProfile.findFirst({
+            where: {
+                OR: [
+                    { nationalId: identifier },
+                    { passportNumber: identifier },
+                    { taxIdNumber: identifier }
+                ]
+            },
+            include: {
+                user: {
+                    include: {
+                        stakeholder: {
+                            include: {
+                                vendor: {
+                                    include: {
+                                        rentContracts: {
+                                            where: { status: 'ACTIVE' },
+                                            include: {
+                                                payments: {
+                                                    orderBy: { periodEnd: 'desc' },
+                                                    take: 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: 'Identity record not found in system'
+            });
+        }
+
+        const user = profile.user;
+        const vendor = user.stakeholder?.vendor;
+        const activeContract = vendor?.rentContracts?.[0];
+        const lastPayment = activeContract?.payments?.[0];
+
+        // Synthesize Trust Status
+        let trustLevel = 'LOW';
+        let verificationStatus = 'UNVERIFIED';
+        let paymentStatus = 'UNKNOWN';
+
+        if (profile.verificationLevel === 'GOLD' || profile.verificationLevel === 'VERIFIED') {
+            trustLevel = 'HIGH';
+            verificationStatus = 'VERIFIED';
+        } else if (profile.verificationLevel === 'BASIC') {
+            trustLevel = 'MEDIUM';
+            verificationStatus = 'PARTIAL';
+        }
+
+        if (activeContract) {
+            if (vendor.isDelinquent) {
+                paymentStatus = 'DELINQUENT';
+                trustLevel = 'CRITICAL_RISK';
+            } else if (lastPayment && new Date(lastPayment.periodEnd) > new Date()) {
+                paymentStatus = 'PAID_UP';
+            } else {
+                paymentStatus = 'PENDING_PAYMENT';
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                fullName: `${profile.firstName} ${profile.lastName}`,
+                photoUrl: profile.profilePictureUrl,
+                nationalId: profile.nationalId,
+                role: user.stakeholder ? 'VENDOR' : 'CITIZEN',
+                verificationStatus,
+                trustLevel,
+                financials: {
+                    isVendor: !!vendor,
+                    businessName: vendor?.businessName,
+                    paymentStatus,
+                    lastPaymentDate: lastPayment?.paymentDate,
+                    isDelinquent: vendor?.isDelinquent || false
+                },
+                handshakeVerifiedAt: new Date()
+            }
+        });
+
+    } catch (err) {
+        console.error('verifyIdentity error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error during handshake' });
+    }
+};

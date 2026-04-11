@@ -5,11 +5,11 @@
  * Manages products: CRUD operations, bulk imports, stock tracking
  */
 
-const { PrismaClient } = require('@prisma/client');
+
 const productService = require('../services/product.service');
 const { validateProductCreation, validateProductUpdate, validateBulkUploadRow } = require('../utils/product.validation');
 
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 /**
  * POST /api/vendors/:vendorId/products

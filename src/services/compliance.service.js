@@ -1,7 +1,7 @@
-const { PrismaClient } = require('@prisma/client');
+
 const notificationService = require('./notification.service');
 
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 /**
  * Compliance Service
@@ -187,7 +187,47 @@ async function checkDocumentCompliance() {
     }
 }
 
+/**
+ * General utility to write robust audit logs for financial and operational records.
+ */
+async function logAudit({
+    action,
+    entityType,
+    entityId,
+    oldData = null,
+    newData = null,
+    userId = null,
+    ipAddress = null,
+    userAgent = null,
+    endpoint = null,
+    httpMethod = null,
+    success = true,
+    errorMessage = null
+}) {
+    try {
+        await prisma.auditLog.create({
+            data: {
+                action,
+                entityType,
+                entityId,
+                oldData,
+                newData,
+                userId,
+                ipAddress,
+                userAgent,
+                endpoint,
+                httpMethod,
+                success,
+                errorMessage
+            }
+        });
+    } catch (e) {
+        console.error('[ComplianceService] Failed to write AuditLog', e);
+    }
+}
+
 module.exports = {
     processRentCompliance,
-    checkDocumentCompliance
+    checkDocumentCompliance,
+    logAudit
 };

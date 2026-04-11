@@ -118,8 +118,47 @@ export async function seedMarketStaff(prisma: PrismaClient, roleMap: Record<stri
     },
   });
 
-  const kabaleAdmin = await prisma.admin.findUniqueOrThrow({ where: { userId: kabaleUser.id } });
-  const jinjaAdmin = await prisma.admin.findUniqueOrThrow({ where: { userId: jinjaUser.id } });
+  // 4. Mbarara Market Master (Bug Fix: was missing)
+  const mbararaUser = await prisma.user.upsert({
+    where: { email: "master.admin@mbaramarket.ug" },
+    update: { status: UserStatus.ACTIVE },
+    create: {
+      email: "master.admin@mbaramarket.ug",
+      passwordHash: hashedPassword,
+      phone: "+256700000014",
+      emailVerified: true,
+      status: UserStatus.ACTIVE,
+      userRoles: { create: { roleId: roleMap["MarketMaster"] } },
+      profile: {
+        create: {
+          firstName: "Grace",
+          lastName: "Tumusiime",
+          primaryPhone: "+256700000014",
+          primaryEmail: "master.admin@mbaramarket.ug",
+          country: "Uganda",
+          verificationLevel: "FULL",
+        },
+      },
+      admin: {
+        create: {
+          adminLevel: AdminLevel.MARKET_MASTER,
+          employeeId: "MM-MBR-001",
+          assignedByAdminId: superAdminId,
+          marketMaster: { create: { 
+            marketId: marketMap["MKT-MBARARA"].id 
+          } }
+        },
+      },
+    },
+  });
 
-  return { kabaleAdmin, jinjaAdmin };
+  const kabaleAdmin  = await prisma.admin.findUniqueOrThrow({ where: { userId: kabaleUser.id } });
+  const jinjaAdmin   = await prisma.admin.findUniqueOrThrow({ where: { userId: jinjaUser.id } });
+  const mbararaAdmin = await prisma.admin.findUniqueOrThrow({ where: { userId: mbararaUser.id } });
+
+  console.log(`  ✅ Kabale Market Master: master.admin@kabalemarket.ug`);
+  console.log(`  ✅ Jinja Market Master:  master.admin@jinjamarket.ug`);
+  console.log(`  ✅ Mbarara Market Master: master.admin@mbaramarket.ug`);
+
+  return { kabaleAdmin, jinjaAdmin, mbararaAdmin };
 }

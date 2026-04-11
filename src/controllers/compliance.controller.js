@@ -1,6 +1,5 @@
 const complianceService = require('../services/compliance.service');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma'); // ✅ Shared singleton — avoids duplicate connection pool
 
 /**
  * Compliance Controller
@@ -17,6 +16,18 @@ exports.triggerAudit = async (req, res) => {
         
         const rentResult = await complianceService.processRentCompliance();
         const docResult = await complianceService.checkDocumentCompliance();
+
+        // ✅ NEW: Log administrative action in the AuditLog
+        await complianceService.logAudit({
+            action: 'COMPLIANCE_AUDIT_TRIGGERED',
+            entityType: 'MARKET',
+            entityId: req.user?.marketId || 'GLOBAL',
+            userId: req.user?.userId,
+            endpoint: '/api/compliance/audit',
+            httpMethod: 'POST',
+            newData: { rentProcessed: rentResult.processedCount, docsChecked: docResult.count },
+            success: true
+        });
 
         return res.status(200).json({
             success: true,

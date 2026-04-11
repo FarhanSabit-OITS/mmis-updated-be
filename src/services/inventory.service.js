@@ -27,9 +27,9 @@ module.exports = {
           acc[item.productName] = { in: 0, out: 0, balance: 0 };
       }
       if (item.movementType === 'INBOUND' || item.movementType === 'STOCK_IN') {
-          acc[item.productName].in += item._sum.quantity;
+          acc[item.productName].in += item._sum.quantity ?? 0; // ✅ null-safe guard
       } else {
-          acc[item.productName].out += item._sum.quantity;
+          acc[item.productName].out += item._sum.quantity ?? 0; // ✅ null-safe guard
       }
       acc[item.productName].balance = acc[item.productName].in - acc[item.productName].out;
       return acc;

@@ -25,6 +25,10 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+// Trust first proxy — required for accurate IP detection behind nginx/load balancers
+// This ensures rate limiting is applied per real client IP, not the proxy IP
+app.set('trust proxy', 1);
+
 app.use(cors(corsOptions));
 app.use(apiLimiter);
 app.use(cookieParser()); // Parse cookies for refresh token

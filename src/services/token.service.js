@@ -8,12 +8,25 @@ const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 
 module.exports = {
   generateTokens: async (user, roleName) => {
+  generateTokens: async (user, roleName) => {
+    // Extract Jurisdiction
+    const marketId = user.admin?.marketMaster?.marketId || 
+                     user.admin?.pseudoMarketAdmin?.marketId || 
+                     user.stakeholder?.vendor?.primaryMarketId || null;
+    const cityId = user.admin?.cityAdmin?.cityId || null;
+    const districtId = user.admin?.districtAdmin?.districtId || null;
+    const roleLevel = user.admin?.adminLevel || 'USER';
+
     // 1. Generate Access Token
     const accessToken = jwt.sign(
       { 
         userId: user.id, 
         email: user.email, 
-        role: roleName 
+        role: roleName,
+        roleLevel,
+        marketId,
+        cityId,
+        districtId
       },
       JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRY }

@@ -4,19 +4,30 @@ export async function cleanup(prisma: PrismaClient) {
   console.log("🧹 Starting database cleanup...");
 
   // Delete in order of dependency (leaf to root)
-  // 1. Operational data
+  // 1. Operational data (Extended — include all Phase 3 tables)
   await prisma.auditLog.deleteMany({});
   await prisma.notification.deleteMany({});
-  
+  await prisma.supportTicket.deleteMany({});  // ✅ Added: was missing
+
+  // Financial
   await prisma.rentContract.deleteMany({});
-  await prisma.supplierRating.deleteMany({});
-  await prisma.supplierBid.deleteMany({});
-  await prisma.requisition.deleteMany({});
-  
   await prisma.taxPayment.deleteMany({});
   await prisma.rentPayment.deleteMany({});
   await prisma.supplierInvoice.deleteMany({});
-  
+
+  // Supply Chain
+  await prisma.supplierRating.deleteMany({});
+  await prisma.supplierBid.deleteMany({});
+  await prisma.requisition.deleteMany({});
+
+  // Inventory & Products
+  await prisma.stockMovement.deleteMany({});   // ✅ Added: was missing
+  await prisma.product.deleteMany({}).catch(() => {}); // May not exist yet — safe skip
+
+  // KYC
+  await prisma.kycSubmission.deleteMany({}).catch(() => {}); // ✅ Added: was missing
+
+  // Gate Tokens
   await prisma.gateEntry.deleteMany({});
   await prisma.gateOperation.deleteMany({});
   await prisma.marketToken.deleteMany({});

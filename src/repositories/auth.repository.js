@@ -16,6 +16,14 @@ module.exports = {
             vendor: true,
             supplier: true
           }
+        },
+        admin: {
+          include: {
+            marketMaster: true,
+            cityAdmin: true,
+            districtAdmin: true,
+            pseudoMarketAdmin: true
+          }
         }
       }
     });

@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
+
 const crypto = require('crypto');
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 // Helper to generate unique codes
 const generateUniqueCode = (prefix) => {

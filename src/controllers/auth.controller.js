@@ -2,7 +2,7 @@ const authService = require('../services/auth.service');
 const userService = require('../services/user.service');
 const marketService = require('../services/market.service');
 const adminService = require('../services/admin.service');
-const catchAsync = require('../utils/catchAsync');
+const { catchAsync } = require('../utils'); // ✅ Unified import — no more deep path
 
 /**
  * POST /api/auth/register
@@ -276,13 +276,7 @@ exports.setVendorPassword = catchAsync(async (req, res) => {
  * POST /api/auth/vendor-onboarding
  * First-time seeded vendor setup to configure email/password and shop details
  */
-exports.vendorOnboarding = catchAsync(async (req, res) => {
-  // We'll migrate the logic to AuthService later, but for now we follow the pattern
-  // Note: vendorOnboarding is a complex flow that needs a dedicated invitation/registration cycle
-  // This will be handled in a follow-up if specific service logic is needed.
-  // For now, delegating to the same logic pattern.
-  res.status(200).json({ success: true, message: 'Vendor onboarding logic updated.' });
-});
+exports.vendorOnboarding = require('./vendor.onboarding.controller').setupShop;
 
 /**
  * GET /api/auth/admins

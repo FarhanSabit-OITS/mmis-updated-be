@@ -16,10 +16,12 @@ exports.createTicket = asyncHandler(async (req, res) => {
         subject, 
         description, 
         priority = 'MEDIUM', 
-        category, 
-        creatorId,
+        category,
         marketId
     } = req.body;
+
+    // ✅ SECURITY FIX: Always use authenticated user as creator — never trust req.body.creatorId
+    const creatorId = req.user.userId;
 
     // Generate a ticket number e.g., TKT-1712689200
     const ticketNumber = `TKT-${Date.now()}`;
@@ -32,7 +34,7 @@ exports.createTicket = asyncHandler(async (req, res) => {
             priority,
             category,
             creatorId,
-            marketId,
+            marketId: marketId || req.user.marketId || null,
             status: 'OPEN'
         }
     });
@@ -44,6 +46,21 @@ exports.createTicket = asyncHandler(async (req, res) => {
         message: `Your ticket ${ticketNumber} has been received and is being processed.`,
         type: 'INFO'
     });
+
+    // ✅ NEW: Alert all authorized market staff via WebSocket room broadcast
+    if (ticket.marketId) {
+        await require('../services/notification.service').notifyMarket(ticket.marketId, {
+            title: 'New Support Ticket',
+            message: `Ticket ${ticketNumber}: ${subject}`,
+            type: 'WARNING',
+            actionUrl: `/support/tickets/${ticket.id}`,
+            metadata: { 
+                ticketId: ticket.id,
+                category: ticket.category,
+                priority: ticket.priority
+            }
+        });
+    }
 
     return res.status(201).json(new ApiResponse({
         statusCode: 201,
@@ -58,13 +75,24 @@ exports.createTicket = asyncHandler(async (req, res) => {
  */
 exports.getTickets = asyncHandler(async (req, res) => {
     const { userId, status, priority, category, marketId } = req.query;
+    const { roleName, userId: authUserId, marketId: authMarketId } = req.user;
 
     const where = {};
-    if (userId) where.creatorId = userId;
-    if (status) where.status = status;
+
+    // RBAC scoping: vendors/vendors staff only see their own tickets
+    if (roleName === 'Vendor' || roleName === 'GateCounter' || roleName === 'RevenueCollector') {
+        where.creatorId = authUserId;
+    } else {
+        // Admins: apply optional filters
+        if (userId) where.creatorId = userId;
+        // MarketMaster: auto-scope to their market
+        if (roleName === 'MarketMaster') where.marketId = authMarketId;
+        else if (marketId) where.marketId = marketId;
+    }
+
+    if (status)   where.status   = status;
     if (priority) where.priority = priority;
     if (category) where.category = category;
-    if (marketId) where.marketId = marketId;
 
     const tickets = await prisma.supportTicket.findMany({
         where,
@@ -98,15 +126,25 @@ exports.getTickets = asyncHandler(async (req, res) => {
 exports.updateTicket = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { status, assignedToId, resolution } = req.body;
+    const { roleName } = req.user;
+
+    // ✅ RBAC: only admins and market staff can update tickets
+    const canUpdate = ['SuperAdmin', 'MarketMaster', 'GateCounter', 'RevenueCollector'];
+    if (!canUpdate.includes(roleName)) {
+        return res.status(403).json({ success: false, message: 'Forbidden: Insufficient permissions to update tickets' });
+    }
 
     const oldTicket = await prisma.supportTicket.findUnique({ where: { id } });
+    if (!oldTicket) {
+        return res.status(404).json({ success: false, message: 'Ticket not found' });
+    }
     
     const ticket = await prisma.supportTicket.update({
         where: { id },
         data: {
-            status,
-            assignedToId,
-            resolution,
+            ...(status       && { status }),
+            ...(assignedToId && { assignedToId }),
+            ...(resolution   && { resolution }),
             updatedAt: new Date()
         }
     });

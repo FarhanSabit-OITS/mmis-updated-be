@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+const prisma = require('../shared/prisma');
 const emailService = require('../services/email.service');
 const crypto = require('crypto');
 

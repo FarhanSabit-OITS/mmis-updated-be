@@ -5,8 +5,8 @@
  * Handles database operations for products and inventory records
  */
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+const prisma = require('../shared/prisma');
 
 /**
  * Create a new product with initial inventory record

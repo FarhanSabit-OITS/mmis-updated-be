@@ -2,10 +2,10 @@
  * Document Controller — Extended with KYC submission, PDF generation, and analytics reporting.
  */
 
-const { PrismaClient } = require('@prisma/client');
+
 const pdfService = require('../services/pdf.service');
 const { notify } = require('../services/notification.service');
-const prisma = new PrismaClient();
+const prisma = require('../shared/prisma');
 
 // ── 1. EXISTING: Get all documents ───────────────────────────────────────────
 exports.getDocuments = async (req, res) => {
