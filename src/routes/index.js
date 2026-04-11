@@ -33,7 +33,10 @@ const configureRouter = (app)=>{
     app.use('/api/superadmin/vendors', vendorRoutes);
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
+    app.use('/api/gate', tokenRoutes); // Alias for Frontend Gate Service
     app.use('/api/requisitions', requisitionRoutes);
+    app.use('/api/financials', paymentRoutes); // Alias for Frontend Financials Service
+    app.use('/api/applications', vendorRoutes); // Alias for Frontend Applications Service
     app.use('/api', paymentRoutes);
     app.use('/api/markets', marketRoutes)
     app.use('/api/facilities', facilityRoutes)

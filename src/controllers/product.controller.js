@@ -475,11 +475,36 @@ exports.bulkUpload = async (req, res) => {
       });
     }
 
+    // 1. Gather all IDs to check in batch
+    const uniqueFacilityIds = [...new Set(rows.map(r => r.facility_id).filter(Boolean))];
+    const uniqueSkus = [...new Set(rows.map(r => r.sku).filter(Boolean))];
+    const uniqueBarcodes = [...new Set(rows.map(r => r.barcode).filter(Boolean))];
+
+    // 2. Fetch all relevant data in single queries
+    const [existingFacilities, existingProductsBySku, existingProductsByBarcode] = await Promise.all([
+      prisma.facility.findMany({
+        where: { id: { in: uniqueFacilityIds }, vendors: { some: { id: vendorId } } },
+        select: { id: true }
+      }),
+      uniqueSkus.length > 0 ? prisma.product.findMany({
+        where: { sku: { in: uniqueSkus }, isActive: true },
+        select: { sku: true, facilityId: true }
+      }) : Promise.resolve([]),
+      uniqueBarcodes.length > 0 ? prisma.product.findMany({
+        where: { barcode: { in: uniqueBarcodes }, isActive: true },
+        select: { barcode: true }
+      }) : Promise.resolve([])
+    ]);
+
+    const facilityMap = new Set(existingFacilities.map(f => f.id));
+    const skuDbSet = new Set(existingProductsBySku.map(p => `${p.facilityId}|${p.sku}`));
+    const barcodeDbSet = new Set(existingProductsByBarcode.map(p => p.barcode));
+
     // Validate each row
     const validRows = [];
     const errors = [];
-    const skuMap = new Set();
-    const barcodeMap = new Set();
+    const skuFileSet = new Set();
+    const barcodeFileSet = new Set();
 
     for (let i = 0; i < rows.length; i++) {
       const rowNum = i + 2; // +2 because row 1 is header
@@ -493,12 +518,8 @@ exports.bulkUpload = async (req, res) => {
         continue;
       }
 
-      const facility = await prisma.facility.findUnique({
-        where: { id: row.facility_id },
-        include: { vendors: { where: { id: vendorId } } }
-      });
-
-      if (!facility || facility.vendors.length === 0) {
+      // Check facility existence (from batch)
+      if (!facilityMap.has(row.facility_id)) {
         errors.push({
           row: rowNum,
           field: 'facility_id',
@@ -510,7 +531,8 @@ exports.bulkUpload = async (req, res) => {
 
       // Check SKU uniqueness (within file and database)
       if (row.sku) {
-        if (skuMap.has(`${row.stall_id}|${row.sku}`)) {
+        const fileKey = `${row.facility_id}|${row.sku}`;
+        if (skuFileSet.has(fileKey)) {
           errors.push({
             row: rowNum,
             field: 'sku',
@@ -520,23 +542,21 @@ exports.bulkUpload = async (req, res) => {
           continue;
         }
 
-        const skuUnique = await productService.isSkuUnique(row.stall_id, row.sku);
-        if (!skuUnique) {
+        if (skuDbSet.has(fileKey)) {
           errors.push({
             row: rowNum,
             field: 'sku',
-            message: 'SKU already exists in database'
+            message: 'SKU already exists in database for this facility'
           });
           if (stopOnError) break;
           continue;
         }
-
-        skuMap.add(`${row.stall_id}|${row.sku}`);
+        skuFileSet.add(fileKey);
       }
 
       // Check barcode uniqueness (within file and database)
       if (row.barcode) {
-        if (barcodeMap.has(row.barcode)) {
+        if (barcodeFileSet.has(row.barcode)) {
           errors.push({
             row: rowNum,
             field: 'barcode',
@@ -546,8 +566,7 @@ exports.bulkUpload = async (req, res) => {
           continue;
         }
 
-        const barcodeUnique = await productService.isBarcodeUnique(row.barcode);
-        if (!barcodeUnique) {
+        if (barcodeDbSet.has(row.barcode)) {
           errors.push({
             row: rowNum,
             field: 'barcode',
@@ -556,8 +575,7 @@ exports.bulkUpload = async (req, res) => {
           if (stopOnError) break;
           continue;
         }
-
-        barcodeMap.add(row.barcode);
+        barcodeFileSet.add(row.barcode);
       }
 
       validRows.push({ ...row, rowNum });

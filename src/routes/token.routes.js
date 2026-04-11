@@ -5,6 +5,7 @@ const authMiddleware = require('../middleware/auth.middleware');
 
 // All token routes require authentication
 router.post('/entry',              authMiddleware, tokenController.generateEntryToken);
+router.get('/parking-status',      authMiddleware, tokenController.getParkingStatus);
 router.get('/:code',               authMiddleware, tokenController.getTokenDetails);
 router.post('/dispatch',           authMiddleware, tokenController.recordStockDispatch);
 router.post('/tax',                authMiddleware, tokenController.recordTax);

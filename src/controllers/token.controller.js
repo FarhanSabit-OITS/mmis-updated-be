@@ -569,4 +569,80 @@ exports.downloadKycCertificate = async (req, res) => {
     }
 };
 
+/**
+ * GET /api/gate/parking-status
+ * Synthesize parking slot data from ACTIVE tokens
+ */
+exports.getParkingStatus = async (req, res) => {
+    try {
+        const { marketId } = req.user;
+        
+        // Find all ACTIVE tokens for this market that have a vehicleNumber
+        const activeVehicles = await prisma.marketToken.findMany({
+            where: {
+                marketId,
+                status: 'ACTIVE',
+                vehicleNumber: { not: null }
+            },
+            select: {
+                id: true,
+                vehicleNumber: true,
+                vehicleType: true,
+                visitorName: true,
+                shortCode: true
+            }
+        });
+
+        // Synthesize parking slots
+        // Zone A: 1-12 (Heavy)
+        // Zone B: 1-12 (Light)
+        const slots = [];
+        
+        // Fill Zone A (Heavy Trucks / large vehicles)
+        const heavyVehicles = activeVehicles.filter(v => 
+            v.vehicleType?.toLowerCase().includes('truck') || 
+            v.vehicleType?.toLowerCase().includes('van') ||
+            v.vehicleType?.toLowerCase().includes('pickup')
+        );
+        
+        for (let i = 1; i <= 12; i++) {
+            const vehicle = heavyVehicles[i-1];
+            slots.push({
+                id: `A-${i}`,
+                number: `A-${i.toString().padStart(2, '0')}`,
+                zone: 'A',
+                status: vehicle ? 'OCCUPIED' : 'OPEN',
+                vehiclePlate: vehicle ? vehicle.vehicleNumber : null
+            });
+        }
+
+        // Fill Zone B (Others)
+        const smallVehicles = activeVehicles.filter(v => 
+            !v.vehicleType?.toLowerCase().includes('truck') && 
+            !v.vehicleType?.toLowerCase().includes('van') &&
+            !v.vehicleType?.toLowerCase().includes('pickup')
+        );
+        
+        for (let i = 1; i <= 12; i++) {
+            const vehicle = smallVehicles[i-1];
+            slots.push({
+                id: `B-${i}`,
+                number: `B-${i.toString().padStart(2, '0')}`,
+                zone: 'B',
+                status: vehicle ? 'OCCUPIED' : 'OPEN',
+                vehiclePlate: vehicle ? vehicle.vehicleNumber : null
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: slots
+        });
+
+    } catch (err) {
+        console.error('getParkingStatus error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
 

@@ -15,4 +15,7 @@ router.get('/supplier/open', requisitionController.getOpenRequisitions);
 router.post('/supplier/:requisitionId/bid', requisitionController.placeBid);
 router.get('/supplier/bids', requisitionController.getSupplierBids);
 
+// Supplier Directory
+router.get('/suppliers', requisitionController.getSuppliers);
+
 module.exports = router;

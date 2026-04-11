@@ -29,7 +29,7 @@ const prisma = require('../prisma');
 //new code with only name no first and last name
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, businessName, marketId } = req.body;
+    const { name, email, password, role, businessName, marketId, phoneNumber } = req.body;
     // const { firstName, lastName, email, password } = req.body;
 
     // Validate all fields are present
@@ -103,6 +103,7 @@ exports.register = async (req, res) => {
           data: {
             email: normalizedEmail,
             passwordHash,
+            phone: phoneNumber || null,
             status: 'PENDING',
             emailVerified: false,
             // Relate to Guest role
@@ -778,7 +779,7 @@ exports.login = async (req, res) => {
             ? user.admin?.pseudoMarketAdmin?.marketId
             : (user.stakeholder?.vendor?.primaryMarketId || null)),
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
     );
 
@@ -789,7 +790,7 @@ exports.login = async (req, res) => {
         email: user.email,
         type: 'refresh',
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
     );
 
@@ -879,7 +880,7 @@ exports.refresh = async (req, res) => {
     // Verify refresh token
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'your-secret-key');
+      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
     } catch (err) {
       console.error('Refresh token verification error:', err.message);
       return res.status(401).json({
@@ -957,7 +958,7 @@ exports.refresh = async (req, res) => {
         roleName,
         roleLevel,
       },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
     );
 

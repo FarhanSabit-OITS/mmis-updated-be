@@ -337,5 +337,45 @@ module.exports = {
       data: bids,
       message: 'Supplier bids fetched'
     }));
+  }),
+
+  /**
+   * GET /api/requisitions/suppliers
+   * Fetch all verified suppliers for the directory.
+   */
+  getSuppliers: asyncHandler(async (req, res) => {
+    const suppliers = await prisma.supplier.findMany({
+      where: { isVerified: true },
+      select: {
+        id: true,
+        businessName: true,
+        supplierType: true,
+        averageRating: true,
+        isVerified: true,
+        stakeholder: {
+          select: {
+            kycStatus: true
+          }
+        }
+      }
+    });
+
+    // Map to frontend expectation (matching SuppliersNetwork.tsx)
+    const formatted = suppliers.map(s => ({
+      id: s.id,
+      companyName: s.businessName,
+      rating: s.averageRating || 0,
+      totalRatings: 0, // Not explicitly tracked in schema as count, but average is there
+      trustScore: 85, // Default trust score
+      categories: [s.supplierType], // Use supplierType as primary category
+      kycVerified: s.stakeholder?.kycStatus === 'VERIFIED'
+    }));
+
+    return res.status(200).json(new ApiResponse({
+      statusCode: 200,
+      success: true,
+      data: formatted,
+      message: 'Suppliers fetched'
+    }));
   })
 };

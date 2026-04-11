@@ -35,8 +35,7 @@ module.exports = function authMiddleware(req, res, next) {
   const token = parts[1];
 
   try {
-    // Verify and decode JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Attach user info to request
     req.user = {
