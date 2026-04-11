@@ -11,6 +11,7 @@ const http = require('http');
 const socketService = require('./services/socket.service');
 const errorHandler = require('./middleware/errorHandler.middleware');
 const configureRouter = require('./routes');
+const { apiLimiter } = require('./middleware/rateLimit.middleware');
 
 const app = express();
 const server = http.createServer(app);
@@ -25,6 +26,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(apiLimiter);
 app.use(cookieParser()); // Parse cookies for refresh token
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

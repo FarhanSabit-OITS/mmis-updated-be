@@ -15,7 +15,7 @@
  * Dependencies:
  *   npm install -D ts-node bcryptjs @types/bcryptjs
  */
-
+import "dotenv/config";
 import {
   PrismaClient,
   AdminLevel,
@@ -171,12 +171,14 @@ async function main() {
     { name: "Customer", desc: "Market visitor/shopper" },
   ];
 
+  const roleRecords: Record<string, string> = {};
   for (const r of roles) {
     const role = await prisma.role.upsert({
       where: { name: r.name },
       update: { description: r.desc, level: r.level || null },
       create: { name: r.name, description: r.desc, level: r.level || null, isSystem: true },
     });
+    roleRecords[r.name] = role.id;
 
     // Simple permission mapping for seed
     const resources = [PermissionResource.MARKET, PermissionResource.SHOP, PermissionResource.STALL, PermissionResource.GATE, PermissionResource.PAYMENT];
@@ -194,7 +196,7 @@ async function main() {
     }
 
     // Market Master specific MANAGE permissions
-    if (r.name === "MARKET_MASTER") {
+    if (r.name === "MarketMaster") {
       const manageResources = [PermissionResource.SHOP, PermissionResource.STALL, PermissionResource.GATE, PermissionResource.KYC];
       for (const res of manageResources) {
         await prisma.rolePermission.upsert({
@@ -304,7 +306,10 @@ async function main() {
 
   const superAdminUser = await prisma.user.upsert({
     where: { email: "superadmin@kabalemarket.ug" },
-    update: {},
+    update: { 
+      passwordHash: DEV_PASSWORD,
+      status: UserStatus.ACTIVE,
+    },
     create: {
       email: "superadmin@kabalemarket.ug",
       passwordHash: DEV_PASSWORD,
@@ -313,6 +318,11 @@ async function main() {
       phoneVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["SuperAdmin"],
+        },
+      },
       profile: {
         create: {
           firstName: "System",
@@ -351,6 +361,11 @@ async function main() {
       emailVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["MarketMaster"],
+        },
+      },
       profile: {
         create: {
           firstName: "John",
@@ -382,6 +397,11 @@ async function main() {
       emailVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["MarketMaster"],
+        },
+      },
       profile: {
         create: {
           firstName: "Sarah",
@@ -413,6 +433,11 @@ async function main() {
       emailVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["MarketMaster"],
+        },
+      },
       profile: {
         create: {
           firstName: "David",
@@ -545,6 +570,11 @@ async function main() {
       emailVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["GateCounter"],
+        },
+      },
       profile: {
         create: {
           firstName: "Grace",
@@ -581,6 +611,11 @@ async function main() {
       emailVerified: true,
       status: UserStatus.ACTIVE,
       mfaType: MfaType.NONE,
+      userRoles: {
+        create: {
+          roleId: roleRecords["HealthInspector"],
+        },
+      },
       profile: {
         create: {
           firstName: "Samuel",
@@ -843,6 +878,11 @@ async function main() {
         emailVerified: true,
         status: UserStatus.ACTIVE,
         mfaType: MfaType.NONE,
+        userRoles: {
+          create: {
+            roleId: roleRecords["Vendor"],
+          },
+        },
         profile: {
           create: {
             firstName,
@@ -919,6 +959,11 @@ async function main() {
         emailVerified: true,
         status: UserStatus.ACTIVE,
         mfaType: MfaType.NONE,
+        userRoles: {
+          create: {
+            roleId: roleRecords["Customer"],
+          },
+        },
         profile: {
           create: {
             firstName: cd.firstName,
@@ -969,6 +1014,11 @@ async function main() {
         emailVerified: true,
         status: UserStatus.ACTIVE,
         mfaType: MfaType.NONE,
+        userRoles: {
+          create: {
+            roleId: roleRecords["Supplier"],
+          },
+        },
         profile: {
           create: {
             firstName: sd.firstName,

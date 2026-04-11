@@ -715,7 +715,7 @@ exports.login = async (req, res) => {
         },
         stakeholder: {
           include: {
-            vendor: { include: { stalls: true } },
+            vendor: { include: { facilities: true } },
             supplier: true
           }
         },
@@ -828,7 +828,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: refreshTokenExpiryDays * 24 * 60 * 60 * 1000, // milliseconds
+      maxAge: refreshTokenExpiryDays * 24 * 60 * 60 * 1000,
       path: '/',
     });
 
@@ -851,10 +851,11 @@ exports.login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('[AUTH_LOGIN_ERROR]:', err);
     return res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again later.',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }
 };
@@ -889,9 +890,10 @@ exports.refresh = async (req, res) => {
       });
     }
 
-    // Find active session with this refresh token
+    // Hash the token and find active session
+    const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     const session = await prisma.userSession.findUnique({
-      where: { refreshToken },
+      where: { refreshToken: refreshTokenHash },
     });
 
     if (!session || !session.isActive) {

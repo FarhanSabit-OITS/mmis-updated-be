@@ -377,5 +377,71 @@ module.exports = {
       data: formatted,
       message: 'Suppliers fetched'
     }));
+  }),
+
+  /**
+   * POST /api/requisitions/suppliers/:supplierId/rate
+   * Vendor rates a supplier based on a specific Purchase Order
+   */
+  submitRating: asyncHandler(async (req, res) => {
+    const { supplierId } = req.params;
+    const { orderId, rating, quality, timeliness, comment } = req.body;
+    const userId = req.user.id;
+
+    // 1. Verify user is a vendor
+    const vendor = await prisma.vendor.findFirst({
+      where: { stakeholder: { userId } },
+      select: { id: true }
+    });
+    if (!vendor) {
+      return res.status(403).json(new ApiResponse({ statusCode: 403, success: false, message: 'Only vendors can rate suppliers.' }));
+    }
+
+    // 2. Verify order exists and belongs to this vendor and supplier
+    const order = await prisma.purchaseOrder.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order || order.vendorId !== vendor.id || order.supplierId !== supplierId) {
+       return res.status(404).json(new ApiResponse({ statusCode: 404, success: false, message: 'Invalid order for this rating submission.' }));
+    }
+
+    // 3. Create Rating in transaction and update Supplier average
+    const result = await prisma.$transaction(async (tx) => {
+      // Create the rating record
+      const newRating = await tx.supplierRating.create({
+        data: {
+          supplierId,
+          vendorId: vendor.id,
+          orderId,
+          rating: parseInt(rating),
+          quality: quality ? parseInt(quality) : null,
+          timeliness: timeliness ? parseInt(timeliness) : null,
+          comment
+        }
+      });
+
+      // Calculate new average rating for supplier
+      const ratings = await tx.supplierRating.aggregate({
+        where: { supplierId },
+        _avg: { rating: true },
+        _count: { rating: true }
+      });
+
+      // Update supplier averageRating
+      await tx.supplier.update({
+        where: { id: supplierId },
+        data: { averageRating: ratings._avg.rating || rating }
+      });
+
+      return newRating;
+    });
+
+    return res.status(201).json(new ApiResponse({
+      statusCode: 201,
+      success: true,
+      data: result,
+      message: 'Rating submitted successfully'
+    }));
   })
 };

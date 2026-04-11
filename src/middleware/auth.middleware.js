@@ -56,14 +56,14 @@ module.exports = function authMiddleware(req, res, next) {
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
-        message: 'Unauthorized: Token has expired. Please log in again.',
+        message: 'Unauthorized: Token has expired',
       });
     }
 
     if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
-        message: 'Unauthorized: Invalid token.',
+        message: 'Unauthorized: Invalid token',
       });
     }
 

@@ -15,7 +15,8 @@ router.get('/supplier/open', requisitionController.getOpenRequisitions);
 router.post('/supplier/:requisitionId/bid', requisitionController.placeBid);
 router.get('/supplier/bids', requisitionController.getSupplierBids);
 
-// Supplier Directory
+// Supplier Directory & Rating
 router.get('/suppliers', requisitionController.getSuppliers);
+router.post('/suppliers/:supplierId/rate', requisitionController.submitRating);
 
 module.exports = router;
