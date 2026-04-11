@@ -17,6 +17,7 @@ const orderRoutes = require('./order.route');
 const complianceRoutes = require('./compliance.routes');
 const documentRoutes = require('./document.routes');
 const deliveryRoutes = require('./delivery.route');
+const inventoryRoutes = require('./inventory.routes');
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
@@ -44,6 +45,7 @@ const configureRouter = (app)=>{
     app.use('/api/admin/onboarding', adminOnboardingRoutes);
     app.use('/api/orders', orderRoutes);
     app.use('/api/deliveries', deliveryRoutes);
+    app.use('/api/inventory', inventoryRoutes);
 }
 
 module.exports = configureRouter

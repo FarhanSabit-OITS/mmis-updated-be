@@ -35,7 +35,25 @@ module.exports = {
       search: query.search,
       cityId: query.cityId,
     });
-    
+  },
+
+  addLevel: async (marketId, data) => {
+    return await marketRepository.addLevel(marketId, data);
+  },
+
+  addSection: async (marketId, data) => {
+    return await marketRepository.addSection(marketId, data);
+  },
+
+  addAisle: async (sectionId, data) => {
+    return await marketRepository.addAisle(sectionId, data);
+  },
+
+  addGate: async (marketId, data) => {
+    return await marketRepository.addGate(marketId, data);
+  },
+
+  getMarketStakeholders: async (marketId) => {
+    return await marketRepository.getMarketStakeholders(marketId);
   }
-  
 };

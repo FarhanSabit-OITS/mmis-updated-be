@@ -51,5 +51,46 @@ module.exports = {
     return {markets, pagination: new PaginationResponse(total, page, limit)}
   },
   findMarketByName: async (name) =>
-    await prisma.market.findUnique({ where: { name } })
+    await prisma.market.findUnique({ where: { name } }),
+
+  // Infrastructure Methods
+  addLevel: async (marketId, data) => {
+    return await prisma.marketLevel.create({
+      data: { ...data, marketId }
+    });
+  },
+
+  addSection: async (marketId, data) => {
+    return await prisma.marketSection.create({
+      data: { ...data, marketId }
+    });
+  },
+
+  addAisle: async (sectionId, data) => {
+    return await prisma.marketAisle.create({
+      data: { ...data, sectionId }
+    });
+  },
+
+  addGate: async (marketId, data) => {
+    return await prisma.marketGate.create({
+      data: { ...data, marketId }
+    });
+  },
+
+  getMarketStakeholders: async (marketId) => {
+    return await prisma.stakeholder.findMany({
+      where: {
+        OR: [
+          { marketAuthority: { id: { not: undefined } } },
+          { vendor: { primaryMarketId: marketId } }
+        ]
+      },
+      include: {
+        user: { include: { profile: true } },
+        marketAuthority: true,
+        vendor: true
+      }
+    });
+  }
 };

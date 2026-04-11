@@ -77,4 +77,54 @@ module.exports = {
     );
   }
   ),
+
+  addLevel: asyncHandler(async (req, res) => {
+    const level = await marketService.addLevel(req.params.marketId, req.body);
+    return res.status(201).json(new ApiResponse({
+      statusCode: 201,
+      success: true,
+      data: level,
+      message: "Market level added successfully"
+    }));
+  }),
+
+  addSection: asyncHandler(async (req, res) => {
+    const section = await marketService.addSection(req.params.marketId, req.body);
+    return res.status(201).json(new ApiResponse({
+      statusCode: 201,
+      success: true,
+      data: section,
+      message: "Market section added successfully"
+    }));
+  }),
+
+  addAisle: asyncHandler(async (req, res) => {
+    const aisle = await marketService.addAisle(req.params.sectionId, req.body);
+    return res.status(201).json(new ApiResponse({
+      statusCode: 201,
+      success: true,
+      data: aisle,
+      message: "Market aisle added successfully"
+    }));
+  }),
+
+  addGate: asyncHandler(async (req, res) => {
+    const gate = await marketService.addGate(req.params.marketId, req.body);
+    return res.status(201).json(new ApiResponse({
+      statusCode: 201,
+      success: true,
+      data: gate,
+      message: "Market gate added successfully"
+    }));
+  }),
+
+  getMarketStakeholders: asyncHandler(async (req, res) => {
+    const stakeholders = await marketService.getMarketStakeholders(req.params.marketId);
+    return res.status(200).json(new ApiResponse({
+      statusCode: 200,
+      success: true,
+      data: stakeholders,
+      message: "Market stakeholders fetched successfully"
+    }));
+  })
 };

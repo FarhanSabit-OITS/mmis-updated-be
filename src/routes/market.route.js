@@ -24,4 +24,11 @@ router.patch("/:marketId/capacity", validate(updateCapacitySchema), marketContro
 
 router.get("/:marketId", marketController.getMarket);
 
+// Infrastructure Sub-resources
+router.post("/:marketId/levels", marketController.addLevel);
+router.post("/:marketId/sections", marketController.addSection);
+router.post("/sections/:sectionId/aisles", marketController.addAisle);
+router.post("/:marketId/gates", marketController.addGate);
+router.get("/:marketId/stakeholders", marketController.getMarketStakeholders);
+
 module.exports = router;

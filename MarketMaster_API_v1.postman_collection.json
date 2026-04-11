@@ -1,0 +1,265 @@
+{
+	"info": {
+		"_postman_id": "4ae8790b-1234-5678-abcd-ef1234567890",
+		"name": "MarketMaster ERP API v1",
+		"description": "Comprehensive API collection for MarketMaster Multi-Tenant ERP System. Includes Infrastructure, Security, Support, and Financial modules.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"superadmin@marketmaster.com\",\n    \"password\": \"Admin@123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Market Registry",
+			"item": [
+				{
+					"name": "List Markets",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/markets?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"markets"
+							],
+							"query": [
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Market",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Kabale Central Market\",\n    \"displayName\": \"KCM-001\",\n    \"location\": \"Kabale Town\",\n    \"capacity\": 500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/markets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"markets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Market Level",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ground Floor\",\n    \"code\": \"L0\",\n    \"description\": \"Main entrance level\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/markets/:marketId/levels",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"markets",
+								":marketId",
+								"levels"
+							],
+							"variable": [
+								{ "key": "marketId", "value": "uuid-here" }
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stock & Inventory",
+			"item": [
+				{
+					"name": "Record Stock Inbound",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"marketId\": \"uuid-here\",\n    \"productName\": \"Tomatoes\",\n    \"quantity\": 50,\n    \"unit\": \"KG\",\n    \"movementType\": \"INBOUND\",\n    \"supplierName\": \"John's Farm\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/inventory/movements",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"movements"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Inventory Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/inventory/summary/:marketId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"inventory",
+								"summary",
+								":marketId"
+							],
+							"variable": [
+								{ "key": "marketId", "value": "uuid-here" }
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Security & CCTV",
+			"item": [
+				{
+					"name": "Get Security Streams",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/assets/market/:marketId/cctv",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"assets",
+								"market",
+								":marketId",
+								"cctv"
+							],
+							"variable": [
+								{ "key": "marketId", "value": "uuid-here" }
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Support Desk",
+			"item": [
+				{
+					"name": "Create Support Ticket",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"subject\": \"Gate Barrier Malfunction\",\n    \"description\": \"Gate 2 barrier is not responding to token scan.\",\n    \"priority\": \"HIGH\",\n    \"category\": \"INFRASTRUCTURE\",\n    \"marketId\": \"uuid-here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/support",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"support"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000/api",
+			"type": "string"
+		}
+	]
+}
