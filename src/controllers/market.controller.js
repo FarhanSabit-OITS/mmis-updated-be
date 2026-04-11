@@ -126,5 +126,25 @@ module.exports = {
       data: stakeholders,
       message: "Market stakeholders fetched successfully"
     }));
+  }),
+
+  getMarketHierarchy: asyncHandler(async (req, res) => {
+    const hierarchy = await marketService.getMarketHierarchy(req.params.marketId);
+    return res.status(200).json(new ApiResponse({
+      statusCode: 200,
+      success: true,
+      data: hierarchy,
+      message: "Market hierarchy fetched successfully"
+    }));
+  }),
+
+  getMarketStaff: asyncHandler(async (req, res) => {
+    const staff = await marketService.getMarketStaff(req.params.marketId);
+    return res.status(200).json(new ApiResponse({
+      statusCode: 200,
+      success: true,
+      data: staff,
+      message: "Market staff registry fetched successfully"
+    }));
   })
 };

@@ -30,5 +30,7 @@ router.post("/:marketId/sections", marketController.addSection);
 router.post("/sections/:sectionId/aisles", marketController.addAisle);
 router.post("/:marketId/gates", marketController.addGate);
 router.get("/:marketId/stakeholders", marketController.getMarketStakeholders);
+router.get("/:marketId/hierarchy", marketController.getMarketHierarchy);
+router.get("/:marketId/staff", marketController.getMarketStaff);
 
 module.exports = router;

@@ -92,5 +92,41 @@ module.exports = {
         vendor: true
       }
     });
+  },
+
+  getMarketHierarchy: async (marketId) => {
+    return await prisma.market.findUnique({
+      where: { id: marketId },
+      include: {
+        levels: {
+          include: {
+            sections: {
+              include: {
+                aisles: true
+              }
+            }
+          }
+        },
+        gates: true,
+        assets: {
+          where: { assetType: 'CCTV_STREAM' }
+        }
+      }
+    });
+  },
+
+  getMarketStaff: async (marketId) => {
+    return await prisma.pseudoMarketAdmin.findMany({
+      where: { marketId },
+      include: {
+        admin: {
+          include: {
+            user: {
+              include: { profile: true }
+            }
+          }
+        }
+      }
+    });
   }
 };

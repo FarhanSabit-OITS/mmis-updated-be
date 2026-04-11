@@ -15,4 +15,7 @@ router.post('/ma/emergency-lock', authMiddleware, isMarketAuthority, adminOnboar
 // Public/Provisional Endpoints
 router.post('/verify-handshake', adminOnboardingController.verifyHandshake);
 
+// Administrative Oversights
+router.get('/requests', authMiddleware, isSuperAdmin, adminOnboardingController.getPendingRequests);
+
 module.exports = router;

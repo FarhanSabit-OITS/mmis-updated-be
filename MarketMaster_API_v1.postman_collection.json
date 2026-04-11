@@ -1,236 +1,367 @@
 {
 	"info": {
 		"_postman_id": "4ae8790b-1234-5678-abcd-ef1234567890",
-		"name": "MarketMaster ERP API v1",
-		"description": "Comprehensive API collection for MarketMaster Multi-Tenant ERP System. Includes Infrastructure, Security, Support, and Financial modules.",
+		"name": "MarketMaster ERP API v1 - Production Ready",
+		"description": "Comprehensive API collection for MarketMaster Multi-Tenant ERP System. Mapping 100+ backend routes and frontend service calls for multi-tenant Super Admin hierarchy.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Authentication",
+			"name": "1. Authentication & Identity",
 			"item": [
 				{
-					"name": "Login",
+					"name": "User Login",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"superadmin@marketmaster.com\",\n    \"password\": \"Admin@123\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"email\": \"superadmin@marketmaster.ug\",\n    \"password\": \"Admin@123\"\n}",
+							"options": { "raw": { "language": "json" } }
 						},
-						"url": {
-							"raw": "{{baseUrl}}/auth/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Market Registry",
-			"item": [
-				{
-					"name": "List Markets",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/markets?page=1&limit=10",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"markets"
-							],
-							"query": [
-								{ "key": "page", "value": "1" },
-								{ "key": "limit", "value": "10" }
-							]
-						}
-					},
-					"response": []
+						"url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+					}
 				},
 				{
-					"name": "Create Market",
+					"name": "Register New Account",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Kabale Central Market\",\n    \"displayName\": \"KCM-001\",\n    \"location\": \"Kabale Town\",\n    \"capacity\": 500\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"password\": \"SecurePass123\",\n    \"role\": \"Vendor\",\n    \"marketId\": \"{{marketId}}\",\n    \"phoneNumber\": \"+256700000000\"\n}",
+							"options": { "raw": { "language": "json" } }
 						},
-						"url": {
-							"raw": "{{baseUrl}}/markets",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"markets"
-							]
-						}
-					},
-					"response": []
+						"url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+					}
 				},
 				{
-					"name": "Add Market Level",
+					"name": "Get Current Profile (Me)",
 					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ground Floor\",\n    \"code\": \"L0\",\n    \"description\": \"Main entrance level\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/markets/:marketId/levels",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"markets",
-								":marketId",
-								"levels"
-							],
-							"variable": [
-								{ "key": "marketId", "value": "uuid-here" }
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Stock & Inventory",
-			"item": [
-				{
-					"name": "Record Stock Inbound",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"marketId\": \"uuid-here\",\n    \"productName\": \"Tomatoes\",\n    \"quantity\": 50,\n    \"unit\": \"KG\",\n    \"movementType\": \"INBOUND\",\n    \"supplierName\": \"John's Farm\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/inventory/movements",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"inventory",
-								"movements"
-							]
-						}
-					},
-					"response": []
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+					}
 				},
 				{
-					"name": "Get Inventory Summary",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/inventory/summary/:marketId",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"inventory",
-								"summary",
-								":marketId"
-							],
-							"variable": [
-								{ "key": "marketId", "value": "uuid-here" }
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Security & CCTV",
-			"item": [
-				{
-					"name": "Get Security Streams",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/assets/market/:marketId/cctv",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"assets",
-								"market",
-								":marketId",
-								"cctv"
-							],
-							"variable": [
-								{ "key": "marketId", "value": "uuid-here" }
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Support Desk",
-			"item": [
-				{
-					"name": "Create Support Ticket",
+					"name": "Refresh Token",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"subject\": \"Gate Barrier Malfunction\",\n    \"description\": \"Gate 2 barrier is not responding to token scan.\",\n    \"priority\": \"HIGH\",\n    \"category\": \"INFRASTRUCTURE\",\n    \"marketId\": \"uuid-here\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}",
+							"options": { "raw": { "language": "json" } }
 						},
-						"url": {
-							"raw": "{{baseUrl}}/support",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"support"
-							]
-						}
-					},
-					"response": []
+						"url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Market Registry (Infrastructure)",
+			"item": [
+				{
+					"name": "Facility List (All Markets)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/markets?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["markets"], "query": [ { "key": "page", "value": "1" }, { "key": "limit", "value": "20" } ] }
+					}
+				},
+				{
+					"name": "Market Deep Hierarchy",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/markets/:marketId/hierarchy", "host": ["{{baseUrl}}"], "path": ["markets", ":marketId", "hierarchy"], "variable": [ { "key": "marketId", "value": "{{marketId}}" } ] }
+					}
+				},
+				{
+					"name": "Market Masters (Registry)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/markets/:marketId/stakeholders", "host": ["{{baseUrl}}"], "path": ["markets", ":marketId", "stakeholders"], "variable": [ { "key": "marketId", "value": "{{marketId}}" } ] }
+					}
+				},
+				{
+					"name": "CCTV Monitor (All Streams)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/assets/market/:marketId/cctv", "host": ["{{baseUrl}}"], "path": ["assets", "market", ":marketId", "cctv"], "variable": [ { "key": "marketId", "value": "{{marketId}}" } ] }
+					}
+				},
+				{
+					"name": "Add Infrastructure Level",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"First Floor\",\n    \"code\": \"L1\",\n    \"description\": \"Garment & Dry Goods\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/markets/:marketId/levels", "host": ["{{baseUrl}}"], "path": ["markets", ":marketId", "levels"], "variable": [ { "key": "marketId", "value": "{{marketId}}" } ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "3. User Registry (Multi-Role)",
+			"item": [
+				{
+					"name": "Vendors Registry",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/vendors?status=APPROVED", "host": ["{{baseUrl}}"], "path": ["vendors"], "query": [ { "key": "status", "value": "APPROVED" } ] }
+					}
+				},
+				{
+					"name": "Suppliers Registry",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/suppliers", "host": ["{{baseUrl}}"], "path": ["suppliers"] }
+					}
+				},
+				{
+					"name": "Market Admins (Lvl 1-3)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/auth/admins?level=NATIONAL_ADMIN", "host": ["{{baseUrl}}"], "path": ["auth", "admins"], "query": [ { "key": "level", "value": "NATIONAL_ADMIN" } ] }
+					}
+				},
+				{
+					"name": "Management & Staff Registry",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/market-staff?role=HEALTH_INSPECTOR", "host": ["{{baseUrl}}"], "path": ["market-staff"], "query": [ { "key": "role", "value": "HEALTH_INSPECTOR" } ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Revenue Hub (Finance)",
+			"item": [
+				{
+					"name": "Global Revenue Hub (Overview)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/payments/revenue-hub", "host": ["{{baseUrl}}"], "path": ["payments", "revenue-hub"] }
+					}
+				},
+				{
+					"name": "Rental Revenue (Detailed)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/payments/revenue-hub?type=RENT", "host": ["{{baseUrl}}"], "path": ["payments", "revenue-hub"], "query": [ { "key": "type", "value": "RENT" } ] }
+					}
+				},
+				{
+					"name": "VAT/TAX Revenue",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/payments/revenue-hub?type=VAT_TAX", "host": ["{{baseUrl}}"], "path": ["payments", "revenue-hub"], "query": [ { "key": "type", "value": "VAT_TAX" } ] }
+					}
+				},
+				{
+					"name": "Record Payment Manual",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vendorId\": \"{{vendorId}}\",\n    \"amount\": 50000,\n    \"paymentType\": \"RENT\",\n    \"billingPeriod\": \"2024-04\",\n    \"marketId\": \"{{marketId}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/payments/rent/record", "host": ["{{baseUrl}}"], "path": ["payments", "rent", "record"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Operations & Control",
+			"item": [
+				{
+					"name": "Gate Control (Access Logs)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/tokens/history", "host": ["{{baseUrl}}"], "path": ["tokens", "history"] }
+					}
+				},
+				{
+					"name": "Stock Control (Movement)",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productId\": \"{{productId}}\",\n    \"quantity\": 10,\n    \"movementType\": \"OUTBOUND\",\n    \"reason\": \"Sale\",\n    \"marketId\": \"{{marketId}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/inventory/movements", "host": ["{{baseUrl}}"], "path": ["inventory", "movements"] }
+					}
+				},
+				{
+					"name": "Asset Control (Registry)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/assets", "host": ["{{baseUrl}}"], "path": ["assets"] }
+					}
+				},
+				{
+					"name": "Token Control (Issuance)",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"stakeholderId\": \"{{vendorId}}\",\n    \"tokenType\": \"EXIT\",\n    \"validHours\": 4\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/tokens/generate", "host": ["{{baseUrl}}"], "path": ["tokens", "generate"] }
+					}
+				},
+				{
+					"name": "Request Panel (Operations)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/onboarding/requests", "host": ["{{baseUrl}}"], "path": ["onboarding", "requests"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Supply Chain Hub",
+			"item": [
+				{
+					"name": "Supplier Network Hub",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/suppliers/hub", "host": ["{{baseUrl}}"], "path": ["suppliers", "hub"] }
+					}
+				},
+				{
+					"name": "Manage Biddings",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/requisitions?status=PENDING_BIDS", "host": ["{{baseUrl}}"], "path": ["requisitions"], "query": [ { "key": "status", "value": "PENDING_BIDS" } ] }
+					}
+				},
+				{
+					"name": "Place Internal Order",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"products\": [ { \"id\": \"{{productId}}\", \"qty\": 100 } ],\n    \"marketId\": \"{{marketId}}\",\n    \"type\": \"RESTOCK\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Support Hub",
+			"item": [
+				{
+					"name": "List All Tickets (SuperAdmin)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/support", "host": ["{{baseUrl}}"], "path": ["support"] }
+					}
+				},
+				{
+					"name": "Market Specific Tickets",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/support/market/:marketId", "host": ["{{baseUrl}}"], "path": ["support", "market", ":marketId"], "variable": [ { "key": "marketId", "value": "{{marketId}}" } ] }
+					}
+				},
+				{
+					"name": "Respond to Ticket",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"Technician assigned to inspect Gate 2. ETA: 30 mins.\",\n    \"status\": \"IN_PROGRESS\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/support/:ticketId/comment", "host": ["{{baseUrl}}"], "path": ["support", ":ticketId", "comment"], "variable": [ { "key": "ticketId", "value": "{{ticketId}}" } ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Compliance & Auditing",
+			"item": [
+				{
+					"name": "Identity Verification (NIN Check)",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nin\": \"CM12345678ABCD\",\n    \"userId\": \"{{targetUserId}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/compliance/verify-nin", "host": ["{{baseUrl}}"], "path": ["compliance", "verify-nin"] }
+					}
+				},
+				{
+					"name": "Global Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"url": { "raw": "{{baseUrl}}/compliance/audit-logs", "host": ["{{baseUrl}}"], "path": ["compliance", "audit-logs"] }
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Bulk Operations",
+			"item": [
+				{
+					"name": "Import Vendors CSV",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [ { "key": "csv", "type": "file", "src": "/path/to/vendors.csv" } ]
+						},
+						"url": { "raw": "{{baseUrl}}/bulk/import/vendors", "host": ["{{baseUrl}}"], "path": ["bulk", "import", "vendors"] }
+					}
+				},
+				{
+					"name": "Import Facilities CSV",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [ { "key": "csv", "type": "file", "src": "/path/to/shops.csv" } ]
+						},
+						"url": { "raw": "{{baseUrl}}/bulk/import/facilities", "host": ["{{baseUrl}}"], "path": ["bulk", "import", "facilities"] }
+					}
 				}
 			]
 		}
@@ -238,28 +369,19 @@
 	"event": [
 		{
 			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
+			"script": { "type": "text/javascript", "exec": [""] }
 		},
 		{
 			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"exec": [
-					""
-				]
-			}
+			"script": { "type": "text/javascript", "exec": [""] }
 		}
 	],
 	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:5000/api",
-			"type": "string"
-		}
+		{ "key": "baseUrl", "value": "http://localhost:5000/api", "type": "string" },
+		{ "key": "token", "value": "replace-with-jwt", "type": "string" },
+		{ "key": "marketId", "value": "uuid-placeholder", "type": "string" },
+		{ "key": "vendorId", "value": "uuid-placeholder", "type": "string" },
+		{ "key": "productId", "value": "uuid-placeholder", "type": "string" },
+		{ "key": "ticketId", "value": "uuid-placeholder", "type": "string" }
 	]
 }

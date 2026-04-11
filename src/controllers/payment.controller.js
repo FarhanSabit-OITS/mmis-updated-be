@@ -150,6 +150,42 @@ class PaymentController {
   async sendPaymentReminder(req, res) {
     res.json({ success: true, message: 'Reminder stub kept as-is for now' });
   }
+
+  async getRevenueHub(req, res) {
+    try {
+      const { type, marketId } = req.query;
+      const { roleName, marketId: managerMarketId } = req.user;
+
+      let targetMarketId = roleName === 'MarketMaster' ? managerMarketId : marketId;
+
+      const where = {
+        ...(targetMarketId && { vendor: { primaryMarketId: targetMarketId } }),
+        ...(type && { paymentType: type }) // RENT, VAT_TAX, MISC
+      };
+
+      const payments = await prisma.payment.findMany({
+        where,
+        include: {
+          vendor: { include: { stakeholder: { include: { user: { include: { profile: true } } } } } }
+        },
+        orderBy: { paymentDate: 'desc' }
+      });
+
+      const formatted = payments.map(p => ({
+        id: p.id,
+        amount: p.amount,
+        type: p.paymentType,
+        status: p.status,
+        date: p.paymentDate,
+        vendor: `${p.vendor?.stakeholder?.user?.profile?.firstName || ''} ${p.vendor?.stakeholder?.user?.profile?.lastName || ''}`.trim(),
+        period: p.billingPeriod
+      }));
+
+      return res.status(200).json({ success: true, data: formatted });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }
 
 module.exports = new PaymentController();

@@ -1889,5 +1889,55 @@ exports.vendorOnboarding = async (req, res) => {
       success: false,
       message: err.message || 'Internal server error. Please try again.',
     });
+    });
+  }
+};
+
+/**
+ * GET /api/auth/admins
+ * List all non-pseudo admins (National, District, City, MarketMaster)
+ */
+exports.getAdmins = async (req, res) => {
+  try {
+    const { level, marketId } = req.query;
+
+    const where = {
+      admin: {
+        adminLevel: {
+          not: 'PSEUDO_MARKET_ADMIN'
+        }
+      }
+    };
+
+    if (level) where.admin.adminLevel = level;
+    if (marketId) where.admin.marketScopeId = marketId;
+
+    const admins = await prisma.user.findMany({
+      where,
+      include: {
+        profile: true,
+        admin: true,
+        userRoles: {
+          include: { role: true }
+        }
+      }
+    });
+
+    const formatted = admins.map(a => ({
+      id: a.id,
+      email: a.email,
+      name: `${a.profile?.firstName || ''} ${a.profile?.lastName || ''}`.trim(),
+      level: a.admin?.adminLevel,
+      status: a.status,
+      roles: a.userRoles.map(ur => ur.role.name)
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: formatted
+    });
+  } catch (err) {
+    console.error('getAdmins error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

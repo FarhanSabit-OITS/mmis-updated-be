@@ -22,4 +22,7 @@ router.get('/admin/payments/outstanding', paymentController.getOutstandingPaymen
 router.get('/admin/payments/vendors', paymentController.getScopedVendorsWithPayments);
 router.post('/admin/payments/send-reminder', paymentController.sendPaymentReminder);
 
+// Revenue Hub
+router.get('/revenue-hub', paymentController.getRevenueHub);
+
 module.exports = router;

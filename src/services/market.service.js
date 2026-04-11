@@ -55,5 +55,13 @@ module.exports = {
 
   getMarketStakeholders: async (marketId) => {
     return await marketRepository.getMarketStakeholders(marketId);
+  },
+
+  getMarketHierarchy: async (marketId) => {
+    return await marketRepository.getMarketHierarchy(marketId);
+  },
+
+  getMarketStaff: async (marketId) => {
+    return await marketRepository.getMarketStaff(marketId);
   }
 };

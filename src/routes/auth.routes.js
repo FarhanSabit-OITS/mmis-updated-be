@@ -24,4 +24,7 @@ router.get('/me', authMiddleware, authController.getMe);
 router.post('/update-profile', authMiddleware, authController.updateProfile);
 router.post('/change-password', authMiddleware, authController.changePassword);
 
+// Administrative Registry
+router.get('/admins', authMiddleware, authController.getAdmins);
+
 module.exports = router;

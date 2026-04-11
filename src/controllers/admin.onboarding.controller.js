@@ -187,3 +187,44 @@ exports.emergencyLock = async (req, res) => {
         res.status(500).json({ message: "Emergency Lock Error", error: error.message });
     }
 };
+
+/**
+ * GET /api/onboarding/requests
+ * Get all pending onboarding and verification requests globally
+ */
+exports.getPendingRequests = async (req, res) => {
+    try {
+        const { marketId } = req.query;
+
+        const invitations = await prisma.invitation.findMany({
+            where: {
+                status: 'PENDING',
+                ...(marketId && { marketScopeId: marketId })
+            },
+            include: {
+                handshakeCode: true,
+                marketScope: true
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Map to a unified 'Request' format
+        const requests = invitations.map(inv => ({
+            id: inv.id,
+            type: 'USER_ONBOARDING',
+            source: inv.email,
+            subject: inv.recipientName,
+            status: inv.status,
+            market: inv.marketScope?.name || 'GLOBAL',
+            date: inv.createdAt,
+            hasHandshake: !!inv.handshakeCode
+        }));
+
+        res.status(200).json({
+            success: true,
+            data: requests
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

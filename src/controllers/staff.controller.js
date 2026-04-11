@@ -3,49 +3,37 @@ const prisma = require('../prisma');
 const { validateEmail, validatePassword, normalizeEmail } = require('../utils/validation');
 
 /**
- * GET /api/market/staff/gate-counters
- * Get gate counter(s) based on user role
+ * GET /api/market/staff
+ * Get all pseudo-staff members across markets (or filtered by market/role)
  */
-exports.getGateCounters = async (req, res) => {
+exports.getAllStaff = async (req, res) => {
     try {
-        const { roleName, marketId } = req.user;
+        const { roleName, marketId: managerMarketId } = req.user;
+        const { marketId, role } = req.query;
 
-        let whereClause = {
-            role: 'GATE_COUNTER'
-        };
+        let whereClause = {};
 
-        // If MarketMaster, only show for their market
+        // RBAC: MarketMaster can only see their own market
         if (roleName === 'MarketMaster') {
-            if (!marketId) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Market identification failed for this manager.'
-                });
-            }
-            whereClause.marketId = marketId;
-        }
-        // If SuperAdmin, showing all (or filter by query param)
-        else if (roleName === 'SuperAdmin') {
-            const filterMarketId = req.query.marketId;
-            if (filterMarketId) {
-                whereClause.marketId = filterMarketId;
-            }
+            whereClause.marketId = managerMarketId;
+        } else if (roleName === 'SuperAdmin') {
+            if (marketId) whereClause.marketId = marketId;
         } else {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized access to staff management.'
-            });
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
         }
 
-        const gateCounters = await prisma.pseudoMarketAdmin.findMany({
+        // Optional Role filter (e.g., SECURITY_ADMIN, HEALTH_INSPECTOR)
+        if (role) {
+            whereClause.role = role;
+        }
+
+        const staff = await prisma.pseudoMarketAdmin.findMany({
             where: whereClause,
             include: {
                 admin: {
                     include: {
                         user: {
-                            include: {
-                                profile: true
-                            }
+                            include: { profile: true }
                         }
                     }
                 },
@@ -53,16 +41,17 @@ exports.getGateCounters = async (req, res) => {
             }
         });
 
-        const formatted = gateCounters.map(gc => ({
-            id: gc.id,
-            userId: gc.admin?.user?.id,
-            name: `${gc.admin?.user?.profile?.firstName || ''} ${gc.admin?.user?.profile?.lastName || ''}`.trim() || gc.admin?.user?.email.split('@')[0],
-            email: gc.admin?.user?.email,
-            phone: gc.admin?.user?.phone || gc.admin?.user?.profile?.primaryPhone || 'N/A',
-            marketName: gc.market?.name,
-            marketId: gc.marketId,
-            status: gc.admin?.user?.status,
-            assignedSection: gc.assignedSection
+        const formatted = staff.map(s => ({
+            id: s.id,
+            role: s.role,
+            userId: s.admin?.user?.id,
+            name: `${s.admin?.user?.profile?.firstName || ''} ${s.admin?.user?.profile?.lastName || ''}`.trim(),
+            email: s.admin?.user?.email,
+            phone: s.admin?.user?.profile?.primaryPhone || 'N/A',
+            marketName: s.market?.name,
+            marketId: s.marketId,
+            status: s.admin?.user?.status,
+            assignedSection: s.assignedSection
         }));
 
         return res.status(200).json({
@@ -70,132 +59,61 @@ exports.getGateCounters = async (req, res) => {
             data: formatted
         });
     } catch (err) {
-        console.error('getGateCounters error:', err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        console.error('getAllStaff error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 /**
- * POST /api/market/staff/gate-counters
- * Create a new gate counter
+ * GET /api/market/staff/gate-counters
+ * Get gate counter(s) based on user role (Legacy support)
  */
-exports.createGateCounter = async (req, res) => {
+exports.getGateCounters = async (req, res) => {
+    req.query.role = 'GATE_COUNTER';
+    return exports.getAllStaff(req, res);
+};
+
+/**
+ * POST /api/market/staff
+ * Create a specialized staff member (Security, Health, Stock, etc.)
+ */
+exports.createStaff = async (req, res) => {
     try {
         const { roleName, marketId: managerMarketId } = req.user;
-        let { name, email, phone, password, marketId } = req.body;
+        let { name, email, phone, password, marketId, role } = req.body;
 
-        // RBAC check for marketId
-        if (roleName === 'MarketMaster') {
-            marketId = managerMarketId;
-        } else if (roleName !== 'SuperAdmin') {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized'
-            });
-        }
-
-        if (!marketId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Market ID is required'
-            });
+        if (roleName === 'MarketMaster') marketId = managerMarketId;
+        
+        if (!marketId || !role) {
+            return res.status(400).json({ success: false, message: 'Market ID and Role are required' });
         }
 
         // Validation
         if (!name || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Name, email, and password are required'
-            });
-        }
-
-        if (!validateEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid email format'
-            });
-        }
-
-        if (!validatePassword(password)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Password must be 8-64 characters'
-            });
+            return res.status(400).json({ success: false, message: 'Missing credentials' });
         }
 
         const normalizedEmail = normalizeEmail(email);
 
-        // Check if market already has a gate counter
-        const existingStaff = await prisma.pseudoMarketAdmin.findFirst({
-            where: {
-                marketId,
-                role: 'GATE_COUNTER'
-            }
-        });
-
-        if (existingStaff) {
-            return res.status(400).json({
-                success: false,
-                message: 'This market already has a Gate Counter assigned.'
-            });
-        }
-
-        // Check email uniqueness
-        const existingUser = await prisma.user.findUnique({
-            where: { email: normalizedEmail }
-        });
-        if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: 'Email already in use'
-            });
-        }
-
-        const passwordHash = await bcrypt.hash(password, 10);
-        const firstName = name.split(' ')[0];
-        const lastName = name.split(' ').slice(1).join(' ') || ' ';
-
-        // Get GateCounter Role
-        const gcRole = await prisma.role.findUnique({
-            where: { name: 'GateCounter' }
-        });
-
-        if (!gcRole) {
-            return res.status(500).json({
-                success: false,
-                message: 'GateCounter role not found in system'
-            });
-        }
-
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Create User
             const user = await tx.user.create({
                 data: {
                     email: normalizedEmail,
-                    passwordHash,
+                    passwordHash: await bcrypt.hash(password, 10),
                     phone,
                     status: 'ACTIVE',
-                    emailVerified: true, // Auto-verify for administrative accounts
+                    emailVerified: true,
                     profile: {
                         create: {
-                            firstName,
-                            lastName,
+                            firstName: name.split(' ')[0],
+                            lastName: name.split(' ').slice(1).join(' ') || ' ',
                             primaryPhone: phone || '',
                             primaryEmail: normalizedEmail
-                        }
-                    },
-                    userRoles: {
-                        create: {
-                            roleId: gcRole.id
                         }
                     }
                 }
             });
 
-            // 2. Create Admin record
             const admin = await tx.admin.create({
                 data: {
                     userId: user.id,
@@ -203,12 +121,11 @@ exports.createGateCounter = async (req, res) => {
                 }
             });
 
-            // 3. Create PseudoMarketAdmin record
             const pseudo = await tx.pseudoMarketAdmin.create({
                 data: {
                     adminId: admin.id,
                     marketId,
-                    role: 'GATE_COUNTER'
+                    role: role // e.g., SECURITY_ADMIN, HEALTH_INSPECTOR
                 }
             });
 
@@ -217,69 +134,66 @@ exports.createGateCounter = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: 'Gate Counter created successfully',
             data: result
         });
 
     } catch (err) {
-        console.error('createGateCounter error:', err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        console.error('createStaff error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 /**
- * DELETE /api/market/staff/gate-counters/:id
- * Remove a gate counter
+ * PATCH /api/market/staff/:id
+ * Update staff duty/section
  */
-exports.deleteGateCounter = async (req, res) => {
+exports.updateStaff = async (req, res) => {
     try {
         const { id } = req.params;
-        const { roleName, marketId } = req.user;
+        const { assignedSection, role } = req.body;
 
+        const updated = await prisma.pseudoMarketAdmin.update({
+            where: { id },
+            data: { 
+                assignedSection,
+                role 
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: updated
+        });
+    } catch (err) {
+        return res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+/**
+ * DELETE /api/market/staff/:id
+ */
+exports.deleteStaff = async (req, res) => {
+    try {
+        const { id } = req.params;
         const staff = await prisma.pseudoMarketAdmin.findUnique({
             where: { id },
             include: { admin: true }
         });
 
-        if (!staff) {
-            return res.status(404).json({
-                success: false,
-                message: 'Staff member not found'
-            });
-        }
+        if (!staff) return res.status(404).json({ success: false, message: 'Not found' });
 
-        // RBAC: MarketMaster can only delete from their market
-        if (roleName === 'MarketMaster' && staff.marketId !== marketId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Unauthorized'
-            });
-        }
-
-        // Delete in transaction
         await prisma.$transaction(async (tx) => {
-            // Delete Pseudo record
             await tx.pseudoMarketAdmin.delete({ where: { id } });
-
-            // Delete Admin record
             await tx.admin.delete({ where: { id: staff.adminId } });
-
-            // Delete User record (optional, but keep it clean for these pseudo admins?)
             await tx.user.delete({ where: { id: staff.admin.userId } });
         });
 
-        return res.status(200).json({
-            success: true,
-            message: 'Gate Counter removed successfully'
-        });
+        return res.status(200).json({ success: true, message: 'Staff removed' });
     } catch (err) {
-        console.error('deleteGateCounter error:', err);
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        return res.status(500).json({ success: false, message: 'Error deleting staff' });
     }
 };
+
+// Legacy alias handlers for backward compatibility if needed
+exports.createGateCounter = exports.createStaff;
+exports.deleteGateCounter = exports.deleteStaff;
