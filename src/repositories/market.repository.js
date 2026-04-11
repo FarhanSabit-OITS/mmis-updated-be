@@ -1,132 +1,64 @@
 const prisma = require('../shared/prisma');
-const { PaginationResponse } = require('../utils');
 
 module.exports = {
-  createMarket: async (data) => {
-    return await prisma.market.create({ data });
-  },
-
-  updateMarket: async (marketId, data) => {
-    return await prisma.market.update({
-      where: { id: marketId },
-      data,
-    });
-  },
-
-  getMarketById: async (marketId) => {
-    return await prisma.market.findUnique({
-      where: { id: marketId },
-      include: {
-        levels: true,
-        sections: true,
-        shops: true,
-        stalls: true,
-        gates: true,
-      },
-    });
-  },
-  getMarketList: async ({ page, limit, search, cityId }) => {
-    const skip = (page - 1) * limit;
-
-    const where = {
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { displayName: { contains: search, mode: "insensitive" } },
-        ],
-      }),
-      ...(cityId && { cityId }),
-    };
-
-    const [markets, total] = await Promise.all([
-      prisma.market.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.market.count({ where }),
-    ]);
-
-    return {markets, pagination: new PaginationResponse(total, page, limit)}
-  },
-  findMarketByName: async (name) =>
-    await prisma.market.findUnique({ where: { name } }),
-
-  // Infrastructure Methods
-  addLevel: async (marketId, data) => {
-    return await prisma.marketLevel.create({
-      data: { ...data, marketId }
-    });
-  },
-
-  addSection: async (marketId, data) => {
-    return await prisma.marketSection.create({
-      data: { ...data, marketId }
-    });
-  },
-
-  addAisle: async (sectionId, data) => {
-    return await prisma.marketAisle.create({
-      data: { ...data, sectionId }
-    });
-  },
-
-  addGate: async (marketId, data) => {
-    return await prisma.marketGate.create({
-      data: { ...data, marketId }
-    });
-  },
-
-  getMarketStakeholders: async (marketId) => {
-    return await prisma.stakeholder.findMany({
-      where: {
-        OR: [
-          { marketAuthority: { id: { not: undefined } } },
-          { vendor: { primaryMarketId: marketId } }
-        ]
-      },
-      include: {
-        user: { include: { profile: true } },
-        marketAuthority: true,
-        vendor: true
+  findAllActive: async () => {
+    return await prisma.market.findMany({
+      where: { status: 'ACTIVE' },
+      select: {
+        id: true,
+        name: true,
+        uniqueCode: true,
       }
     });
   },
 
-  getMarketHierarchy: async (marketId) => {
-    return await prisma.market.findUnique({
-      where: { id: marketId },
-      include: {
-        levels: {
-          include: {
-            sections: {
-              include: {
-                aisles: true
-              }
-            }
+  findGateById: async (gateId) => {
+    return await prisma.marketGate.findUnique({
+      where: { id: gateId },
+      include: { market: true }
+    });
+  },
+
+  findSupplierById: async (supplierId) => {
+    // Try UUID first
+    let supplier = await prisma.supplier.findUnique({
+      where: { id: supplierId },
+      include: { stakeholder: true }
+    });
+
+    if (!supplier) {
+      // Try Code
+      supplier = await prisma.supplier.findUnique({
+        where: { supplierCode: supplierId },
+        include: { stakeholder: true }
+      });
+    }
+
+    if (!supplier) {
+      // Try Linked User ID
+      supplier = await prisma.supplier.findFirst({
+        where: {
+          stakeholder: {
+            userId: supplierId
           }
         },
-        gates: true,
-        assets: {
-          where: { assetType: 'CCTV_STREAM' }
-        }
-      }
+        include: { stakeholder: true }
+      });
+    }
+
+    return supplier;
+  },
+
+  findUserById: async (userId) => {
+    return await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true }
     });
   },
 
-  getMarketStaff: async (marketId) => {
-    return await prisma.pseudoMarketAdmin.findMany({
-      where: { marketId },
-      include: {
-        admin: {
-          include: {
-            user: {
-              include: { profile: true }
-            }
-          }
-        }
-      }
+  createMarketToken: async (tokenData) => {
+    return await prisma.marketToken.create({
+      data: tokenData
     });
   }
 };

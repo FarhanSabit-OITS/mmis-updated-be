@@ -1,67 +1,93 @@
-const { ConflictError } = require("../errors/app.errors");
-const marketRepository = require("../repositories/market.repository");
+const crypto = require('crypto');
+const marketRepository = require('../repositories/market.repository');
+const AppError = require('../errors/AppError');
 
 module.exports = {
-  createMarket: async (data) => {
-    const existingMarket = await marketRepository.findMarketByName(data.name)
-    if (existingMarket){
-        throw new ConflictError("Market already exists")
+  getActiveMarkets: async () => {
+    return await marketRepository.findAllActive();
+  },
+
+  generateGateToken: async (supplierId, gateId, adminId) => {
+    if (!gateId) {
+      throw new AppError('Gate ID is required', 400);
     }
-    return await marketRepository.createMarket(data);
-  },
 
-  updateGeneralInfo: async (marketId, data) => {
-    return await marketRepository.updateMarket(marketId, data);
-  },
+    // 1. Verify Gate and Market
+    const gate = await marketRepository.findGateById(gateId);
+    if (!gate) {
+      throw new AppError('Gate not found', 404);
+    }
 
-  updateOperatingInfo: async (marketId, data) => {
-    return await marketRepository.updateMarket(marketId, data);
-  },
+    // 2. Identify Target (Supplier or Generic User)
+    let targetUserId;
+    let targetData = {};
+    let isGenericUser = false;
 
-  updateCapacityInfo: async (marketId, data) => {
-    return await marketRepository.updateMarket(marketId, data);
-  },
+    const supplier = await marketRepository.findSupplierById(supplierId);
 
-  getMarket: async (marketId) => {
-    return await marketRepository.getMarketById(marketId);
-  },
-  getMarketList: async (query) => {
-    const page = parseInt(query.page) || 1;
-    const limit = parseInt(query.limit) || 10;
+    if (supplier) {
+      if (!supplier.stakeholder || !supplier.stakeholder.userId) {
+        throw new AppError('Supplier is not linked to a valid user account', 400);
+      }
+      targetUserId = supplier.stakeholder.userId;
+      targetData = {
+        id: supplier.id,
+        code: supplier.supplierCode,
+        name: supplier.businessName
+      };
+    } else {
+      // Fallback: direct User lookup
+      const user = await marketRepository.findUserById(supplierId);
+      if (!user) {
+        throw new AppError('Supplier or User not found', 404);
+      }
+      targetUserId = user.id;
+      targetData = {
+        id: user.id,
+        code: 'GENERIC_USER',
+        name: user.profile ? `${user.profile.firstName} ${user.profile.lastName}` : user.email
+      };
+      isGenericUser = true;
+    }
 
-    return await marketRepository.getMarketList({
-      page,
-      limit,
-      search: query.search,
-      cityId: query.cityId,
+    // 3. Logic for Code Generation
+    const randomSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const tokenCode = `SUP_${gate.market.uniqueCode}_${gate.gateNumber}_${randomSuffix}`;
+
+    // 4. Calculate Expiry (End of Day)
+    const expiresAt = new Date();
+    expiresAt.setHours(23, 59, 59, 999);
+
+    // 5. Create Token via Repository
+    const token = await marketRepository.createMarketToken({
+      tokenCode,
+      tokenType: 'GATE_ENTRY',
+      status: 'PENDING',
+      marketId: gate.marketId,
+      gateId: gate.id,
+      userId: targetUserId,
+      createdById: adminId,
+      expiresAt,
+      metadata: {
+        supplierId: targetData.id,
+        supplierCode: targetData.code,
+        generatedBy: 'API',
+        isGenericUser
+      }
     });
-  },
 
-  addLevel: async (marketId, data) => {
-    return await marketRepository.addLevel(marketId, data);
-  },
-
-  addSection: async (marketId, data) => {
-    return await marketRepository.addSection(marketId, data);
-  },
-
-  addAisle: async (sectionId, data) => {
-    return await marketRepository.addAisle(sectionId, data);
-  },
-
-  addGate: async (marketId, data) => {
-    return await marketRepository.addGate(marketId, data);
-  },
-
-  getMarketStakeholders: async (marketId) => {
-    return await marketRepository.getMarketStakeholders(marketId);
-  },
-
-  getMarketHierarchy: async (marketId) => {
-    return await marketRepository.getMarketHierarchy(marketId);
-  },
-
-  getMarketStaff: async (marketId) => {
-    return await marketRepository.getMarketStaff(marketId);
+    return {
+      tokenCode: token.tokenCode,
+      expiresAt: token.expiresAt,
+      supplier: {
+        name: targetData.name,
+        code: targetData.code
+      },
+      gate: {
+        name: gate.gateName,
+        number: gate.gateNumber,
+        market: gate.market.name
+      }
+    };
   }
 };
