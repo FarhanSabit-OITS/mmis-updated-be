@@ -744,8 +744,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    //  Check if account is active
-    if (user.status !== 'ACTIVE') {
+    //  Check if account is active or pending setup
+    if (user.status !== 'ACTIVE' && user.status !== 'PENDING') {
       return res.status(403).json({
         success: false,
         message: 'Your account is not active. Please contact support.',
@@ -1774,6 +1774,120 @@ exports.setVendorPassword = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
+    });
+  }
+};
+
+/**
+ * POST /api/auth/vendor-onboarding
+ * First-time seeded vendor setup to configure email/password and shop details
+ */
+exports.vendorOnboarding = async (req, res) => {
+  try {
+    const { email: newEmail, password: newPassword, businessName, category, facilityCode } = req.body;
+    
+    // 1. User must be authenticated (we assume middleware protects this route and sets req.user)
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    // 2. Validate inputs
+    if (!newEmail || !newPassword || !businessName || !category) {
+      return res.status(400).json({ success: false, message: 'Missing required onboarding fields' });
+    }
+    if (!validateEmail(newEmail)) {
+      return res.status(400).json({ success: false, message: 'Invalid email format' });
+    }
+
+    const normalizedEmail = normalizeEmail(newEmail);
+
+    // 3. Check if new email is already in use by someone else
+    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existingUser && existingUser.id !== req.user.userId) {
+      return res.status(409).json({ success: false, message: 'This email is already registered.' });
+    }
+
+    // 4. Update the user, vendor, facility in a transaction
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Find stakeholder to get vendor ID
+      const stakeholder = await tx.stakeholder.findUnique({
+        where: { userId: req.user.userId },
+        include: { vendor: true }
+      });
+
+      if (!stakeholder || !stakeholder.vendor) {
+        throw new Error('Vendor profile not found');
+      }
+
+      // Update User credentials and set emailVerified to false, keep PENDING until verified?
+      // Actually, if they verify email, it will set them to ACTIVE. So they stay PENDING for now.
+      const updatedUser = await tx.user.update({
+        where: { id: req.user.userId },
+        data: {
+          email: normalizedEmail,
+          passwordHash,
+          emailVerified: false,
+        }
+      });
+
+      // Update Vendor businessName
+      await tx.vendor.update({
+        where: { id: stakeholder.vendor.id },
+        data: {
+          businessName: businessName,
+          businessType: category,
+        }
+      });
+
+      // Create an invitation token to verify the new email
+      const invitation = await tx.invitation.create({
+        data: {
+          email: normalizedEmail,
+          token: verificationToken,
+          invitationType: 'USER_REGISTRATION',
+          status: 'PENDING',
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+          metadata: {
+            purpose: 'VERIFY_EMAIL',
+            targetRole: 'Vendor',
+          },
+        },
+      });
+
+      // Clear existing sessions to force re-login
+      await tx.userSession.deleteMany({
+        where: { userId: req.user.userId }
+      });
+
+      return { user: updatedUser, invitation };
+    });
+
+    // Send verification email
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000'; 
+    const verifyUrl = `${frontendBase}/verify-email?token=${encodeURIComponent(verificationToken)}`;
+
+    try {
+      await sendVerificationEmail(
+        normalizedEmail,
+        verifyUrl,
+        { firstName: businessName, lastName: '' }
+      );
+    } catch (mailErr) {
+      console.error('Verification email failed to send:', mailErr);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Setup complete. Please check your email to verify your account.',
+    });
+  } catch (err) {
+    console.error('Vendor Onboarding Error:', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Internal server error. Please try again.',
     });
   }
 };

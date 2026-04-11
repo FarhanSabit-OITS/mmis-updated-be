@@ -10,6 +10,7 @@ router.post('/verify-email', authController.verifyEmail);
 router.get('/verify-vendor-email', authController.verifyVendorEmail);
 router.post('/set-vendor-password', authController.setVendorPassword);
 router.post('/login', authLimiter, authController.login);
+router.post('/vendor-onboarding', authMiddleware, authController.vendorOnboarding);
 router.get('/markets', authController.getMarkets);
 router.post('/refresh', authController.refresh);
 router.post('/logout', authController.logout);
