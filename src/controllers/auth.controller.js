@@ -1941,3 +1941,62 @@ exports.getAdmins = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+/**
+ * Update an administrative user (Super Admin only)
+ */
+exports.updateAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, status, level, marketId } = req.body;
+
+    // 1. Update User basic info
+    const updateData = {};
+    if (status) updateData.status = status;
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: updateData,
+      include: {
+        admin: true,
+        profile: true
+      }
+    });
+
+    // 2. Update Profile if name provided
+    if (name && user.profile) {
+      const names = name.split(' ');
+      await prisma.profile.update({
+        where: { userId: id },
+        data: {
+          firstName: names[0] || '',
+          lastName: names.slice(1).join(' ') || ''
+        }
+      });
+    }
+
+    // 3. Update Admin Scope if provided
+    if ((level || marketId) && user.admin) {
+      await prisma.admin.update({
+        where: { userId: id },
+        data: {
+          adminLevel: level || user.admin.adminLevel,
+          marketScopeId: marketId || user.admin.marketScopeId
+        }
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Admin profile updated successfully',
+      data: {
+        id: user.id,
+        email: user.email,
+        status: user.status
+      }
+    });
+  } catch (err) {
+    console.error('updateAdmin error:', err);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

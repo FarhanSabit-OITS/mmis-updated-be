@@ -142,6 +142,19 @@
 						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
 						"url": { "raw": "{{baseUrl}}/market-staff?role=HEALTH_INSPECTOR", "host": ["{{baseUrl}}"], "path": ["market-staff"], "query": [ { "key": "role", "value": "HEALTH_INSPECTOR" } ] }
 					}
+				},
+				{
+					"name": "Update Admin Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jane Doe\",\n    \"status\": \"ACTIVE\",\n    \"level\": \"DISTRICT_ADMIN\",\n    \"marketId\": \"{{marketId}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{baseUrl}}/auth/admins/:id", "host": ["{{baseUrl}}"], "path": ["auth", "admins", ":id"], "variable": [ { "key": "id", "value": "{{targetAdminId}}" } ] }
+					}
 				}
 			]
 		},

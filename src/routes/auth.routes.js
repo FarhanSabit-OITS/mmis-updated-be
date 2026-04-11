@@ -26,5 +26,6 @@ router.post('/change-password', authMiddleware, authController.changePassword);
 
 // Administrative Registry
 router.get('/admins', authMiddleware, authController.getAdmins);
+router.patch('/admins/:id', authMiddleware, authController.updateAdmin);
 
 module.exports = router;
