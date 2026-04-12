@@ -1,0 +1,2872 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  // Remove previewFeatures unless you really need one that exists in v6
+  // previewFeatures = []
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+  DELETED
+}
+
+enum KycStatus {
+  NOT_SUBMITTED
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum AdminLevel {
+  SUPER_ADMIN
+  NATIONAL_ADMIN
+  DISTRICT_ADMIN
+  CITY_ADMIN
+  MARKET_MASTER
+  PSEUDO_MARKET_ADMIN
+}
+
+enum PseudoMarketRole {
+  REVENUE_COLLECTOR
+  HEALTH_INSPECTOR
+  SECURITY_ADMIN
+  GATE_COUNTER
+  STOCK_COUNTER
+  VAT_PAYMENT_COUNTER
+  WAREHOUSE_MANAGER
+  QUALITY_CONTROLLER
+}
+
+enum StakeholderType {
+  MARKET_AUTHORITY
+  MEMBER
+  VENDOR
+  SUPPLIER
+  CUSTOMER
+  GUEST
+}
+
+enum MfaType {
+  EMAIL
+  SMS
+  TOTP
+  NONE
+}
+
+enum VerificationTokenType {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+  ACCOUNT_RECOVERY
+  ADMIN_INVITATION
+  KYC_VERIFICATION
+  HANDSHAKE_CODE
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+  USED
+}
+
+enum InvitationType {
+  ADMIN_ONBOARDING
+  VENDOR_REGISTRATION
+  SUPPLIER_REGISTRATION
+  USER_REGISTRATION
+  KYC_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum PermissionResource {
+  SYSTEM
+  USER
+  MARKET
+  CITY
+  DISTRICT
+  SHOP
+  STALL
+  PRODUCT
+  INVENTORY
+  GATE
+  PAYMENT
+  TAX
+  REPORT
+  SETTINGS
+  KYC
+  INVITATION
+  ROLE
+  PERMISSION
+  DOCUMENT
+  AUDIT
+  NOTIFICATION
+}
+
+enum PermissionAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  MANAGE
+  APPROVE
+  VERIFY
+  EXPORT
+  IMPORT
+  ASSIGN
+  REVOKE
+}
+
+enum DocumentType {
+  ID_PROOF
+  ADDRESS_PROOF
+  BUSINESS_LICENSE
+  TAX_REGISTRATION
+  BANK_STATEMENT
+  UTILITY_BILL
+  PASSPORT
+  DRIVING_LICENSE
+  VENDOR_CERTIFICATE
+  SUPPLIER_CERTIFICATE
+  QUALITY_CERTIFICATE
+  INSURANCE_POLICY
+  INVOICE
+  RECEIPT
+  GATE_TOKEN
+  SHOP_CONTRACT
+  SYSTEM_REPORT
+  OTHER
+}
+
+enum MarketType {
+  PERMANENT
+  TEMPORARY
+  POP_UP
+  WEEKLY_BAZAAR
+  SEASONAL
+}
+
+enum FacilityType {
+  SHOP
+  STALL
+  WAREHOUSE
+  KIOSK
+  OFFICE
+  OTHER
+}
+
+enum FacilityStatus {
+  ACTIVE
+  INACTIVE
+  UNDER_MAINTENANCE
+  CLOSED
+}
+
+enum OccupationStatus {
+  VACANT
+  OCCUPIED
+  RESERVED
+  LOCKED
+}
+
+enum MarketTokenType {
+  GATE_ENTRY
+  GATE_EXIT
+  STOCK_RECEIPT
+  STOCK_DISPATCH
+  PAYMENT_CONFIRMATION
+  TAX_PAYMENT
+  RENT_PAYMENT
+  INSPECTION_APPROVAL
+  DELIVERY_CONFIRMATION
+  VEHICLE_PASS
+  VISITOR_PASS
+  TEMPORARY_ACCESS
+}
+
+enum TokenStatus {
+  PENDING
+  ACTIVE
+  USED
+  EXPIRED
+  REVOKED
+  INVALIDATED
+}
+
+enum QrCodeType {
+  USER_IDENTIFICATION
+  STAFF_IDENTIFICATION
+  VEHICLE_PASS
+  PRODUCT_TRACKING
+  PAYMENT_RECEIPT
+  GATE_PASS
+  DELIVERY_CONFIRMATION
+  INSPECTION_TAG
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+/**
+ * ************
+ * CORE USER & AUTH
+ * ************
+ */
+model User {
+  id           String  @id @default(uuid())
+  email        String  @unique @db.VarChar(255)
+  passwordHash String  @db.VarChar(255)
+  phone        String? @unique @db.VarChar(20)
+
+  mfaEnabled      Boolean   @default(false)
+  mfaType         MfaType   @default(NONE)
+  totpSecret      String?   @db.VarChar(255)
+  totpBackupCodes String[] // Array — length enforced in app layer
+  lastTotpUsed    DateTime?
+
+  emailVerified             Boolean   @default(false)
+  phoneVerified             Boolean   @default(false)
+  lastEmailVerificationSent DateTime?
+  lastPhoneVerificationSent DateTime?
+
+  loginAttempts      Int       @default(0)
+  lockUntil          DateTime?
+  lastLogin          DateTime?
+  lastPasswordChange DateTime?
+  passwordHistory    String[] // history entries — length enforced in app
+
+  status             UserStatus @default(PENDING)
+  deactivationReason String?    @db.Text
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  profile     UserProfile?
+  admin       Admin?
+  stakeholder Stakeholder?
+
+  verificationTokens VerificationToken[]
+  marketTokens       MarketToken[]
+  qrCodes            QrCode[]            @relation("UserQrCodes")
+  sessions           UserSession[]
+
+  userRoles UserRole[]
+
+  auditLogs     AuditLog[]     @relation("UserAuditLogs")
+  notifications Notification[]
+
+  uploadedDocs   Document[]     @relation("DocumentUploader")
+  uploadedAssets DigitalAsset[] @relation("AssetUploader")
+
+  gateOperationsRecordedBy  GateOperation[] @relation("GateOperationRecordedBy")
+  gateOperationsValidatedBy GateOperation[] @relation("GateOperationValidatedBy")
+
+  dailyCollectionsAsCollector DailyCollection[] @relation("DailyCollectionCollector")
+  dailyCollectionsAsCreator   DailyCollection[] @relation("DailyCollectionCreator")
+  dailyCollectionsAsVerifier  DailyCollection[] @relation("DailyCollectionVerifier")
+
+  createdLevels            MarketLevel[]   @relation("LevelCreatedBy")
+  createdSections          MarketSection[] @relation("SectionCreatedBy")
+  createdAisles            MarketAisle[]   @relation("AisleCreatedBy")
+  createdFacilities        Facility[]      @relation("FacilityCreatedBy")
+  createdGates             MarketGate[]    @relation("GateCreatedBy")
+  createdTokens            MarketToken[]   @relation("TokenCreatedBy")
+  createdQrCodes           QrCode[]        @relation("QrCodeCreatedBy")
+  createdFacilityAssets    FacilityAsset[] @relation("FacilityAssetCreatedBy")
+  registeredScannerDevices ScannerDevice[] @relation("ScannerDeviceRegistrar")
+
+  // Other Operation Relations
+  createdGateEntries         GateEntry[]
+  createdStockMovements      StockMovement[]
+  createdTaxPayments         TaxPayment[]
+  createdHealthInspections   HealthInspection[]
+  createdMarketRegulations   MarketRegulation[]
+  createdBusinessLicenses    BusinessLicense[]
+  createdDeliveries          Delivery[]           @relation("DeliveryCreator") // Add this
+  createdSupplierInvoices    SupplierInvoice[]
+  createdProductReviews      ProductReview[]
+  createdLoyaltyTransactions LoyaltyTransaction[]
+  createdMarketTaxes         MarketTax[]
+
+  // Add this new relation for verified deliveries
+  verifiedDeliveries      Delivery[]              @relation("DeliveryVerifier")
+  verifiedGuests          GuestEntry[]            @relation("GuestVerifier")
+  CreatedGuests           GuestEntry[]            @relation("GuestCreator")
+  createdTokenConfigs     TokenGenerationConfig[]
+  createdQrConfigs        QrGenerationConfig[]
+  tokenUsageLogs          TokenUsageLog[]         @relation("UserTokenUsageLogs")
+  qrScanLogs              QrScanLog[]             @relation("UserQrScanLogs")
+  sentInvitations         Invitation[]            @relation("InvitationSenderUser")
+  acceptedInvitations     Invitation[]            @relation("InvitationAccepter")
+  sponsoredGuests         Guest[]                 @relation("GuestSponsor")
+  createdTickets          SupportTicket[]         @relation("CreatedTickets")
+  assignedTickets         SupportTicket[]         @relation("AssignedTickets")
+  createdInventoryRecords InventoryRecord[]       @relation("InventoryRecordRecorder")
+  createdSales            Sale[]                  @relation("SaleCreator")
+  createdProducts         Product[]               @relation("ProductCreator")
+  createdRentContract     RentContract[]          @relation("RentContractCreator")
+
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+  @@map("users")
+}
+
+model UserProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  title       String?   @db.VarChar(10)
+  firstName   String    @db.VarChar(100)
+  middleName  String?   @db.VarChar(100)
+  lastName    String    @db.VarChar(100)
+  displayName String?   @db.VarChar(150)
+  gender      Gender?
+  dateOfBirth DateTime?
+  age         Int?
+
+  nationalId      String? @unique @db.VarChar(50)
+  nationalIdType  String? @default("NIN") @db.VarChar(20)
+  passportNumber  String? @unique @db.VarChar(50)
+  passportCountry String? @db.VarChar(100)
+  taxIdNumber     String? @unique @db.VarChar(50)
+
+  primaryPhone     String  @db.VarChar(20)
+  secondaryPhone   String? @db.VarChar(20)
+  emergencyPhone   String? @db.VarChar(20)
+  emergencyContact String? @db.VarChar(100)
+  primaryEmail     String  @db.VarChar(255)
+  secondaryEmail   String? @db.VarChar(255)
+
+  residentialAddress String? @db.VarChar(500)
+  permanentAddress   String? @db.VarChar(500)
+  city               String? @db.VarChar(100)
+  district           String? @db.VarChar(100)
+  country            String  @default("Uganda") @db.VarChar(100)
+  postalCode         String? @db.VarChar(20)
+
+  occupation        String? @db.VarChar(100)
+  companyName       String? @db.VarChar(200)
+  designation       String? @db.VarChar(100)
+  yearsOfExperience Int?
+
+  maritalStatus MaritalStatus?
+  spouseName    String?        @db.VarChar(100)
+  religion      String?        @db.VarChar(50)
+  language      String[]       @default(["en", "sw"])
+
+  profilePictureUrl String? @db.VarChar(500)
+  signatureUrl      String? @db.VarChar(500)
+
+  preferredLanguage       String @default("en") @db.VarChar(10)
+  timezone                String @default("Africa/Kampala") @db.VarChar(50)
+  currency                String @default("UGX") @db.VarChar(10)
+  notificationPreferences Json?
+
+  verificationLevel String    @default("BASIC") @db.VarChar(20)
+  verifiedByAdminId String?
+  verificationDate  DateTime?
+
+  mmisId          String?   @unique @db.VarChar(50)
+  personalQRCode  String?   @unique @db.VarChar(100)
+  qrCodeExpiry    DateTime?
+
+  bankName          String? @db.VarChar(100)
+  bankAccountNumber String? @db.VarChar(50)
+  bankAccountName   String? @db.VarChar(150)
+
+  metadata          Json?
+  version           Int       @default(1)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastProfileUpdate DateTime?
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verifiedBy Admin? @relation("ProfileVerifier", fields: [verifiedByAdminId], references: [id])
+
+  @@index([verificationLevel])
+  @@map("user_profiles")
+}
+
+/**
+ * ************
+ * AUTHENTICATION & SECURITY
+ * ************
+ */
+model VerificationToken {
+  id        String                @id @default(uuid())
+  token     String                @unique @db.VarChar(255)
+  tokenType VerificationTokenType
+  userId    String?
+  email     String?               @db.VarChar(255)
+  phone     String?               @db.VarChar(20)
+
+  maxAttempts Int     @default(3)
+  attempts    Int     @default(0)
+  isUsed      Boolean @default(false)
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  ipAddress String? @db.VarChar(45)
+  userAgent String? @db.VarChar(500)
+  location  Json?
+
+  purposeData Json?
+
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("verification_tokens")
+}
+
+model UserSession {
+  id           String  @id @default(uuid())
+  userId       String
+  sessionToken String  @unique @db.VarChar(255)
+  refreshToken String? @unique @db.VarChar(255)
+
+  deviceId   String? @db.VarChar(100)
+  deviceName String? @db.VarChar(100)
+  deviceType String? @db.VarChar(50)
+  os         String? @db.VarChar(50)
+  browser    String? @db.VarChar(100)
+
+  ipAddress   String? @db.VarChar(45)
+  city        String? @db.VarChar(100)
+  country     String? @db.VarChar(100)
+  coordinates Json?
+
+  mfaVerified  Boolean  @default(false)
+  lastActivity DateTime @default(now())
+  expiresAt    DateTime
+
+  isActive     Boolean @default(true)
+  logoutReason String? @db.VarChar(100)
+
+  createdAt   DateTime  @default(now())
+  loggedOutAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([refreshToken])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+model Geolocation {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(200)
+  code        String   @unique @db.VarChar(20)
+  country     String   @default("Uganda") @db.VarChar(100)
+  countryCode String   @default("UG") @db.VarChar(10)
+  timezone    String   @default("Africa/Kampala") @db.VarChar(50)
+  currency    String   @default("UGX") @db.VarChar(10)
+  language    String   @default("en") @db.VarChar(10)
+  regionType  String   @default("REGION") @db.VarChar(50)
+  population  Int?
+  areaSqKm    Float?
+  coordinates Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  districts District[]
+
+  @@index([code])
+  @@map("geolocations")
+}
+
+model District {
+  id            String   @id @default(uuid())
+  geolocationId String   @default("")
+  name          String   @db.VarChar(200)
+  code          String   @unique @db.VarChar(20)
+  districtType  String?  @db.VarChar(50)
+  population    Int?
+  areaSqKm      Float?
+  headquarters  String?  @db.VarChar(200)
+  coordinates   Json?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  geolocation    Geolocation     @relation(fields: [geolocationId], references: [id])
+  cities         City[]
+  districtAdmins DistrictAdmin[]
+
+  invitations Invitation[] @relation("DistrictInvitations")
+
+  @@index([geolocationId])
+  @@map("districts")
+}
+
+model City {
+  id          String   @id @default(uuid())
+  districtId  String
+  name        String   @db.VarChar(200)
+  code        String   @unique @db.VarChar(20)
+  cityType    String?  @db.VarChar(50)
+  population  Int?
+  areaSqKm    Float?
+  mayor       String?  @db.VarChar(150)
+  coordinates Json?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  district   District    @relation(fields: [districtId], references: [id])
+  markets    Market[]
+  cityAdmins CityAdmin[]
+
+  invitations Invitation[] @relation("CityInvitations")
+
+  @@index([districtId])
+  @@map("cities")
+}
+
+model Market {
+  id          String  @id @default(uuid())
+  cityId      String
+  name        String  @db.VarChar(200)
+  uniqueCode  String  @unique @db.VarChar(50)
+  displayName String? @db.VarChar(200)
+  description String? @db.Text
+  address     String  @db.VarChar(500)
+
+  marketType MarketType @default(PERMANENT)
+  categories String[]
+
+  totalFacilities    Int  @default(0)
+  occupiedFacilities Int  @default(0)
+  maxCapacity        Int?
+
+  openingTime     String   @default("06:00") @db.VarChar(10)
+  closingTime     String   @default("20:00") @db.VarChar(10)
+  operatingDays   String[] @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"])
+  is24Hours       Boolean  @default(false)
+  holidaySchedule Json?
+
+  contactPhone String? @db.VarChar(20)
+  contactEmail String? @db.VarChar(255)
+  website      String? @db.VarChar(200)
+  managerName  String? @db.VarChar(150)
+
+  averageRent           Decimal? @db.Decimal(12, 2)
+  securityDeposit       Decimal? @db.Decimal(12, 2)
+  monthlyMaintenanceFee Decimal? @db.Decimal(10, 2)
+  vatRate               Decimal @default(18.00) @db.Decimal(5, 2)
+
+  status            String    @default("ACTIVE") @db.VarChar(50)
+  establishmentDate DateTime?
+  lastRenovation    DateTime?
+  notes             String?   @db.Text
+
+  createdByAdminId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  city      City   @relation(fields: [cityId], references: [id])
+  createdBy Admin? @relation("MarketCreator", fields: [createdByAdminId], references: [id])
+
+  levels     MarketLevel[]
+  sections   MarketSection[]
+  facilities Facility[]      @relation("MarketFacilities")
+  gates      MarketGate[]
+  assets     Asset[]
+
+  marketMasters MarketMaster[]
+  pseudoAdmins  PseudoMarketAdmin[]
+  vendors       Vendor[]            @relation("PrimaryMarketVendors")
+
+  dailyCollections DailyCollection[]
+  taxes            MarketTax[]
+  marketTokens     MarketToken[]     @relation("MarketTokens")
+
+  tokenGenerationConfigs TokenGenerationConfig[]
+
+  gateEntries       GateEntry[]        @relation("MarketGateEntries")
+  stockMovements    StockMovement[]    @relation("MarketStockMovements")
+  taxPayments       TaxPayment[]       @relation("MarketTaxPayments")
+  healthInspections HealthInspection[] @relation("MarketHealthInspections")
+
+  scannerDevices ScannerDevice[] @relation("MarketScannerDevices")
+
+  invitations   Invitation[]   @relation("MarketInvitations")
+  requisitions  Requisition[]
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([cityId, name])
+  @@index([cityId])
+  @@map("markets")
+}
+
+model MarketLevel {
+  id          String  @id @default(uuid())
+  marketId    String
+  levelNumber Int
+  uniqueCode  String  @unique @db.VarChar(50)
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+
+  accessType   String? @db.VarChar(50)
+  hasElevator  Boolean @default(false)
+  hasEscalator Boolean @default(false)
+  hasRestrooms Boolean @default(true)
+  hasParking   Boolean @default(false)
+
+  totalSections   Int @default(0)
+  totalFacilities Int @default(0)
+
+  wheelchairAccess Boolean @default(false)
+  emergencyExits   Int     @default(2)
+
+  status         String    @default("ACTIVE") @db.VarChar(50)
+  isOperational  Boolean   @default(true)
+  lastInspection DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  createdBy User   @relation("LevelCreatedBy", fields: [createdById], references: [id])
+
+  sections   MarketSection[]
+  facilities Facility[]      @relation("LevelFacilities")
+
+  @@unique([marketId, levelNumber])
+  @@index([marketId])
+  @@map("market_levels")
+}
+
+model MarketSection {
+  id          String  @id @default(uuid())
+  marketId    String
+  levelId     String?
+  uniqueCode  String  @unique @db.VarChar(50)
+  name        String  @db.VarChar(100)
+  displayName String? @db.VarChar(150)
+  description String? @db.Text
+
+  sectionType  String   @db.VarChar(100)
+  subType      String?  @db.VarChar(100)
+  categoryTags String[]
+
+  locationCode String? @db.VarChar(10)
+  entranceGate String? @db.VarChar(50)
+
+  totalFacilities    Int  @default(0)
+  occupiedFacilities Int  @default(0)
+  maxCapacity        Int?
+
+  hasAirConditioning Boolean @default(false)
+  hasCommonLighting  Boolean @default(true)
+  hasWaterSupply     Boolean @default(true)
+  hasSecurityCamera  Boolean @default(false)
+
+  supervisorId String?
+  assistantIds String[]
+
+  status      String  @default("ACTIVE") @db.VarChar(50)
+  openingTime String? @db.VarChar(10)
+  closingTime String? @db.VarChar(10)
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market     Market             @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  level      MarketLevel?       @relation(fields: [levelId], references: [id])
+  supervisor PseudoMarketAdmin? @relation("SectionSupervisor", fields: [supervisorId], references: [id])
+  createdBy  User               @relation("SectionCreatedBy", fields: [createdById], references: [id])
+
+  facilities Facility[]    @relation("SectionFacilities")
+  aisles     MarketAisle[]
+
+  sectionRules        Json?
+  specialRequirements String? @db.VarChar(500)
+
+  @@unique([marketId, levelId, name])
+  @@index([marketId])
+  @@map("market_sections")
+}
+
+model MarketAisle {
+  id          String  @id @default(uuid())
+  sectionId   String
+  uniqueCode  String  @unique @db.VarChar(50)
+  aisleNumber String  @db.VarChar(20)
+  name        String? @db.VarChar(100)
+
+  aisleType String  @default("MAIN") @db.VarChar(20)
+  isCovered Boolean @default(true)
+
+  maxStallsPerSide Int?
+
+  fireExitAccess    Boolean @default(true)
+  emergencyLighting Boolean @default(true)
+
+  status          String    @default("ACTIVE") @db.VarChar(50)
+  lastCleaning    DateTime?
+  lastMaintenance DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  section   MarketSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdBy User          @relation("AisleCreatedBy", fields: [createdById], references: [id])
+
+  facilities Facility[] @relation("AisleFacilities")
+
+  @@unique([sectionId, aisleNumber])
+  @@index([sectionId])
+  @@map("market_aisles")
+}
+
+/**
+ * ************
+ * STAKEHOLDERS
+ * ************
+ */
+model Stakeholder {
+  id                   String          @id @default(uuid())
+  userId               String          @unique
+  stakeholderType      StakeholderType
+  kycStatus            KycStatus       @default(NOT_SUBMITTED)
+  kycSubmittedAt       DateTime?
+  kycVerifiedAt        DateTime?
+  kycVerifiedByAdminId String?
+  kycDocuments         Json?
+  bankAccountDetails   Json?
+  taxComplianceStatus  String?         @default("COMPLIANT") @db.VarChar(50)
+  businessRating       Float?          @default(5.0)
+  notes                String?         @db.Text
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kycVerifiedBy Admin? @relation("KycVerifier", fields: [kycVerifiedByAdminId], references: [id])
+
+  marketAuthority MarketAuthority?
+  member          Member?
+  vendor          Vendor?
+  supplier        Supplier?
+  customer        Customer?
+  guest           Guest?
+
+  transactions   Transaction[]
+  documents      Document[]
+  assets         DigitalAsset[]  @relation("StakeholderAssets")
+  kycSubmissions KycSubmission[]
+
+  auditLogs AuditLog[] @relation("StakeholderAuditLogs")
+
+  @@map("stakeholders")
+}
+
+model MarketAuthority {
+  id                 String   @id @default(uuid())
+  stakeholderId      String   @unique
+  authorityName      String   @db.VarChar(200)
+  registrationNumber String   @unique @db.VarChar(100)
+  jurisdiction       String[]
+  contactPerson      String?  @db.VarChar(150)
+  officeAddress      String?  @db.VarChar(500)
+  website            String?  @db.VarChar(200)
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+
+  marketRegulations MarketRegulation[]
+  issuedLicenses    BusinessLicense[]
+
+  @@map("market_authorities")
+}
+
+model Member {
+  id                 String    @id @default(uuid())
+  stakeholderId      String    @unique
+  membershipNumber   String    @unique @db.VarChar(50)
+  membershipType     String    @default("REGULAR") @db.VarChar(50)
+  membershipSince    DateTime  @default(now())
+  membershipExpiry   DateTime?
+  businessName       String    @db.VarChar(200)
+  businessType       String?   @db.VarChar(100)
+  registrationNumber String    @unique @db.VarChar(100)
+  taxIdNumber        String?   @unique @db.VarChar(50)
+  tradeLicenseNumber String?   @unique @db.VarChar(100)
+  yearsInBusiness    Int?
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+
+  facilities    Facility[]
+  rentContracts RentContract[] @relation("MemberAsLandlord")
+
+  @@index([businessName])
+  @@map("members")
+}
+
+model Vendor {
+  id                    String   @id @default(uuid())
+  stakeholderId         String   @unique
+  vendorCode            String   @unique @db.VarChar(50)
+  businessName          String   @db.VarChar(200)
+  businessType          String?  @db.VarChar(100)
+  businessLicenseNumber String?  @unique @db.VarChar(100)
+  taxIdNumber           String?  @unique @db.VarChar(50)
+  vatRegistered         Boolean  @default(false)
+  vatNumber             String?  @unique @db.VarChar(50)
+  yearsInBusiness       Int?
+  preferredMarkets      String[]
+  primaryMarketId       String?
+  
+  isDelinquent     Boolean @default(false)
+  delinquencyStage Int     @default(0)
+  daysOverdue      Int     @default(0)
+
+  stakeholder   Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  primaryMarket Market?     @relation("PrimaryMarketVendors", fields: [primaryMarketId], references: [id])
+
+  marketMasterApprovalId String?
+  approvedByMarketMaster MarketMaster? @relation("VendorApprover", fields: [marketMasterApprovalId], references: [id])
+
+  facilities    Facility[]     @relation("VendorFacilities")
+  gateEntries   GateEntry[]
+  rentContracts RentContract[] @relation("VendorAsTenant")
+  marketTokens  MarketToken[]
+
+  taxPayments TaxPayment[]
+
+  invitations   Invitation[]
+  requisitions  Requisition[]
+  purchaseOrders PurchaseOrder[]
+  supplierRatings SupplierRating[]
+
+  @@index([businessName])
+  @@map("vendors")
+}
+
+model Supplier {
+  id               String   @id @default(uuid())
+  stakeholderId    String   @unique
+  supplierCode     String   @unique @db.VarChar(50)
+  businessName     String   @db.VarChar(200)
+  supplierType     String   @default("WHOLESALER") @db.VarChar(50)
+  licenseNumber    String?  @unique @db.VarChar(100)
+  taxId            String?  @unique @db.VarChar(50)
+  warehouseAddress String?  @db.VarChar(500)
+  deliveryRadius   Int?
+  minimumOrder     Decimal? @db.Decimal(10, 2)
+  paymentTerms     String?  @default("NET30") @db.VarChar(50)
+
+  isVerified    Boolean @default(false)
+  averageRating Float?  @default(0)
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+
+  products   Product[]
+  deliveries Delivery[]
+  invoices   SupplierInvoice[]
+
+  invitations Invitation[]
+  bids        SupplierBid[]
+  orders      PurchaseOrder[]
+  ratings     SupplierRating[]
+
+  @@index([businessName])
+  @@map("suppliers")
+}
+
+model Customer {
+  id                     String    @id @default(uuid())
+  stakeholderId          String    @unique
+  customerCode           String    @unique @db.VarChar(50)
+  customerType           String    @default("RETAIL") @db.VarChar(50)
+  loyaltyPoints          Int       @default(0)
+  totalSpent             Decimal   @default(0) @db.Decimal(15, 2)
+  visitCount             Int       @default(0)
+  lastVisit              DateTime?
+  preferredPaymentMethod String?   @default("CASH") @db.VarChar(50)
+  discountEligible       Boolean   @default(false)
+  discountRate           Float?    @default(0.0)
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+
+  sales               Sale[]
+  reviews             ProductReview[]
+  complaints          Complaint[]
+  loyaltyTransactions LoyaltyTransaction[]
+  marketTokens        MarketToken[]
+
+  @@map("customers")
+}
+
+model Guest {
+  id            String   @id @default(uuid())
+  stakeholderId String   @unique
+  guestCode     String   @unique @db.VarChar(50)
+  temporaryId   String   @unique @db.VarChar(100)
+  expiryDate    DateTime
+  purpose       String?  @db.VarChar(100)
+  sponsorId     String?
+  accessAreas   String[]
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  sponsor     User?       @relation("GuestSponsor", fields: [sponsorId], references: [id])
+
+  guestEntries GuestEntry[]
+  marketTokens MarketToken[] @relation("GuestMarketTokens")
+
+  @@map("guests")
+}
+
+model Facility {
+  id        String  @id @default(uuid())
+  marketId  String
+  levelId   String?
+  sectionId String?
+  aisleId   String?
+  memberId  String // Landlord/Owner
+
+  uniqueCode   String  @unique @db.VarChar(50)
+  unitNumber   String  @db.VarChar(20) // Unified code for shopNumber/stallNumber
+  displayName  String? @db.VarChar(150)
+  facilityName String? @db.VarChar(200)
+
+  type     FacilityType @default(SHOP)
+  subType  String?      @db.VarChar(100)
+  category String?      @db.VarChar(100) // From Stall.category
+  tags     String[]
+
+  locationDescription String? @db.VarChar(500)
+
+  // Infrastructure Booleans
+  hasElectricity     Boolean @default(true)
+  hasWaterSupply     Boolean @default(true)
+  hasStorage         Boolean @default(false)
+  hasLighting        Boolean @default(true)
+  hasPowerOutlet     Boolean @default(true)
+  hasAirConditioning Boolean @default(false)
+  hasSecurityShutter Boolean @default(true)
+  hasDisplayCounter  Boolean @default(true)
+
+  electricityMeterNumber String? @db.VarChar(50)
+  waterMeterNumber       String? @db.VarChar(50)
+
+  // Billing (Unified)
+  monthlyRent     Decimal? @db.Decimal(12, 2)
+  dailyRate       Decimal? @db.Decimal(10, 2)
+  securityDeposit Decimal? @db.Decimal(12, 2)
+  maintenanceFee  Decimal? @db.Decimal(10, 2)
+  billingCycle    String   @default("MONTHLY") @db.VarChar(20)
+
+  contractStartDate DateTime?
+  contractEndDate   DateTime?
+
+  status           FacilityStatus   @default(ACTIVE)
+  occupationStatus OccupationStatus @default(VACANT)
+
+  qrCode String? @unique @db.VarChar(100)
+
+  createdById    String
+  marketMasterId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  market       Market         @relation("MarketFacilities", fields: [marketId], references: [id], onDelete: Cascade)
+  level        MarketLevel?   @relation("LevelFacilities", fields: [levelId], references: [id])
+  section      MarketSection? @relation("SectionFacilities", fields: [sectionId], references: [id])
+  aisle        MarketAisle?   @relation("AisleFacilities", fields: [aisleId], references: [id])
+  member       Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  marketMaster MarketMaster?  @relation("FacilityManager", fields: [marketMasterId], references: [id])
+  createdBy    User           @relation("FacilityCreatedBy", fields: [createdById], references: [id])
+
+  rentContracts     RentContract[]
+  assets            FacilityAsset[]
+  products          Product[]
+  sales             Sale[]
+  gateEntries       GateEntry[]
+  marketTokens      MarketToken[]
+  healthInspections HealthInspection[]
+  vendors           Vendor[]           @relation("VendorFacilities")
+  supplierInvoices  SupplierInvoice[]
+  deliveries        Delivery[]
+
+  @@unique([marketId, unitNumber])
+  @@index([marketId])
+  @@index([memberId])
+  @@map("facilities")
+}
+
+model Admin {
+  id                String     @id @default(uuid())
+  userId            String     @unique
+  employeeId        String?    @unique @db.VarChar(50)
+  adminLevel        AdminLevel
+  assignedByAdminId String?
+  adminSettings     Json?
+  canAssignRoles    Json?
+  assignedAt        DateTime?
+  notes             String?    @db.Text
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedBy     Admin?  @relation("AdminAssignment", fields: [assignedByAdminId], references: [id])
+  assignedAdmins Admin[] @relation("AdminAssignment")
+
+  superAdmin        SuperAdmin?
+  nationalAdmin     NationalAdmin?
+  districtAdmin     DistrictAdmin?
+  cityAdmin         CityAdmin?
+  marketMaster      MarketMaster?
+  pseudoMarketAdmin PseudoMarketAdmin?
+
+  createdMarkets     Market[]         @relation("MarketCreator")
+  processedKyc       KycSubmission[]  @relation("KycProcessor")
+  sentInvitations    Invitation[]     @relation("InvitationSenderAdmin")
+  grantedPermissions RolePermission[]
+  verifiedDocuments  Document[]       @relation("DocumentVerifier")
+  verifiedProfiles   UserProfile[]    @relation("ProfileVerifier")
+
+  verifiedKycSubmissions Stakeholder[] @relation("KycVerifier")
+
+  issuedTokens MarketToken[] @relation("AdminIssuedTokens")
+
+  tokenUsageLogs TokenUsageLog[] @relation("AdminTokenUsageLogs")
+  qrScanLogs     QrScanLog[]     @relation("AdminQrScanLogs")
+  auditLogs      AuditLog[]      @relation("AdminAuditLogs")
+
+  assignedUserRoles UserRole[] @relation("AdminRoleAssigner")
+
+  handshakeCodes HandshakeCode[] @relation("AdminHandshakeCodes")
+
+  @@index([adminLevel])
+  @@index([employeeId])
+  @@index([assignedAt])
+  @@map("admins")
+}
+
+model SuperAdmin {
+  id               String @id @default(uuid())
+  adminId          String @unique
+  globalSettings   Json?
+  systemAccessLogs Json?
+  apiKeys          Json?
+  backupSettings   Json?
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("super_admins")
+}
+
+model NationalAdmin {
+  id             String   @id @default(uuid())
+  adminId        String   @unique
+  ministry       String   @db.VarChar(200)
+  department     String?  @db.VarChar(200)
+  officeLocation String?  @db.VarChar(500)
+  jurisdiction   String[]
+  taxAuthorityId String?  @unique @db.VarChar(50)
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([ministry])
+  @@index([taxAuthorityId])
+  @@map("national_admins")
+}
+
+model DistrictAdmin {
+  id         String @id @default(uuid())
+  adminId    String @unique
+  districtId String
+
+  admin    Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  district District @relation(fields: [districtId], references: [id])
+
+  @@index([districtId])
+  @@map("district_admins")
+}
+
+model CityAdmin {
+  id      String @id @default(uuid())
+  adminId String @unique
+  cityId  String
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  city  City  @relation(fields: [cityId], references: [id])
+
+  @@index([cityId])
+  @@map("city_admins")
+}
+
+model MarketMaster {
+  id       String @id @default(uuid())
+  adminId  String @unique
+  marketId String
+
+  admin  Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  market Market @relation(fields: [marketId], references: [id])
+
+  managedFacilities Facility[]    @relation("FacilityManager")
+  rentCollections   RentPayment[]
+  vendorApprovals   Vendor[]      @relation("VendorApprover")
+
+  @@index([marketId])
+  @@map("market_masters")
+}
+
+model PseudoMarketAdmin {
+  id              String           @id @default(uuid())
+  adminId         String           @unique
+  marketId        String
+  role            PseudoMarketRole
+  assignedSection String?          @db.VarChar(100)
+  specialization  String?          @db.VarChar(100)
+  workingHours    Json?
+  permissions     Json?
+
+  admin  Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  market Market @relation(fields: [marketId], references: [id])
+
+  gateEntries        GateEntry[]        @relation("GateCounter")
+  stockCounts        StockMovement[]    @relation("StockCounter")
+  taxCollections     TaxPayment[]       @relation("TaxCollector")
+  inspections        HealthInspection[] @relation("HealthInspector")
+  supervisedSections MarketSection[]    @relation("SectionSupervisor")
+
+  assignedGatesAsStaff   MarketGate[] @relation("GateStaffAssignment")
+  assignedGatesAsCounter MarketGate[] @relation("GateCounterAssignment")
+
+  gateOperations GateOperation[] @relation("GateOperationInspector")
+
+  @@index([marketId])
+  @@index([role])
+  @@map("pseudo_market_admins")
+}
+
+model MarketGate {
+  id         String  @id @default(uuid())
+  marketId   String
+  uniqueCode String  @unique @db.VarChar(50)
+  gateNumber String  @db.VarChar(20)
+  gateName   String? @db.VarChar(100)
+  gateType   String  @default("ENTRY") @db.VarChar(20)
+  location   String? @db.VarChar(200)
+
+  accessType          String @default("ALL") @db.VarChar(20)
+  allowedVehicleTypes Json
+
+  hasScanner       Boolean @default(false)
+  hasCamera        Boolean @default(false)
+  hasSecurityCheck Boolean @default(false)
+
+  isOperational     Boolean @default(true)
+  operatingHours    Json?
+  assignedStaffId   String?
+  assignedCounterId String?
+
+  status          String    @default("ACTIVE") @db.VarChar(50)
+  lastMaintenance DateTime?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market          Market             @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  assignedStaff   PseudoMarketAdmin? @relation("GateStaffAssignment", fields: [assignedStaffId], references: [id])
+  assignedCounter PseudoMarketAdmin? @relation("GateCounterAssignment", fields: [assignedCounterId], references: [id])
+  createdBy       User               @relation("GateCreatedBy", fields: [createdById], references: [id])
+
+  gateEntries    GateEntry[]
+  gateOperations GateOperation[]
+  scannerDevices ScannerDevice[]
+
+  marketTokens   MarketToken[]   @relation("GateTokens")
+  tokenUsageLogs TokenUsageLog[] @relation("GateTokenUsageLogs")
+  qrScanLogs     QrScanLog[]     @relation("GateQrScanLogs")
+
+  @@unique([marketId, gateNumber])
+  @@index([uniqueCode])
+  @@index([marketId])
+  @@index([gateType])
+  @@map("market_gates")
+}
+
+model MarketToken {
+  id String @id @default(uuid())
+
+  tokenCode String          @unique @db.VarChar(100)
+  tokenType MarketTokenType
+  shortCode String?         @unique @db.VarChar(50)
+
+  tokenValue   String? @unique @db.VarChar(255)
+  displayValue String? @db.VarChar(100)
+
+  marketId   String
+  gateId     String?
+  facilityId String?
+  vendorId   String?
+  customerId String?
+  adminId    String?
+  userId     String?
+  guestId    String?
+
+  vehicleNumber String? @db.VarChar(50)
+  vehicleType   String? @db.VarChar(50)
+  driverName    String? @db.VarChar(100)
+  visitorName   String? @db.VarChar(100)
+  visitorType   String? @db.VarChar(50)
+
+  transactionId String?
+  amount        Decimal? @db.Decimal(12, 2)
+  currency      String   @default("UGX") @db.VarChar(10)
+
+  purpose     String? @db.VarChar(200)
+  description String? @db.VarChar(500)
+  metadata    Json?
+
+  issuedAt    DateTime @default(now())
+  validFrom   DateTime @default(now())
+  expiresAt   DateTime
+  isSingleUse Boolean  @default(true)
+  maxUses     Int      @default(1)
+  currentUses Int      @default(0)
+
+  status             TokenStatus @default(PENDING)
+  usedAt             DateTime?
+  invalidatedAt      DateTime?
+  invalidationReason String?     @db.VarChar(500)
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market      @relation("MarketTokens", fields: [marketId], references: [id])
+  gate      MarketGate? @relation("GateTokens", fields: [gateId], references: [id])
+  facility  Facility?   @relation(fields: [facilityId], references: [id])
+  vendor    Vendor?     @relation(fields: [vendorId], references: [id])
+  customer  Customer?   @relation(fields: [customerId], references: [id])
+  admin     Admin?      @relation("AdminIssuedTokens", fields: [adminId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id])
+  guest     Guest?      @relation("GuestMarketTokens", fields: [guestId], references: [id])
+  createdBy User        @relation("TokenCreatedBy", fields: [createdById], references: [id])
+
+  tokenLogs      TokenUsageLog[]
+  gateOperations GateOperation[]
+
+  @@index([tokenCode])
+  @@index([shortCode])
+  @@index([tokenType])
+  @@index([marketId])
+  @@index([gateId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([issuedAt])
+  @@map("market_tokens")
+}
+
+model TokenUsageLog {
+  id      String @id @default(uuid())
+  tokenId String
+  action  String @db.VarChar(50)
+
+  usedByUserId    String?
+  usedByAdminId   String?
+  usedAtGateId    String?
+  usedAtCounterId String? @db.VarChar(100)
+
+  deviceId   String? @db.VarChar(100)
+  deviceType String? @db.VarChar(50)
+  scannerId  String? @db.VarChar(100)
+
+  ipAddress      String? @db.VarChar(45)
+  gpsCoordinates Json?
+
+  isValid           Boolean
+  validationMessage String? @db.VarChar(500)
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  token         MarketToken    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  usedByUser    User?          @relation("UserTokenUsageLogs", fields: [usedByUserId], references: [id])
+  usedByAdmin   Admin?         @relation("AdminTokenUsageLogs", fields: [usedByAdminId], references: [id])
+  usedAtGate    MarketGate?    @relation("GateTokenUsageLogs", fields: [usedAtGateId], references: [id])
+  scannerDevice ScannerDevice? @relation(fields: [scannerId], references: [deviceId])
+
+  @@index([tokenId])
+  @@index([action])
+  @@index([usedByUserId])
+  @@index([usedAtGateId])
+  @@index([createdAt])
+  @@map("token_usage_logs")
+}
+
+model QrCode {
+  id String @id @default(uuid())
+
+  qrCode    String     @unique @db.VarChar(255)
+  qrType    QrCodeType
+  shortCode String?    @unique @db.VarChar(50)
+
+  entityType String @db.VarChar(50)
+  entityId   String
+
+  encodedData   Json
+  publicData    Json?
+  encryptionKey String? @db.VarChar(255)
+
+  size            Int     @default(256)
+  errorCorrection String  @default("M") @db.VarChar(5)
+  foregroundColor String  @default("#000000") @db.VarChar(10)
+  backgroundColor String  @default("#FFFFFF") @db.VarChar(10)
+  logoUrl         String? @db.VarChar(500)
+
+  scanCount    Int       @default(0)
+  lastScanned  DateTime?
+  firstScanned DateTime?
+
+  validFrom DateTime  @default(now())
+  expiresAt DateTime?
+  isActive  Boolean   @default(true)
+
+  maxScans        Int?
+  requireAuth     Boolean  @default(false)
+  allowedScanners String[]
+
+  createdById String
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User  @relation("QrCodeCreatedBy", fields: [createdById], references: [id])
+  user      User? @relation("UserQrCodes", fields: [userId], references: [id])
+
+  scanLogs       QrScanLog[]
+  gateOperations GateOperation[]
+
+  @@index([qrCode])
+  @@index([shortCode])
+  @@index([qrType])
+  @@index([entityType, entityId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@map("qr_codes")
+}
+
+model QrScanLog {
+  id        String  @id @default(uuid())
+  qrCodeId  String
+  scannerId String? @db.VarChar(100)
+
+  scannedByUserId    String?
+  scannedByAdminId   String?
+  scannedAtGateId    String?
+  scannedAtCounterId String? @db.VarChar(100)
+
+  deviceId   String? @db.VarChar(100)
+  deviceType String? @db.VarChar(50)
+  os         String? @db.VarChar(50)
+  browser    String? @db.VarChar(100)
+
+  ipAddress      String? @db.VarChar(45)
+  gpsCoordinates Json?
+
+  isValid          Boolean
+  validationResult Json?
+  errorMessage     String? @db.VarChar(500)
+
+  responseData Json?
+
+  scannedAt DateTime @default(now())
+
+  qrCode         QrCode         @relation(fields: [qrCodeId], references: [id], onDelete: Cascade)
+  scannedByUser  User?          @relation("UserQrScanLogs", fields: [scannedByUserId], references: [id])
+  scannedByAdmin Admin?         @relation("AdminQrScanLogs", fields: [scannedByAdminId], references: [id])
+  scannedAtGate  MarketGate?    @relation("GateQrScanLogs", fields: [scannedAtGateId], references: [id])
+  scannerDevice  ScannerDevice? @relation(fields: [scannerId], references: [deviceId])
+
+  @@index([qrCodeId])
+  @@index([scannedByUserId])
+  @@index([scannedAtGateId])
+  @@index([scannedAt])
+  @@index([isValid])
+  @@map("qr_scan_logs")
+}
+
+model GateOperation {
+  id String @id @default(uuid())
+
+  gateId        String
+  operationType String @db.VarChar(50)
+
+  tokenId  String?
+  qrCodeId String?
+
+  entityType String? @db.VarChar(50)
+  entityId   String?
+  entityName String? @db.VarChar(150)
+
+  vehicleNumber String? @db.VarChar(50)
+  vehicleType   String? @db.VarChar(50)
+  driverName    String? @db.VarChar(100)
+
+  goodsDescription String?  @db.VarChar(500)
+  quantity         Decimal? @db.Decimal(12, 2)
+  weight           Decimal? @db.Decimal(10, 2)
+
+  inspectionNotes  String? @db.Text
+  inspectionResult String? @db.VarChar(50)
+  inspectorId      String?
+
+  entryTime       DateTime?
+  exitTime        DateTime?
+  durationMinutes Int?
+
+  status        String  @default("COMPLETED") @db.VarChar(50)
+  isApproved    Boolean @default(true)
+  approvalNotes String? @db.VarChar(500)
+
+  recordedById  String?
+  validatedById String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations - FIXED
+  gate        MarketGate         @relation(fields: [gateId], references: [id], onDelete: Cascade)
+  token       MarketToken?       @relation(fields: [tokenId], references: [id])
+  qrCode      QrCode?            @relation(fields: [qrCodeId], references: [id])
+  inspector   PseudoMarketAdmin? @relation("GateOperationInspector", fields: [inspectorId], references: [id])
+  recordedBy  User?              @relation("GateOperationRecordedBy", fields: [recordedById], references: [id])
+  validatedBy User?              @relation("GateOperationValidatedBy", fields: [validatedById], references: [id])
+
+  @@index([gateId])
+  @@index([tokenId])
+  @@index([qrCodeId])
+  @@index([inspectorId])
+  @@index([recordedById])
+  @@index([validatedById])
+  @@index([createdAt])
+  @@map("gate_operations")
+}
+
+model Role {
+  id          String      @id @default(uuid())
+  name        String      @unique @db.VarChar(100)
+  description String?     @db.Text
+  level       AdminLevel?
+  isSystem    Boolean     @default(false)
+  permissions Json?
+  metadata    Json?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@index([name])
+  @@map("roles")
+}
+
+model UserRole {
+  id           String    @id @default(uuid())
+  userId       String
+  roleId       String
+  assignedById String?
+  assignedAt   DateTime  @default(now())
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedBy Admin? @relation("AdminRoleAssigner", fields: [assignedById], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([assignedById])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id          String             @id @default(uuid())
+  roleId      String
+  resource    PermissionResource @default(SYSTEM)
+  action      PermissionAction   @default(CREATE)
+  conditions  Json?
+  grantedById String?
+  grantedAt   DateTime           @default(now())
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @default(now()) @updatedAt
+
+  role      Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  grantedBy Admin? @relation(fields: [grantedById], references: [id])
+
+  @@unique([roleId, resource, action])
+  @@index([roleId])
+  @@map("role_permissions")
+}
+
+model Invitation {
+  id String @id @default(uuid())
+
+  email          String           @db.VarChar(255)
+  phone          String?          @db.VarChar(20)
+  invitationType InvitationType
+  token          String           @unique @db.VarChar(255)
+  status         InvitationStatus @default(PENDING)
+
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  scopeType String? @db.VarChar(50)
+  scopeId   String?
+
+  recipientName String? @db.VarChar(150)
+  roleId        String?
+
+  sentByAdminId    String?
+  sentByUserId     String?
+  acceptedByUserId String?
+
+  vendorId   String?
+  supplierId String?
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor      Vendor?   @relation(fields: [vendorId], references: [id])
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  sentByAdmin Admin?    @relation("InvitationSenderAdmin", fields: [sentByAdminId], references: [id])
+  sentByUser  User?     @relation("InvitationSenderUser", fields: [sentByUserId], references: [id])
+  acceptedBy  User?     @relation("InvitationAccepter", fields: [acceptedByUserId], references: [id])
+
+  districtScopeId String?
+  cityScopeId     String?
+  marketScopeId   String?
+
+  district District? @relation("DistrictInvitations", fields: [districtScopeId], references: [id])
+  city     City?     @relation("CityInvitations", fields: [cityScopeId], references: [id])
+  market   Market?   @relation("MarketInvitations", fields: [marketScopeId], references: [id])
+
+  handshakeCode HandshakeCode?
+
+  @@index([email])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("invitations")
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  action     String  @db.VarChar(100)
+  entityType String  @db.VarChar(50)
+  entityId   String?
+  oldData    Json?
+  newData    Json?
+
+  userId        String?
+  adminId       String?
+  stakeholderId String?
+
+  ipAddress  String? @db.VarChar(45)
+  userAgent  String? @db.VarChar(500)
+  endpoint   String? @db.VarChar(500)
+  httpMethod String? @db.VarChar(10)
+
+  success      Boolean @default(true)
+  errorMessage String? @db.VarChar(500)
+
+  createdAt DateTime @default(now())
+
+  user        User?        @relation("UserAuditLogs", fields: [userId], references: [id])
+  admin       Admin?       @relation("AdminAuditLogs", fields: [adminId], references: [id])
+  stakeholder Stakeholder? @relation("StakeholderAuditLogs", fields: [stakeholderId], references: [id])
+
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  userId   String
+  type     String @db.VarChar(50)
+  title    String @db.VarChar(200)
+  message  String @db.Text
+  priority String @default("MEDIUM") @db.VarChar(20)
+
+  isRead     Boolean @default(false)
+  isArchived Boolean @default(false)
+
+  actionUrl   String? @db.VarChar(500)
+  actionLabel String? @db.VarChar(100)
+
+  data       Json?
+  readAt     DateTime?
+  archivedAt DateTime?
+  expiresAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/**
+ * ************
+ * KYC & DOCUMENTS
+ * ************
+ */
+model KycSubmission {
+  id String @id @default(uuid())
+
+  stakeholderId  String
+  submissionDate DateTime  @default(now())
+  status         KycStatus @default(PENDING)
+  level          String    @default("BASIC") @db.VarChar(20)
+
+  reviewedById    String?
+  reviewedAt      DateTime?
+  reviewNotes     String?   @db.Text
+  rejectionReason String?   @db.Text
+
+  submittedDocs String[] // file references (urls or ids)
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  reviewedBy  Admin?      @relation("KycProcessor", fields: [reviewedById], references: [id])
+
+  @@index([stakeholderId])
+  @@index([submissionDate])
+  @@map("kyc_submissions")
+}
+
+model Document {
+  id String @id @default(uuid())
+
+  stakeholderId String
+  documentType  DocumentType
+  fileName      String       @db.VarChar(200)
+  fileUrl       String       @db.VarChar(500)
+  fileSize      Int
+  mimeType      String       @db.VarChar(100)
+
+  verifiedById       String?
+  verificationDate   DateTime?
+  verificationStatus String    @default("PENDING") @db.VarChar(50)
+  verificationNotes  String?   @db.Text
+  expiryDate         DateTime?
+
+  metadata     Json?
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  verifiedBy  Admin?      @relation("DocumentVerifier", fields: [verifiedById], references: [id])
+  uploadedBy  User        @relation("DocumentUploader", fields: [uploadedById], references: [id])
+
+  @@index([stakeholderId])
+  @@index([verificationStatus])
+  @@index([uploadedAt])
+  @@map("documents")
+}
+
+model DigitalAsset {
+  id String @id @default(uuid())
+
+  stakeholderId String?
+  assetType     String  @db.VarChar(50)
+  fileName      String  @db.VarChar(200)
+  fileUrl       String  @db.VarChar(500)
+  fileSize      Int
+  mimeType      String  @db.VarChar(100)
+
+  metadata     Json?
+  uploadedById String
+  uploadedAt   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  stakeholder Stakeholder? @relation("StakeholderAssets", fields: [stakeholderId], references: [id])
+  uploadedBy  User         @relation("AssetUploader", fields: [uploadedById], references: [id])
+
+  @@index([stakeholderId])
+  @@index([assetType])
+  @@index([uploadedAt])
+  @@map("digital_assets")
+}
+
+model Transaction {
+  id String @id @default(uuid())
+
+  stakeholderId String
+  type          String  @db.VarChar(50)
+  amount        Decimal @db.Decimal(15, 2)
+  currency      String  @default("UGX") @db.VarChar(10)
+  status        String  @default("COMPLETED") @db.VarChar(50)
+
+  referenceId       String? @unique @db.VarChar(100)
+  externalReference String? @db.VarChar(100)
+
+  paymentMethod   String? @db.VarChar(50)
+  paymentGateway  String? @db.VarChar(100)
+  gatewayResponse Json?
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+
+  @@index([stakeholderId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Sale {
+  id String @id @default(uuid())
+
+  facilityId     String
+  customerId     String?
+  totalAmount    Decimal @db.Decimal(12, 2)
+  taxAmount      Decimal @db.Decimal(12, 2)
+  discountAmount Decimal @db.Decimal(12, 2)
+  netAmount      Decimal @db.Decimal(12, 2)
+
+  paymentMethod String  @db.VarChar(50)
+  paymentStatus String  @default("PENDING") @db.VarChar(50)
+  transactionId String? @db.VarChar(100)
+
+  saleDate DateTime @default(now())
+
+  notes       String?  @db.Text
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  facility  Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  customer  Customer? @relation(fields: [customerId], references: [id])
+  createdBy User      @relation("SaleCreator", fields: [createdById], references: [id])
+
+  saleItems SaleItem[]
+
+  @@index([facilityId])
+  @@index([customerId])
+  @@index([saleDate])
+  @@index([paymentStatus])
+  @@map("sales")
+}
+
+model SaleItem {
+  id         String   @id @default(uuid())
+  saleId     String
+  productId  String
+  quantity   Decimal  @db.Decimal(10, 2)
+  unitPrice  Decimal  @db.Decimal(12, 2)
+  totalPrice Decimal  @db.Decimal(12, 2)
+  discount   Decimal? @db.Decimal(5, 2)
+
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Product {
+  id String @id @default(uuid())
+
+  facilityId  String
+  name        String  @db.VarChar(200)
+  description String? @db.Text
+  category    String  @db.VarChar(100)
+  subCategory String? @db.VarChar(100)
+
+  unit           String   @db.VarChar(20)
+  price          Decimal  @db.Decimal(12, 2)
+  costPrice      Decimal? @db.Decimal(12, 2)
+  wholesalePrice Decimal? @db.Decimal(12, 2)
+
+  sku           String?  @unique @db.VarChar(100)
+  barcode       String?  @unique @db.VarChar(100)
+  currentStock  Decimal  @default(0) @db.Decimal(10, 2)
+  minStockLevel Decimal? @db.Decimal(10, 2)
+  maxStockLevel Decimal? @db.Decimal(10, 2)
+
+  isActive   Boolean @default(true)
+  isApproved Boolean @default(false)
+
+  supplierId String?
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  facility         Facility          @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  supplier         Supplier?         @relation(fields: [supplierId], references: [id])
+  createdBy        User              @relation("ProductCreator", fields: [createdById], references: [id])
+  saleItems        SaleItem[]
+  inventoryRecords InventoryRecord[]
+
+  @@index([facilityId])
+  @@index([category])
+  @@index([sku])
+  @@index([barcode])
+  @@index([isActive])
+  @@map("products")
+}
+
+model InventoryRecord {
+  id String @id @default(uuid())
+
+  productId        String
+  recordType       String   @db.VarChar(50)
+  quantity         Decimal  @db.Decimal(10, 2)
+  previousQuantity Decimal? @db.Decimal(10, 2)
+  newQuantity      Decimal  @db.Decimal(10, 2)
+
+  referenceId   String? @db.VarChar(100)
+  referenceType String? @db.VarChar(50)
+
+  notes String? @db.Text
+
+  recordedById String
+  recordedAt   DateTime @default(now())
+
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  recordedBy User    @relation("InventoryRecordRecorder", fields: [recordedById], references: [id])
+
+  @@index([productId])
+  @@index([recordType])
+  @@index([recordedAt])
+  @@map("inventory_records")
+}
+
+model StockMovement {
+  id String @id @default(uuid())
+
+  marketId     String
+  facilityId   String?
+  movementType String  @db.VarChar(50)
+  quantity     Decimal @db.Decimal(10, 2)
+  unit         String  @db.VarChar(20)
+
+  productName     String  @db.VarChar(200)
+  productCategory String? @db.VarChar(100)
+
+  vehicleNumber String? @db.VarChar(50)
+  vehicleType   String? @db.VarChar(50)
+  driverName    String? @db.VarChar(100)
+
+  inspectedById    String?
+  inspectionNotes  String? @db.Text
+  inspectionStatus String? @db.VarChar(50)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market      Market             @relation("MarketStockMovements", fields: [marketId], references: [id])
+  // facility             Facility?     @relation(fields: [facilityId], references: [id])
+  inspectedBy PseudoMarketAdmin? @relation("StockCounter", fields: [inspectedById], references: [id])
+  createdBy   User               @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([facilityId])
+  @@index([movementType])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
+
+model TaxPayment {
+  id String @id @default(uuid())
+
+  marketId    String
+  vendorId    String
+  taxType     String    @db.VarChar(50)
+  amount      Decimal   @db.Decimal(12, 2)
+  periodStart DateTime
+  periodEnd   DateTime
+  dueDate     DateTime
+  paymentDate DateTime?
+
+  paymentMethod String? @db.VarChar(50)
+  transactionId String? @db.VarChar(100)
+  receiptNumber String? @unique @db.VarChar(100)
+
+  collectedById   String?
+  collectionNotes String? @db.Text
+
+  status String @default("PENDING") @db.VarChar(50)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market      Market             @relation("MarketTaxPayments", fields: [marketId], references: [id])
+  vendor      Vendor             @relation(fields: [vendorId], references: [id])
+  collectedBy PseudoMarketAdmin? @relation("TaxCollector", fields: [collectedById], references: [id])
+  createdBy   User               @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([vendorId])
+  @@index([taxType])
+  @@index([status])
+  @@index([dueDate])
+  @@map("tax_payments")
+}
+
+model MarketTax {
+  id String @id @default(uuid())
+
+  marketId        String
+  taxType         String  @db.VarChar(50)
+  name            String  @db.VarChar(100)
+  description     String? @db.Text
+  rate            Decimal @db.Decimal(5, 2)
+  calculationType String  @default("PERCENTAGE") @db.VarChar(20)
+
+  appliesTo String[]
+  minAmount Decimal? @db.Decimal(12, 2)
+  maxAmount Decimal? @db.Decimal(12, 2)
+
+  isActive       Boolean   @default(true)
+  effectiveFrom  DateTime  @default(now())
+  effectiveUntil DateTime?
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  createdBy User   @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([taxType])
+  @@index([isActive])
+  @@map("market_taxes")
+}
+
+model TokenGenerationConfig {
+  id String @id @default(uuid())
+
+  marketId    String
+  tokenType   MarketTokenType
+  name        String          @db.VarChar(100)
+  description String?         @db.Text
+
+  prefix  String? @db.VarChar(10)
+  suffix  String? @db.VarChar(10)
+  length  Int     @default(10)
+  charset String  @default("alphanumeric") @db.VarChar(50)
+
+  expirationHours Int?
+  isSingleUse     Boolean @default(true)
+  maxUses         Int?    @default(1)
+
+  requireValidation Boolean @default(false)
+  validationRules   Json?
+
+  isActive Boolean @default(true)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  createdBy User   @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([isActive])
+  @@map("token_generation_configs")
+}
+
+model QrGenerationConfig {
+  id String @id @default(uuid())
+
+  marketId    String
+  qrType      QrCodeType
+  name        String     @db.VarChar(100)
+  description String?    @db.Text
+
+  size            Int    @default(256)
+  errorCorrection String @default("M") @db.VarChar(5)
+  foregroundColor String @default("#000000") @db.VarChar(10)
+  backgroundColor String @default("#FFFFFF") @db.VarChar(10)
+
+  includeLogo Boolean @default(false)
+  logoUrl     String? @db.VarChar(500)
+  logoSize    Int?    @default(50)
+
+  dataTemplate     Json?
+  encryptionMethod String? @db.VarChar(50)
+
+  expirationDays Int?
+
+  isActive Boolean @default(true)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // market            Market     @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  createdBy User @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([isActive])
+  @@map("qr_generation_configs")
+}
+
+model ScannerDevice {
+  id String @id @default(uuid())
+
+  deviceId String  @unique @db.VarChar(100)
+  marketId String
+  gateId   String?
+  name     String  @db.VarChar(100)
+
+  deviceType   String  @db.VarChar(50)
+  manufacturer String? @db.VarChar(100)
+  model        String? @db.VarChar(100)
+  serialNumber String? @unique @db.VarChar(100)
+
+  firmwareVersion String? @db.VarChar(50)
+  ipAddress       String? @db.VarChar(45)
+  macAddress      String? @db.VarChar(20)
+
+  isActive     Boolean   @default(true)
+  lastSeen     DateTime?
+  batteryLevel Int?
+
+  metadata       Json?
+  registeredById String
+  registeredAt   DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  market       Market      @relation("MarketScannerDevices", fields: [marketId], references: [id])
+  gate         MarketGate? @relation(fields: [gateId], references: [id])
+  registeredBy User        @relation("ScannerDeviceRegistrar", fields: [registeredById], references: [id])
+
+  tokenUsageLogs TokenUsageLog[]
+  qrScanLogs     QrScanLog[]
+
+  @@index([deviceId])
+  @@index([marketId])
+  @@index([gateId])
+  @@index([isActive])
+  @@index([lastSeen])
+  @@map("scanner_devices")
+}
+
+model DailyCollection {
+  id String @id @default(uuid())
+
+  marketId        String
+  date            DateTime
+  collectedAmount Decimal  @db.Decimal(15, 2)
+  expectedAmount  Decimal? @db.Decimal(15, 2)
+
+  collectionMethod String  @db.VarChar(50)
+  bankDepositSlip  String? @db.VarChar(100)
+
+  collectorId  String
+  verifiedById String?
+
+  status String @default("COLLECTED") @db.VarChar(50)
+
+  notes String? @db.Text
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market     Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  collector  User   @relation("DailyCollectionCollector", fields: [collectorId], references: [id])
+  verifiedBy User?  @relation("DailyCollectionVerifier", fields: [verifiedById], references: [id])
+  createdBy  User   @relation("DailyCollectionCreator", fields: [createdById], references: [id])
+
+  @@index([marketId, date])
+  @@index([collectorId])
+  @@index([status])
+  @@map("daily_collections")
+}
+
+model RentPayment {
+  id String @id @default(uuid())
+
+  contractId  String
+  amount      Decimal   @db.Decimal(12, 2)
+  periodStart DateTime
+  periodEnd   DateTime
+  dueDate     DateTime
+  paymentDate DateTime?
+
+  paymentMethod String  @db.VarChar(50)
+  transactionId String? @db.VarChar(100)
+  receiptNumber String? @unique @db.VarChar(100)
+
+  isLate          Boolean  @default(false)
+  lateFee         Decimal? @db.Decimal(10, 2)
+  gracePeriodDays Int?     @default(5)
+
+  status String @default("PENDING") @db.VarChar(50)
+
+  notes        String?  @db.Text
+  receivedById String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  contract   RentContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  receivedBy MarketMaster? @relation(fields: [receivedById], references: [id])
+
+  @@index([contractId])
+  @@index([paymentDate])
+  @@index([status])
+  @@map("rent_payments")
+}
+
+model RentContract {
+  id String @id @default(uuid())
+
+  facilityId     String
+  landlordId     String
+  tenantId       String
+  startDate      DateTime
+  endDate        DateTime
+  durationMonths Int
+
+  monthlyRent     Decimal  @db.Decimal(12, 2)
+  securityDeposit Decimal? @db.Decimal(12, 2)
+  maintenanceFee  Decimal? @db.Decimal(10, 2)
+  paymentDay      Int      @default(1)
+
+  status   String  @default("ACTIVE") @db.VarChar(50)
+  isActive Boolean @default(true)
+
+  terminationDate   DateTime?
+  terminationReason String?   @db.VarChar(500)
+
+  contractNumber     String   @unique @db.VarChar(100)
+  termsAndConditions String?  @db.Text
+  metadata           Json?
+  createdById        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  facility  Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  landlord  Member   @relation("MemberAsLandlord", fields: [landlordId], references: [id])
+  tenant    Vendor   @relation("VendorAsTenant", fields: [tenantId], references: [id])
+  createdBy User     @relation("RentContractCreator", fields: [createdById], references: [id])
+
+  payments RentPayment[]
+
+  @@index([facilityId])
+  @@index([landlordId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([contractNumber])
+  @@map("rent_contracts")
+}
+
+model HealthInspection {
+  id String @id @default(uuid())
+
+  marketId       String
+  facilityId     String
+  inspectionDate DateTime
+  inspectorId    String
+
+  hygieneScore    Int
+  safetyScore     Int
+  complianceScore Int
+  overallScore    Int
+
+  violations        String[]
+  correctiveActions String[]
+  remarks           String?  @db.Text
+
+  followUpDate     DateTime?
+  followUpRequired Boolean   @default(false)
+
+  status String @default("COMPLETED") @db.VarChar(50)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market            @relation("MarketHealthInspections", fields: [marketId], references: [id])
+  facility  Facility          @relation(fields: [facilityId], references: [id])
+  inspector PseudoMarketAdmin @relation("HealthInspector", fields: [inspectorId], references: [id])
+  createdBy User              @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([facilityId])
+  @@index([inspectionDate])
+  @@index([inspectorId])
+  @@map("health_inspections")
+}
+
+model MarketRegulation {
+  id String @id @default(uuid())
+
+  marketId         String
+  authorityId      String
+  title            String  @db.VarChar(200)
+  description      String? @db.Text
+  regulationNumber String? @unique @db.VarChar(100)
+
+  appliesTo       String[]
+  effectiveDate   DateTime
+  enforcementDate DateTime?
+
+  complianceLevel String? @db.VarChar(50)
+  penalties       Json?
+
+  status   String  @default("ACTIVE") @db.VarChar(50)
+  isActive Boolean @default(true)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authority MarketAuthority @relation(fields: [authorityId], references: [id])
+  createdBy User            @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([authorityId])
+  @@index([effectiveDate])
+  @@index([status])
+  @@map("market_regulations")
+}
+
+model BusinessLicense {
+  id String @id @default(uuid())
+
+  marketId      String
+  authorityId   String
+  licenseeId    String
+  licenseNumber String @unique @db.VarChar(100)
+  licenseType   String @db.VarChar(100)
+
+  issueDate   DateTime
+  expiryDate  DateTime
+  renewalDate DateTime?
+
+  businessName    String  @db.VarChar(200)
+  businessType    String? @db.VarChar(100)
+  businessAddress String? @db.VarChar(500)
+
+  status   String  @default("ACTIVE") @db.VarChar(50)
+  isActive Boolean @default(true)
+
+  licenseFee Decimal? @db.Decimal(12, 2)
+  renewalFee Decimal? @db.Decimal(12, 2)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authority MarketAuthority @relation(fields: [authorityId], references: [id])
+  createdBy User            @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([licenseeId])
+  @@index([licenseNumber])
+  @@index([expiryDate])
+  @@map("business_licenses")
+}
+
+model DeliveryItem {
+  id               String   @id @default(uuid())
+  deliveryId       String
+  productId        String
+  quantity         Decimal  @db.Decimal(10, 2)
+  unitPrice        Decimal  @db.Decimal(12, 2)
+  totalPrice       Decimal  @db.Decimal(12, 2)
+  receivedQuantity Decimal? @db.Decimal(10, 2)
+
+  qualityStatus String? @db.VarChar(50)
+  qualityNotes  String? @db.Text
+
+  delivery Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryId])
+  @@index([productId])
+  @@map("delivery_items")
+}
+
+model SupplierInvoice {
+  id String @id @default(uuid())
+
+  supplierId    String
+  facilityId    String
+  facility      Facility @relation(fields: [facilityId], references: [id])
+  invoiceNumber String   @unique @db.VarChar(100)
+  invoiceDate   DateTime
+  dueDate       DateTime
+
+  subtotal    Decimal  @db.Decimal(15, 2)
+  taxAmount   Decimal? @db.Decimal(12, 2)
+  totalAmount Decimal  @db.Decimal(15, 2)
+  amountPaid  Decimal  @default(0) @db.Decimal(15, 2)
+  amountDue   Decimal  @db.Decimal(15, 2)
+
+  paymentStatus String    @default("PENDING") @db.VarChar(50)
+  paymentDate   DateTime?
+  paymentMethod String?   @db.VarChar(50)
+
+  status String @default("ACTIVE") @db.VarChar(50)
+
+  notes       String?  @db.Text
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  supplier  Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  invoiceItems InvoiceItem[]
+
+  @@index([supplierId])
+  @@index([facilityId])
+  @@index([invoiceNumber])
+  @@index([dueDate])
+  @@index([paymentStatus])
+  @@map("supplier_invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(uuid())
+  invoiceId   String
+  productId   String
+  quantity    Decimal @db.Decimal(10, 2)
+  unitPrice   Decimal @db.Decimal(12, 2)
+  totalPrice  Decimal @db.Decimal(12, 2)
+  description String? @db.VarChar(500)
+
+  invoice SupplierInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+model ProductReview {
+  id String @id @default(uuid())
+
+  productId  String
+  customerId String
+  rating     Int
+  title      String? @db.VarChar(200)
+  comment    String? @db.Text
+
+  isVerifiedPurchase Boolean   @default(false)
+  purchaseDate       DateTime?
+
+  status     String  @default("PENDING") @db.VarChar(50)
+  isApproved Boolean @default(false)
+
+  helpfulVotes   Int      @default(0)
+  unhelpfulVotes Int      @default(0)
+  createdById    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  customer  Customer @relation(fields: [customerId], references: [id])
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  @@index([productId])
+  @@index([customerId])
+  @@index([rating])
+  @@index([status])
+  @@map("product_reviews")
+}
+
+model Complaint {
+  id String @id @default(uuid())
+
+  customerId  String
+  facilityId  String?
+  title       String  @db.VarChar(200)
+  description String  @db.Text
+  category    String? @db.VarChar(100)
+
+  status   String @default("PENDING") @db.VarChar(50)
+  priority String @default("MEDIUM") @db.VarChar(20)
+
+  assignedToId    String?
+  resolution      String?   @db.Text
+  resolvedAt      DateTime?
+  resolutionNotes String?   @db.Text
+
+  customerSatisfaction Int?
+  feedback             String? @db.Text
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([facilityId])
+  @@index([status])
+  @@index([priority])
+  @@index([createdAt])
+  @@map("complaints")
+}
+
+model LoyaltyTransaction {
+  id String @id @default(uuid())
+
+  customerId    String
+  points        Int
+  type          String  @db.VarChar(50)
+  referenceId   String? @db.VarChar(100)
+  referenceType String? @db.VarChar(50)
+
+  expiresAt DateTime?
+
+  status String @default("COMPLETED") @db.VarChar(50)
+
+  description String?  @db.VarChar(500)
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdBy User     @relation(fields: [createdById], references: [id])
+
+  @@index([customerId])
+  @@index([type])
+  @@index([referenceId])
+  @@index([createdAt])
+  @@map("loyalty_transactions")
+}
+
+model GuestEntry {
+  id String @id @default(uuid())
+
+  guestId   String
+  marketId  String
+  entryTime DateTime
+  exitTime  DateTime?
+
+  purpose           String?  @db.VarChar(100)
+  visitedFacilities String[]
+
+  verifiedById      String?
+  verificationNotes String? @db.Text
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guest      Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  verifiedBy User? @relation("GuestVerifier", fields: [verifiedById], references: [id])
+  createdBy  User  @relation("GuestCreator", fields: [createdById], references: [id])
+
+  @@index([guestId])
+  @@index([marketId])
+  @@index([entryTime])
+  @@map("guest_entries")
+}
+
+model GateEntry {
+  id String @id @default(uuid())
+
+  marketId   String
+  gateId     String
+  vendorId   String
+  facilityId String
+  entryTime  DateTime
+  exitTime   DateTime?
+
+  vehicleNumber String? @db.VarChar(50)
+  vehicleType   String? @db.VarChar(50)
+  driverName    String? @db.VarChar(100)
+
+  goodsDescription String?  @db.VarChar(500)
+  quantity         Decimal? @db.Decimal(12, 2)
+  weight           Decimal? @db.Decimal(10, 2)
+
+  purpose String? @db.VarChar(100)
+
+  counterId         String?
+  verificationNotes String? @db.Text
+
+  status String @default("ENTERED") @db.VarChar(50)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market    Market             @relation("MarketGateEntries", fields: [marketId], references: [id])
+  gate      MarketGate         @relation(fields: [gateId], references: [id])
+  vendor    Vendor             @relation(fields: [vendorId], references: [id])
+  facility  Facility           @relation(fields: [facilityId], references: [id])
+  counter   PseudoMarketAdmin? @relation("GateCounter", fields: [counterId], references: [id])
+  createdBy User               @relation(fields: [createdById], references: [id])
+
+  @@index([marketId])
+  @@index([gateId])
+  @@index([vendorId])
+  @@index([facilityId])
+  @@index([entryTime])
+  @@map("gate_entries")
+}
+
+model FacilityAsset {
+  id String @id @default(uuid())
+
+  facilityId String
+  assetType  String @db.VarChar(50)
+  assetUrl   String @db.VarChar(500)
+  fileName   String @db.VarChar(200)
+  fileSize   Int
+  mimeType   String @db.VarChar(100)
+
+  description String?  @db.Text
+  tags        String[]
+
+  isActive Boolean @default(true)
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  facility  Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  createdBy User     @relation("FacilityAssetCreatedBy", fields: [createdById], references: [id])
+
+  @@index([facilityId])
+  @@index([assetType])
+  @@index([isActive])
+  @@map("facility_assets")
+}
+
+model Delivery {
+  id String @id @default(uuid())
+
+  // Delivery Details
+  supplierId   String
+  facilityId   String
+  facility     Facility  @relation(fields: [facilityId], references: [id])
+  deliveryDate DateTime
+  expectedDate DateTime?
+  receivedDate DateTime?
+
+  // Vehicle Information
+  vehicleNumber String? @db.VarChar(50)
+  driverName    String? @db.VarChar(100)
+  driverPhone   String? @db.VarChar(20)
+
+  // Status
+  status         String  @default("PENDING") @db.VarChar(50)
+  deliveryStatus String? @db.VarChar(50)
+
+  // Verification
+  verifiedById      String?
+  verificationNotes String? @db.Text
+
+  // Metadata
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations 
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  verifiedBy User?    @relation("DeliveryVerifier", fields: [verifiedById], references: [id])
+  createdBy  User     @relation("DeliveryCreator", fields: [createdById], references: [id])
+
+  deliveryItems DeliveryItem[]
+
+  // Relation to PurchaseOrder
+  orderId String?
+  order   PurchaseOrder? @relation(fields: [orderId], references: [id])
+
+  // Indexes
+  @@index([supplierId])
+  @@index([facilityId])
+  @@index([deliveryDate])
+  @@index([status])
+  @@map("deliveries")
+}
+
+model HandshakeCode {
+  id String @id @default(uuid())
+
+  code         String  @unique @db.VarChar(50)
+  invitationId String  @unique
+  issuedById   String // Market Authority personnel ID or reference
+  adminId      String? // Once accepted, linked to the Admin ID
+
+  isUsed Boolean   @default(false)
+  usedAt DateTime?
+
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  admin      Admin?     @relation("AdminHandshakeCodes", fields: [adminId], references: [id])
+
+  @@index([code])
+  @@index([invitationId])
+  @@map("handshake_codes")
+}
+
+// ============================================================
+// VENDOR-SUPPLIER JUNCTION: Requisitions & Bidding
+// ============================================================
+
+model Requisition {
+  id       String @id @default(uuid())
+  vendorId String
+  marketId String?
+
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  deadline    DateTime
+  budget      Decimal? @db.Decimal(15, 2)
+
+  status String @default("OPEN") @db.VarChar(30)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market Market? @relation(fields: [marketId], references: [id])
+
+  items RequisitionItem[]
+  bids  SupplierBid[]
+
+  @@index([vendorId])
+  @@index([marketId])
+  @@index([status])
+  @@index([deadline])
+  @@map("requisitions")
+}
+
+model RequisitionItem {
+  id             String  @id @default(uuid())
+  requisitionId  String
+  name           String  @db.VarChar(200)
+  quantity       Decimal @db.Decimal(10, 2)
+  unit           String  @db.VarChar(50)
+  specifications String? @db.Text
+
+  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+
+  @@index([requisitionId])
+  @@map("requisition_items")
+}
+
+model SupplierBid {
+  id            String @id @default(uuid())
+  requisitionId String
+  supplierId    String
+
+  amount       Decimal  @db.Decimal(15, 2)
+  deliveryDate DateTime
+  notes        String?  @db.Text
+
+  aiTrustScore Int @default(0)
+
+  status String @default("PENDING") @db.VarChar(20)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requisition Requisition     @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  supplier    Supplier        @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  order       PurchaseOrder?
+
+  @@index([requisitionId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("supplier_bids")
+}
+
+model PurchaseOrder {
+  id String @id @default(uuid())
+
+  poNumber String @unique @db.VarChar(50) // e.g., PO-XXXXX
+  marketId String
+
+  vendorId   String
+  supplierId String
+  bidId      String @unique
+
+  totalExclVat Decimal @db.Decimal(15, 2)
+  vatAmount    Decimal @db.Decimal(15, 2)
+  totalInclVat Decimal @db.Decimal(15, 2)
+
+  paymentTerms   String? @db.VarChar(50)
+  expectedDate   DateTime?
+  status         String  @default("PENDING") @db.VarChar(30) // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus  String  @default("UNPAID") @db.VarChar(30)
+
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vendor   Vendor      @relation(fields: [vendorId], references: [id])
+  supplier Supplier    @relation(fields: [supplierId], references: [id])
+  bid      SupplierBid @relation(fields: [bidId], references: [id])
+  market   Market      @relation(fields: [marketId], references: [id])
+
+  deliveries Delivery[]
+
+  @@index([poNumber])
+  @@index([vendorId])
+  @@index([supplierId])
+  @@index([status])
+  @@map("purchase_orders")
+}
+
+model SupplierRating {
+  id String @id @default(uuid())
+
+  supplierId String
+  vendorId   String
+  orderId    String @unique
+
+  rating      Int      @db.Integer // 1 to 5
+  quality     Int?     @db.Integer
+  timeliness  Int?     @db.Integer
+  comment     String?  @db.Text
+  
+  status      String   @default("PUBLISHED") @db.VarChar(20)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  vendor   Vendor   @relation(fields: [vendorId], references: [id])
+
+  @@index([supplierId])
+  @@index([rating])
+  @@map("supplier_ratings")
+}
+
+model Asset {
+  id         String  @id @default(uuid())
+  uniqueCode String  @unique @db.VarChar(50)
+  name       String  @db.VarChar(200)
+  type       String  @db.VarChar(50) // CCTV, VEHICLE, EQUIPMENT, FURNITURE
+  status     String  @default("ACTIVE") @db.VarChar(20)
+  streamUrl  String? @db.VarChar(500) // For CCTV real-time feed
+  marketId   String
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id])
+
+  @@index([marketId])
+  @@index([type])
+  @@map("assets")
+}
+
+model SupportTicket {
+  id           String @id @default(uuid())
+  ticketNumber String @unique @db.VarChar(20)
+  subject      String @db.VarChar(255)
+  description  String @db.Text
+  priority     String @default("MEDIUM") @db.VarChar(20)
+  status       String @default("OPEN") @db.VarChar(20)
+  category     String @db.VarChar(50)
+  
+  aiSummary       String? @db.Text
+  aiInternalNotes String? @db.Text
+
+  
+  creatorId    String
+  assignedToId String?
+  resolution   String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creator    User  @relation("CreatedTickets", fields: [creatorId], references: [id])
+  assignedTo User? @relation("AssignedTickets", fields: [assignedToId], references: [id])
+
+  @@index([creatorId])
+  @@index([status])
+  @@map("support_tickets")
+}

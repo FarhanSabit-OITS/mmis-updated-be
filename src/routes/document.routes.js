@@ -21,8 +21,13 @@ router.get('/contract/:contractId/pdf', documentController.downloadShopContract)
 router.get('/invoice/:vendorId/pdf',    documentController.downloadInvoice);
 router.get('/receipt/:paymentId/pdf',   documentController.downloadReceipt);
 
-// ── Analytics ─────────────────────────────────────────────────────────────────
+// ── Analytics & Forensic Reports ──────────────────────────────────────────────
 router.get('/analytics/stats',               documentController.getAnalyticsStats);
 router.get('/analytics/:marketId/report/pdf', documentController.downloadMarketReport);
+router.get('/forensic/:marketId/pdf',         documentController.downloadForensicReport);
+
+// ── Batch Processing & Verification ──────────────────────────────────────────
+router.post('/batch/invoices', documentController.triggerBatchInvoices);
+router.get('/verify/:hash',    documentController.verifyDigitalSignature);
 
 module.exports = router;

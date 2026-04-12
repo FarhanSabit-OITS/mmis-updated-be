@@ -56,4 +56,42 @@ module.exports = {
       })
     );
   }),
+
+  checkAvailability: asyncHandler(async (req, res) => {
+    const { marketId, unitNumber } = req.query;
+
+    if (!marketId || !unitNumber) {
+      return res.status(400).json({ success: false, message: "Market ID and Unit Number are required" });
+    }
+
+    const facility = await prisma.facility.findFirst({
+      where: { 
+        marketId, 
+        unitNumber,
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true,
+        occupationStatus: true,
+        facilityName: true
+      }
+    });
+
+    if (!facility) {
+      return res.status(200).json({ 
+        success: true, 
+        data: { exists: false, occupied: false } 
+      });
+    }
+
+    return res.status(200).json({ 
+      success: true, 
+      data: { 
+        exists: true, 
+        occupied: facility.occupationStatus !== 'VACANT',
+        facilityId: facility.id,
+        name: facility.facilityName
+      } 
+    });
+  }),
 };

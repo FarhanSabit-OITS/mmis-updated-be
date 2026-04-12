@@ -1,14 +1,8 @@
-
-const prisma = require('../shared/prisma');
+const notificationService = require('../services/notification.service');
 
 exports.getNotifications = async (req, res) => {
     try {
-        const userId = req.user.userId;
-        const notifications = await prisma.notification.findMany({
-            where: { userId },
-            orderBy: { createdAt: 'desc' },
-            take: 50
-        });
+        const notifications = await notificationService.getUserNotifications(req.user);
 
         return res.status(200).json({
             success: true,
@@ -26,10 +20,7 @@ exports.getNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
     try {
         const { id } = req.params;
-        await prisma.notification.update({
-            where: { id },
-            data: { isRead: true, readAt: new Date() }
-        });
+        await notificationService.markAsRead(id);
 
         return res.status(200).json({
             success: true,
@@ -37,6 +28,24 @@ exports.markAsRead = async (req, res) => {
         });
     } catch (err) {
         console.error('markAsRead error:', err);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+        });
+    }
+};
+
+exports.dismissNotification = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await notificationService.dismiss(id);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Notification dismissed'
+        });
+    } catch (err) {
+        console.error('dismissNotification error:', err);
         return res.status(500).json({
             success: false,
             message: 'Internal server error',

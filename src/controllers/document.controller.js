@@ -4,6 +4,8 @@
 
 
 const pdfService = require('../services/pdf.service');
+const docProcessor = require('../services/docProcessor.service');
+const complianceService = require('../services/compliance.service');
 const { notify } = require('../services/notification.service');
 const prisma = require('../shared/prisma');
 
@@ -551,5 +553,78 @@ exports.getAnalyticsStats = async (req, res) => {
     } catch (error) {
         console.error('[DocumentController] Analytics stats error:', error);
         return res.status(500).json({ success: false, message: 'Failed to get analytics stats' });
+    }
+};
+
+// ── 13. NEW: Download Identity Forensic Report ────────────────────────────────
+exports.downloadForensicReport = async (req, res) => {
+    try {
+        const { marketId } = req.params;
+        const user = req.user;
+
+        const auditData = await complianceService.generateIdentityAuditData({ marketId });
+        const { buffer, signature } = await docProcessor.generateDocument('IDENTITY_AUDIT', {
+            ...auditData,
+            generatedBy: `${user?.profile?.firstName || ''} ${user?.profile?.lastName || ''}`
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="ForensicReport-${marketId}-${signature.slice(0,8)}.pdf"`);
+        return res.send(buffer);
+    } catch (error) {
+        console.error('[DocumentController] Forensic PDF error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to generate forensic report' });
+    }
+};
+
+// ── 14. NEW: Verify Digital Signature ─────────────────────────────────────────
+exports.verifyDigitalSignature = async (req, res) => {
+    try {
+        const { hash } = req.params;
+        const { payload } = req.query; // decoded json payload for verification
+        
+        const isValid = docProcessor.verifySignature(JSON.parse(payload), hash);
+        
+        return res.status(200).json({
+            success: true,
+            verified: isValid,
+            message: isValid ? 'Document signature is AUTHENTIC' : 'Signature mismatch - tampering detected'
+        });
+    } catch (error) {
+        return res.status(400).json({ success: false, message: 'Invalid verification request' });
+    }
+};
+
+// ── 15. NEW: Trigger Batch Invoice Generation ─────────────────────────────────
+exports.triggerBatchInvoices = async (req, res) => {
+    try {
+        const { marketId } = req.body;
+        const vendors = await prisma.vendor.findMany({
+            where: { primaryMarketId: marketId },
+            include: { primaryMarket: true, rentContracts: true }
+        });
+
+        const batchId = `INV-BATCH-${marketId}-${Date.now()}`;
+        const tasks = vendors.map(v => ({
+            type: 'INVOICE',
+            id: v.id,
+            data: {
+                vendor: v,
+                market: v.primaryMarket,
+                lineItems: [{ description: 'Monthly Market Rent', qty: 1, unitPrice: 10000 }] // Simplified for batch
+            }
+        }));
+
+        const result = await docProcessor.addToBatchQueue(batchId, tasks, req.user.id);
+        
+        return res.status(202).json({
+            success: true,
+            message: 'Batch invoice generation started',
+            data: result
+        });
+
+    } catch (error) {
+        console.error('[DocumentController] Batch trigger error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to trigger batch processing' });
     }
 };

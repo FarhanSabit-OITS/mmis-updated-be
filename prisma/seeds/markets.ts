@@ -24,13 +24,6 @@ export async function seedMarkets(prisma: PrismaClient, cityMap: Record<string, 
       cityKey: "Jinja",
       address: "Main Street, Jinja City",
       type: MarketType.PERMANENT,
-    },
-    {
-      name: "Gulu Main Market",
-      code: "MKT-GULU",
-      cityKey: "Gulu",
-      address: "Market Street, Gulu City",
-      type: MarketType.PERMANENT,
     }
   ];
 

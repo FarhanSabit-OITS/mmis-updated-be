@@ -13,6 +13,10 @@ router.post('/audit', superAdminMiddleware, complianceController.triggerAudit);
 // Dashboard accessible to all authenticated admins (MarketMaster + SuperAdmin)
 router.get('/dashboard', complianceController.getComplianceDashboard);
 
+// Identity Analytics
+router.get('/identity/stats', complianceController.getIdentityStats);
+router.get('/identity/anomalies', complianceController.getIdentityAnomalies);
+
 // Audit log query — SuperAdmin only
 router.get('/audit-logs', superAdminMiddleware, complianceController.getAuditLogs);
 

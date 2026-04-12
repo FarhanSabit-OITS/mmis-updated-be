@@ -1,5 +1,6 @@
 const prisma = require('../prisma');
 const crypto = require('crypto');
+const complianceService = require('../services/compliance.service');
 
 /**
  * Helper to generate a meaningful unique short code
@@ -24,6 +25,21 @@ async function generateShortCode(marketId) {
         if (!existing) exists = false;
     }
     return code;
+}
+
+/**
+ * Helper to calculate token expiry (Whichever is earlier: 24h or Midnight Today)
+ */
+function calculateExpiry() {
+    const now = new Date();
+    const twentyFourHours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    
+    const midnight = new Date(now);
+    midnight.setHours(23, 59, 59, 999);
+
+    // If it's already past midnight technically (day change just happened) 
+    // we use the end of the newly started day.
+    return twentyFourHours < midnight ? twentyFourHours : midnight;
 }
 
 /**
@@ -69,7 +85,7 @@ exports.generateEntryToken = async (req, res) => {
             shortCode: await generateShortCode(marketId),
             marketId,
             createdById: staffUserId,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+            expiresAt: calculateExpiry(), 
             status: 'ACTIVE',
             vehicleNumber,
             vehicleType
@@ -173,7 +189,7 @@ exports.generateSupplierDeliveryToken = async (req, res) => {
                 visitorName: delivery.supplier.businessName,
                 vehicleNumber: delivery.vehicleNumber,
                 createdById: staffUserId,
-                expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours
+                expiresAt: calculateExpiry(), 
                 status: 'ACTIVE',
                 metadata: {
                     deliveryId: delivery.id,
@@ -659,13 +675,15 @@ exports.verifyIdentity = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Identity identifier (NIN/ID) is required' });
         }
 
-        // Search for the profile by nationalId, passportNumber, or taxIdNumber
+        // Search for the profile by nationalId, passportNumber, taxIdNumber, OR mmisId/qr
         const profile = await prisma.userProfile.findFirst({
             where: {
                 OR: [
                     { nationalId: identifier },
                     { passportNumber: identifier },
-                    { taxIdNumber: identifier }
+                    { taxIdNumber: identifier },
+                    { mmisId: identifier },
+                    { personalQRCode: identifier }
                 ]
             },
             include: {
@@ -728,6 +746,17 @@ exports.verifyIdentity = async (req, res) => {
                 paymentStatus = 'PENDING_PAYMENT';
             }
         }
+
+        // Log Audit for Verification
+        await complianceService.logAudit({
+            action: 'IDENTITY_VERIFIED',
+            entityType: 'IDENTITY',
+            entityId: user.id,
+            newData: { mmisId: profile.mmisId, identifierUsed: identifier },
+            userId: req.user.id, // The staff member performing the verification
+            endpoint: '/api/market/tokens/verify-identity',
+            httpMethod: 'POST'
+        });
 
         return res.status(200).json({
             success: true,

@@ -14,7 +14,7 @@ module.exports = function adminMiddleware(req, res, next) {
 
     const { roleName } = req.user;
 
-    if (roleName !== 'SuperAdmin' && roleName !== 'MarketMaster') {
+    if (roleName !== 'SuperAdmin' && roleName !== 'MarketMaster' && roleName !== 'CityAdmin') {
         return res.status(403).json({
             success: false,
             message: 'Forbidden: Admin privileges required',

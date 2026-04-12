@@ -229,5 +229,60 @@ async function logAudit({
 module.exports = {
     processRentCompliance,
     checkDocumentCompliance,
-    logAudit
+    logAudit,
+
+    /**
+     * Aggregates data for a high-security Identity Forensic Report
+     */
+    async generateIdentityAuditData({ marketId, period }) {
+        const isGlobal = !marketId;
+        const scopeWhere = isGlobal ? {} : { marketId };
+        const logScope = isGlobal ? {} : { entityId: marketId };
+
+        const [stats, anomalies, registrationLogs] = await Promise.all([
+            // Stats
+            prisma.user.count({ where: scopeWhere }),
+            
+            // Anomalies (colliding scans)
+            prisma.auditLog.findMany({
+                where: {
+                    action: 'IDENTITY_VERIFIED',
+                    createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Last 30 days
+                    ...logScope
+                },
+                orderBy: { createdAt: 'desc' }
+            }),
+
+            // Registration Hits
+            prisma.user.findMany({
+                where: {
+                    ...scopeWhere,
+                    createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+                },
+                include: { profile: true },
+                take: 100
+            })
+        ]);
+
+        return {
+            market: isGlobal ? { name: 'MARKETMASTER GLOBAL' } : await prisma.market.findUnique({ where: { id: marketId } }),
+            stats: {
+                totalProfiles: stats,
+                periodHits: registrationLogs.length,
+                anomalyCount: anomalies.length
+            },
+            anomalies: anomalies.map(a => ({
+                id: a.id,
+                mmisId: a.newData?.mmisId,
+                timestamp: a.createdAt,
+                severity: 'CRITICAL'
+            })),
+            registrationLogs: registrationLogs.map(r => ({
+                name: r.name,
+                email: r.email,
+                date: r.createdAt,
+                status: r.status
+            }))
+        };
+    }
 };

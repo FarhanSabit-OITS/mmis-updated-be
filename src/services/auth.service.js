@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const prisma = require('../shared/prisma');
 const authRepository = require('../repositories/auth.repository');
 const tokenService = require('./token.service');
+const complianceService = require('./compliance.service');
 const { sendVerificationEmail } = require('./email.service');
 const AppError = require('../errors/AppError');
 const { normalizeEmail, normalizeName } = require('../utils/validation');
@@ -321,5 +323,56 @@ module.exports = {
     });
 
     return result.user;
+  },
+
+  issueIdentity: async (userId, adminUserId = null) => {
+    // Generate unique MMIS ID
+    const uniquePart = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const mmisId = `MMIS-U-${uniquePart}`;
+
+    const profile = await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        mmisId,
+        personalQRCode: mmisId, // Complementary: same token for both
+        qrCodeExpiry: null // Permanent identity for now
+      }
+    });
+
+    // Log Audit
+    await complianceService.logAudit({
+      action: 'IDENTITY_ISSUED',
+      entityType: 'IDENTITY',
+      entityId: userId,
+      newData: { mmisId },
+      userId: adminUserId
+    });
+
+    return { mmisId: profile.mmisId, userId: profile.userId };
+  },
+
+  updateIdentity: async (userId, customId, adminUserId = null) => {
+    // Allows admins to manually correct or assign premium IDs
+    const oldProfile = await prisma.userProfile.findUnique({ where: { userId }, select: { mmisId: true } });
+    
+    const profile = await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        mmisId: customId,
+        personalQRCode: customId
+      }
+    });
+
+    // Log Audit
+    await complianceService.logAudit({
+      action: 'IDENTITY_REGENERATED',
+      entityType: 'IDENTITY',
+      entityId: userId,
+      oldData: { mmisId: oldProfile?.mmisId },
+      newData: { mmisId: customId },
+      userId: adminUserId
+    });
+
+    return { mmisId: profile.mmisId, userId: profile.userId };
   }
 };

@@ -29,7 +29,6 @@ export async function processRegistries(prisma: PrismaClient, dataDir: string, m
     let market = marketMap["MKT-MBARARA"]; // Default fallback
     if (fileName.toLowerCase().includes("kabale")) market = marketMap["MKT-KABALE"];
     if (fileName.toLowerCase().includes("jinja")) market = marketMap["MKT-JINJA"];
-    if (fileName.toLowerCase().includes("gulu")) market = marketMap["MKT-GULU"];
     
     // Create/Find Landlord Member for this market
     const authorityUser = await prisma.user.upsert({
@@ -40,6 +39,17 @@ export async function processRegistries(prisma: PrismaClient, dataDir: string, m
         passwordHash: hashedPassword,
         status: UserStatus.ACTIVE,
         emailVerified: true,
+        profile: {
+          create: {
+            firstName: market.name,
+            lastName: "Authority",
+            primaryPhone: "None",
+            country: "Uganda",
+            primaryEmail: `authority.${market.uniqueCode.toLowerCase()}@marketmaster.ug`,
+            mmisId: `MMIS-U-AUTH-${market.uniqueCode}`,
+            personalQRCode: `MMIS-U-AUTH-${market.uniqueCode}`
+          }
+        }
       }
     });
 
@@ -151,6 +161,8 @@ export async function processRegistries(prisma: PrismaClient, dataDir: string, m
                       primaryPhone: phoneKey ? `+256${phoneKey}` : "None",
                       primaryEmail: safeEmail,
                       country: "Uganda",
+                      mmisId: `MMIS-U-${crypto.randomBytes(3).toString('hex').toUpperCase()}`,
+                      personalQRCode: `MMIS-U-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
                     }
                   }
                 }

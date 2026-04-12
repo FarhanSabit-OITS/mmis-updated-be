@@ -304,3 +304,35 @@ exports.updateAdmin = catchAsync(async (req, res) => {
     data: result
   });
 });
+
+/**
+ * POST /api/auth/identity/:userId
+ * Issue a formal MMIS Digital Identity to a user
+ */
+exports.issueIdentity = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await authService.issueIdentity(userId, req.user.id);
+
+  return res.status(200).json({
+    success: true,
+    message: 'MMIS Digital Identity issued successfully',
+    data: result
+  });
+});
+
+/**
+ * PATCH /api/auth/identity/:userId
+ * Manually update or override a user's MMIS Identity
+ */
+exports.updateIdentity = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { mmisId } = req.body;
+  
+  const result = await authService.updateIdentity(userId, mmisId, req.user.id);
+
+  return res.status(200).json({
+    success: true,
+    message: 'MMIS Identity updated successfully',
+    data: result
+  });
+});

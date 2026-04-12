@@ -7,5 +7,7 @@ router.use(authMiddleware);
 
 router.get('/', notificationController.getNotifications);
 router.patch('/:id/read', notificationController.markAsRead);
+router.patch('/:id/dismiss', notificationController.dismissNotification);
 
 module.exports = router;
+

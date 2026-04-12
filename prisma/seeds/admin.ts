@@ -27,6 +27,8 @@ export async function seedAdmins(prisma: PrismaClient, roleMap: Record<string, s
           primaryEmail: "superadmin@mmis.ug",
           country: "Uganda",
           verificationLevel: "FULL",
+          mmisId: "MMIS-U-SUPER-ADMIN-01",
+          personalQRCode: "MMIS-U-SUPER-ADMIN-01"
         },
       },
       admin: {
@@ -69,6 +71,8 @@ export async function seedMarketStaff(prisma: PrismaClient, roleMap: Record<stri
           primaryEmail: "master.admin@kabalemarket.ug",
           country: "Uganda",
           verificationLevel: "FULL",
+          mmisId: "MMIS-U-KABALE-01",
+          personalQRCode: "MMIS-U-KABALE-01"
         },
       },
       admin: {
@@ -103,6 +107,8 @@ export async function seedMarketStaff(prisma: PrismaClient, roleMap: Record<stri
           primaryEmail: "master.admin@jinjamarket.ug",
           country: "Uganda",
           verificationLevel: "FULL",
+          mmisId: "MMIS-U-JINJA-01",
+          personalQRCode: "MMIS-U-JINJA-01"
         },
       },
       admin: {
@@ -137,6 +143,8 @@ export async function seedMarketStaff(prisma: PrismaClient, roleMap: Record<stri
           primaryEmail: "master.admin@mbaramarket.ug",
           country: "Uganda",
           verificationLevel: "FULL",
+          mmisId: "MMIS-U-MBARARA-01",
+          personalQRCode: "MMIS-U-MBARARA-01"
         },
       },
       admin: {
