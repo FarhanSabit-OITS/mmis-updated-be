@@ -13,6 +13,15 @@ const {
 
 const prisma = require('../prisma');
 
+const KABALE_EMAIL_DOMAIN = '@kabalemarket.ug';
+const KABALE_CLAIM_PURPOSE = 'KABALE_VENDOR_ACCOUNT_CLAIM';
+
+const isKabaleSeededEmail = (email = '') =>
+  String(email).toLowerCase().endsWith(KABALE_EMAIL_DOMAIN);
+
+const apiError = (res, status, code, message) =>
+  res.status(status).json({ success: false, code, message });
+
 /**
  * POST /api/auth/register
  * Register a new user
@@ -843,6 +852,7 @@ exports.login = async (req, res) => {
           role: roleName,
           status: user.status,
           emailVerified: user.emailVerified,
+          requiresAccountClaim: isKabaleSeededEmail(user.email),
           kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
           vendorId: user.stakeholder?.vendor?.id || null,
           stalls: user.stakeholder?.vendor?.stalls || []
@@ -1372,6 +1382,258 @@ exports.resetPassword = async (req, res) => {
 };
 
 /**
+ * POST /api/auth/kabale-claim/request-email
+ * Send a real-email verification link for seeded Kabale vendor accounts.
+ */
+exports.requestKabaleClaimEmail = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { newEmail } = req.body;
+
+    if (!newEmail || !validateEmail(newEmail)) {
+      return apiError(res, 400, 'INVALID_EMAIL', 'A valid email address is required.');
+    }
+
+    const normalizedEmail = normalizeEmail(newEmail);
+    if (isKabaleSeededEmail(normalizedEmail)) {
+      return apiError(res, 400, 'TEMP_EMAIL_NOT_ALLOWED', 'Please use your real email address.');
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+        userRoles: { include: { role: true } },
+        stakeholder: { include: { vendor: true } },
+      },
+    });
+
+    if (!user) {
+      return apiError(res, 404, 'USER_NOT_FOUND', 'User account was not found.');
+    }
+
+    const hasVendorRole = user.userRoles.some((ur) => ur.role?.name === 'Vendor' && ur.isActive !== false);
+    const hasVendorRecord = Boolean(user.stakeholder?.vendor);
+    if (!isKabaleSeededEmail(user.email) || (!hasVendorRole && !hasVendorRecord)) {
+      return apiError(res, 403, 'NOT_KABALE_SEEDED_VENDOR', 'This account is not eligible for Kabale account claim.');
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    if (existingUser && existingUser.id !== user.id) {
+      return apiError(res, 409, 'EMAIL_ALREADY_EXISTS', 'Another account already uses this email address.');
+    }
+
+    const recentToken = await prisma.verificationToken.findFirst({
+      where: {
+        userId: user.id,
+        tokenType: 'EMAIL_VERIFICATION',
+        isUsed: false,
+        createdAt: { gte: new Date(Date.now() - 60 * 1000) },
+        purposeData: { path: ['purpose'], equals: KABALE_CLAIM_PURPOSE },
+      },
+    });
+
+    if (recentToken) {
+      return apiError(res, 429, 'CLAIM_RATE_LIMITED', 'Please wait before requesting another verification email.');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    await prisma.$transaction([
+      prisma.verificationToken.updateMany({
+        where: {
+          userId: user.id,
+          tokenType: 'EMAIL_VERIFICATION',
+          isUsed: false,
+          purposeData: { path: ['purpose'], equals: KABALE_CLAIM_PURPOSE },
+        },
+        data: { isUsed: true, usedAt: new Date() },
+      }),
+      prisma.verificationToken.create({
+        data: {
+          token,
+          tokenType: 'EMAIL_VERIFICATION',
+          userId: user.id,
+          email: normalizedEmail,
+          expiresAt,
+          purposeData: {
+            purpose: KABALE_CLAIM_PURPOSE,
+            oldEmail: user.email,
+            newEmail: normalizedEmail,
+          },
+        },
+      }),
+    ]);
+
+    const frontendBase = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verifyUrl = `${frontendBase}/?token=${encodeURIComponent(token)}&tokenType=kabale-account-claim`;
+    const displayName = user.profile
+      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
+      : user.email.split('@')[0];
+
+    try {
+      await sendVerificationEmail(normalizedEmail, verifyUrl, { name: displayName || 'Vendor' });
+    } catch (mailErr) {
+      console.error('Kabale claim verification email failed:', mailErr);
+      return apiError(res, 500, 'EMAIL_SEND_FAILED', 'Verification email could not be sent. Please try again later.');
+    }
+
+    return res.status(202).json({
+      success: true,
+      message: 'Verification email sent.',
+      data: {
+        email: normalizedEmail,
+        expiresInMinutes: 60,
+      },
+    });
+  } catch (err) {
+    console.error('Kabale claim request error:', err);
+    return apiError(res, 500, 'CLAIM_REQUEST_FAILED', 'Internal server error. Please try again later.');
+  }
+};
+
+/**
+ * POST /api/auth/kabale-claim/verify-email
+ * Verify a real email for a seeded Kabale vendor and update users.email.
+ */
+exports.verifyKabaleClaimEmail = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return apiError(res, 400, 'TOKEN_REQUIRED', 'Verification token is required.');
+    }
+
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (!verificationToken || verificationToken.tokenType !== 'EMAIL_VERIFICATION' || verificationToken.purposeData?.purpose !== KABALE_CLAIM_PURPOSE) {
+      return apiError(res, 400, 'INVALID_TOKEN', 'Invalid verification token.');
+    }
+
+    if (verificationToken.isUsed) {
+      return apiError(res, 400, 'TOKEN_ALREADY_USED', 'This verification link has already been used.');
+    }
+
+    if (verificationToken.expiresAt < new Date()) {
+      return apiError(res, 400, 'TOKEN_EXPIRED', 'This verification link has expired.');
+    }
+
+    if (!verificationToken.user) {
+      return apiError(res, 404, 'USER_NOT_FOUND', 'User account was not found.');
+    }
+
+    const newEmail = normalizeEmail(verificationToken.purposeData?.newEmail || verificationToken.email);
+    if (!newEmail || !validateEmail(newEmail) || isKabaleSeededEmail(newEmail)) {
+      return apiError(res, 400, 'INVALID_TOKEN', 'Verification token does not contain a valid email.');
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email: newEmail } });
+    if (existingUser && existingUser.id !== verificationToken.userId) {
+      return apiError(res, 409, 'EMAIL_ALREADY_EXISTS', 'Another account already uses this email address.');
+    }
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: verificationToken.userId },
+        data: {
+          email: newEmail,
+          emailVerified: true,
+          status: 'ACTIVE',
+          updatedAt: new Date(),
+        },
+      }),
+      prisma.userProfile.updateMany({
+        where: { userId: verificationToken.userId },
+        data: {
+          primaryEmail: newEmail,
+          updatedAt: new Date(),
+        },
+      }),
+      prisma.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: {
+          isUsed: true,
+          usedAt: new Date(),
+        },
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Email verified successfully.',
+      data: {
+        email: newEmail,
+        requiresPasswordSetup: true,
+      },
+    });
+  } catch (err) {
+    console.error('Kabale claim verify error:', err);
+    return apiError(res, 500, 'EMAIL_VERIFY_FAILED', 'Internal server error. Please try again later.');
+  }
+};
+
+/**
+ * POST /api/auth/kabale-claim/set-password
+ * Set a new password after a Kabale seeded account email claim.
+ */
+exports.setKabaleClaimPassword = async (req, res) => {
+  try {
+    const userId = req.user.userId || req.user.id;
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+      return apiError(res, 400, 'PASSWORD_REQUIRED', 'Password and confirmation are required.');
+    }
+
+    if (password !== confirmPassword) {
+      return apiError(res, 400, 'PASSWORD_MISMATCH', 'Password and confirmation do not match.');
+    }
+
+    if (!validatePassword(password)) {
+      return apiError(res, 400, 'WEAK_PASSWORD', 'Password must be between 8 and 64 characters.');
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return apiError(res, 404, 'USER_NOT_FOUND', 'User account was not found.');
+    }
+
+    if (isKabaleSeededEmail(user.email)) {
+      return apiError(res, 403, 'CLAIM_NOT_READY', 'Please verify your real email before setting a new password.');
+    }
+
+    if (!user.emailVerified) {
+      return apiError(res, 403, 'EMAIL_NOT_VERIFIED', 'Please verify your email before setting a new password.');
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        lastPasswordChange: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully.',
+      data: {
+        mustLoginAgain: false,
+      },
+    });
+  } catch (err) {
+    console.error('Kabale claim password error:', err);
+    return apiError(res, 500, 'PASSWORD_UPDATE_FAILED', 'Internal server error. Please try again later.');
+  }
+};
+
+/**
  * GET /api/auth/me
  * Get current user profile details
  */
@@ -1439,6 +1701,7 @@ exports.getMe = async (req, res) => {
         phone: user.phone || profile?.primaryPhone || 'No phone set',
         name: fullName,
         role: user.userRoles[0]?.role?.name || 'Guest',
+        requiresAccountClaim: isKabaleSeededEmail(user.email),
         kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
         businessId,
         vendorId: user.stakeholder?.vendor?.id || null, // Actual UUID
