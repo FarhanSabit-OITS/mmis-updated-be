@@ -16,6 +16,9 @@ router.post('/resend-verification', authController.resendVerification);
 router.post('/gate-token/:supplierId', authMiddleware, authController.generateGateToken);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
+router.post('/kabale-claim/request-email', authMiddleware, authController.requestKabaleClaimEmail);
+router.post('/kabale-claim/verify-email', authController.verifyKabaleClaimEmail);
+router.post('/kabale-claim/set-password', authMiddleware, authController.setKabaleClaimPassword);
 
 // Profile & Settings
 router.get('/me', authMiddleware, authController.getMe);

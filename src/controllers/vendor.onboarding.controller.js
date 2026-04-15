@@ -94,6 +94,10 @@ exports.setupShop = async (req, res) => {
                     }
                 },
                 profile: true
+                ,
+                userRoles: {
+                    include: { role: true }
+                }
             }
         });
 
@@ -101,23 +105,68 @@ exports.setupShop = async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        if (!user.stakeholder || user.stakeholder.stakeholderType !== 'VENDOR' || !user.stakeholder.vendor) {
-            // Try to recover if they have the role but no record
-            // This part assumes they SHOULD be a vendor
-            return res.status(403).json({
-                success: false,
-                message: 'User is not recognized as a valid vendor. Please contact support.'
+        const hasVendorRole = user.userRoles.some((ur) => ur.role?.name === 'Vendor' && ur.isActive !== false);
+        let stakeholder = user.stakeholder;
+        let vendor = stakeholder?.vendor;
+
+        if (!stakeholder || stakeholder.stakeholderType !== 'VENDOR' || !vendor) {
+            if (!hasVendorRole) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'User is not recognized as a valid vendor. Please contact support.'
+                });
+            }
+
+            const recovered = await prisma.$transaction(async (tx) => {
+                let fixedStakeholder = stakeholder;
+                if (!fixedStakeholder) {
+                    fixedStakeholder = await tx.stakeholder.create({
+                        data: {
+                            userId,
+                            stakeholderType: 'VENDOR',
+                            kycStatus: 'VERIFIED'
+                        }
+                    });
+                } else if (fixedStakeholder.stakeholderType !== 'VENDOR') {
+                    fixedStakeholder = await tx.stakeholder.update({
+                        where: { id: fixedStakeholder.id },
+                        data: {
+                            stakeholderType: 'VENDOR',
+                            kycStatus: fixedStakeholder.kycStatus === 'NOT_SUBMITTED' ? 'VERIFIED' : fixedStakeholder.kycStatus
+                        }
+                    });
+                }
+
+                let fixedVendor = vendor;
+                if (!fixedVendor) {
+                    fixedVendor = await tx.vendor.create({
+                        data: {
+                            stakeholderId: fixedStakeholder.id,
+                            vendorCode: generateUniqueCode('VND'),
+                            businessName: shopName || user.profile?.firstName || user.email.split('@')[0],
+                            businessType: 'Retail',
+                            primaryMarketId: marketId
+                        }
+                    });
+                }
+
+                return { stakeholder: fixedStakeholder, vendor: fixedVendor };
             });
+
+            stakeholder = {
+                ...recovered.stakeholder,
+                member: user.stakeholder?.member || null
+            };
+            vendor = recovered.vendor;
         }
 
-        const stakeholderId = user.stakeholder.id;
-        const vendor = user.stakeholder.vendor;
+        const stakeholderId = stakeholder.id;
         const vendorId = vendor.id;
 
         // 2. Perform Transaction
         const result = await prisma.$transaction(async (tx) => {
             // A. Create Member record if missing
-            let memberId = user.stakeholder.member?.id;
+            let memberId = stakeholder.member?.id;
             if (!memberId) {
                 const membershipNumber = generateUniqueCode('MBR');
                 const newMember = await tx.member.create({
