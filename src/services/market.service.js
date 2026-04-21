@@ -3,11 +3,12 @@ const marketRepository = require("../repositories/market.repository");
 
 module.exports = {
   createMarket: async (data) => {
+    console.log("running")
     const existingMarket = await marketRepository.findMarketByName(data.name)
     if (existingMarket){
         throw new ConflictError("Market already exists")
     }
-    return await marketRepository.createMarket(data);
+    return await marketRepository.createMarket({...data, uniqueCode: "sampleCode"});
   },
 
   updateGeneralInfo: async (marketId, data) => {

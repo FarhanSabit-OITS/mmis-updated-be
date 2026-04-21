@@ -8,6 +8,7 @@ const staffRoutes = require('./staff.routes');
 const tokenRoutes = require('./token.routes');
 const marketRoutes = require('./market.route')
 const shopRoutes = require("./shop.routes")
+const cityRoutes = require('./cities.routes')
 
 const configureRouter = (app)=>{
     app.use('/api/auth', authRoutes);
@@ -22,6 +23,8 @@ const configureRouter = (app)=>{
     app.use('/api', paymentRoutes);
     app.use('/api/markets', marketRoutes)
     app.use('/api/shops', shopRoutes)
+    app.use('/api/cities', cityRoutes)
 }
+
 
 module.exports = configureRouter

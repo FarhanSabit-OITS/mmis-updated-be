@@ -3,12 +3,13 @@ const router = express.Router();
 const marketController = require("../controllers/market.controller");
 const { validate } = require("../middleware/validate.middleware");
 const { 
-    createMarketSchema, 
+     
     updateGeneralSchema, 
     updateOperatingSchema, 
     updateCapacitySchema,
     getMarketListSchema
 } = require("../validations/index.js");
+const { createMarketSchema } = require("../validations/create-market.validation.js");
 
 
 router.get(
