@@ -34,6 +34,46 @@ const generateUniqueCode = (prefix) => {
 const SYSTEM_LANDLORD_EMAIL = 'market.administration@marketmaster.local';
 
 class PaymentService {
+  async ensureCurrentMonthRentRowsForContracts(contracts) {
+    if (!contracts?.length) return;
+
+    const currentMonthStart = startOfMonthUtc();
+    const currentMonthKey = monthKeyFromDate(currentMonthStart);
+
+    for (const contract of contracts) {
+      const existingForMonth = contract.payments?.some((payment) => (
+        payment?.periodStart && monthKeyFromDate(payment.periodStart) === currentMonthKey
+      ));
+
+      if (existingForMonth) continue;
+
+      const monthlyRent = toNumber(contract.monthlyRent);
+      if (monthlyRent <= 0) continue;
+
+      const dueDay = Math.max(1, Math.min(Number(contract.paymentDay || 1), 28));
+      const created = await prisma.rentPayment.create({
+        data: {
+          contractId: contract.id,
+          amount: monthlyRent,
+          periodStart: currentMonthStart,
+          periodEnd: endOfMonthUtc(currentMonthStart),
+          dueDate: new Date(Date.UTC(
+            currentMonthStart.getUTCFullYear(),
+            currentMonthStart.getUTCMonth(),
+            dueDay
+          )),
+          paymentMethod: 'CASH',
+          status: 'PENDING',
+          notes: 'Auto-generated current month rent due row'
+        }
+      });
+
+      if (Array.isArray(contract.payments)) {
+        contract.payments.push(created);
+      }
+    }
+  }
+
   async ensureSystemLandlordMember(client = prisma) {
     const user = await client.user.upsert({
       where: { email: SYSTEM_LANDLORD_EMAIL },
@@ -372,6 +412,8 @@ class PaymentService {
       prisma.vendor.count({ where: vendorWhere })
     ]);
 
+    await this.ensureCurrentMonthRentRowsForContracts(vendors.flatMap((vendor) => vendor.rentContracts));
+
     const scopedPayments = vendors.flatMap((vendor) =>
       vendor.rentContracts.flatMap((contract) =>
         contract.payments.map((payment) => ({
@@ -457,6 +499,8 @@ class PaymentService {
       throw new Error('Vendor not found');
     }
 
+    await this.ensureCurrentMonthRentRowsForContracts(vendor.rentContracts);
+
     const rentLedger = await this.calculateOutstandingRent(vendorId, marketScopeId);
     const obligations = rentLedger.payments;
     const paymentHistory = await this.getRecentPayments(vendorId, 25, marketScopeId);
@@ -489,6 +533,21 @@ class PaymentService {
   }
 
   async calculateOutstandingRent(vendorId, marketScopeId = null) {
+    const activeContracts = await prisma.rentContract.findMany({
+      where: {
+        tenantId: vendorId,
+        isActive: true,
+        ...(marketScopeId ? { shop: { marketId: marketScopeId } } : {})
+      },
+      include: {
+        shop: true,
+        tenant: true,
+        payments: true
+      }
+    });
+
+    await this.ensureCurrentMonthRentRowsForContracts(activeContracts);
+
     const payments = await prisma.rentPayment.findMany({
       where: {
         contract: {

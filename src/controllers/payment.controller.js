@@ -84,7 +84,7 @@ class PaymentController {
       if (!isAdmin(req.user)) {
         return res.status(403).json({ success: false, message: 'Unauthorized to upload payment evidence' });
       }
-      const { vendorId } = req.body;
+      const vendorId = req.body?.vendorId || req.fields?.vendorId || req.query?.vendorId;
       if (!vendorId || !req.files?.file) {
         return res.status(400).json({ success: false, message: 'vendorId and file are required' });
       }
