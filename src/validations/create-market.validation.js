@@ -49,3 +49,53 @@ const createMarketSchema = z.object({
 module.exports = {
     createMarketSchema
 }
+const updateMarketSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+
+  cityId: z.string().uuid().optional(),
+
+  address: z.string().min(1).max(500).optional(),
+
+  marketType: z.enum(['PERMANENT', 'TEMPORARY']).optional(),
+
+  description: z.string().max(5000).optional(),
+
+  website: z.string().url().optional(),
+
+  status: z.string().optional(),
+
+  openingTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time format HH:mm')
+    .optional(),
+
+  closingTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Invalid time format HH:mm')
+    .optional(),
+
+  operatingDays: z
+    .array(
+      z.enum([
+        'MONDAY',
+        'TUESDAY',
+        'WEDNESDAY',
+        'THURSDAY',
+        'FRIDAY',
+        'SATURDAY',
+        'SUNDAY',
+      ])
+    )
+    .optional(),
+
+  is24Hours: z.boolean().optional(),
+
+  totalLevels: z.number().int().min(1).optional(),
+
+  totalSections: z.number().int().min(0).optional(),
+});
+
+module.exports = {
+    createMarketSchema,
+    updateMarketSchema
+};

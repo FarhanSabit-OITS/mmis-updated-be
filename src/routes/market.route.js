@@ -19,10 +19,7 @@ router.get(
 )
 router.get("/market-name-list", marketController.getMarketNameList)
 router.post("/", validate(createMarketSchema), marketController.createMarket);
-
-router.patch("/:marketId/general", validate(updateGeneralSchema), marketController.updateGeneralInfo);
-router.patch("/:marketId/operating", validate(updateOperatingSchema), marketController.updateOperatingInfo);
-router.patch("/:marketId/capacity", validate(updateCapacitySchema), marketController.updateCapacityInfo);
+router.put("/:marketId", validate(createMarketSchema), marketController.updateMarket);
 
 router.get("/:marketId", marketController.getMarket);
 router.delete("/:marketId", marketController.deleteMarket);

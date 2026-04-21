@@ -11,15 +11,7 @@ module.exports = {
     return await marketRepository.createMarket({...data, uniqueCode: "sampleCode"});
   },
 
-  updateGeneralInfo: async (marketId, data) => {
-    return await marketRepository.updateMarket(marketId, data);
-  },
-
-  updateOperatingInfo: async (marketId, data) => {
-    return await marketRepository.updateMarket(marketId, data);
-  },
-
-  updateCapacityInfo: async (marketId, data) => {
+  updateMarket: async (marketId, data) => {
     return await marketRepository.updateMarket(marketId, data);
   },
 
