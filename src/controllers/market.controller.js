@@ -15,38 +15,14 @@ module.exports = {
   }
   ),
 
-  updateGeneralInfo: asyncHandler(
+  updateMarket: asyncHandler(
     async (req, res) => {
-    const market = await marketService.updateGeneralInfo(req.params.marketId, req.body);
+    const market = await marketService.updateMarket(req.params.marketId, req.body);
     return res.status(200).json(new ApiResponse({
         statusCode: 200,
         success: true,
         data: market,
-        message: "Market's general info is updated successfully"
-    }))
-  }
-  ),
-
-  updateOperatingInfo: asyncHandler(
-    async (req, res) => {
-    const market = await marketService.updateOperatingInfo(req.params.marketId, req.body);
-    return res.status(200).json(new ApiResponse({
-        statusCode: 200,
-        success: true,
-        data: market,
-        message: "Market's operating info is updated successfully"
-    }))
-  }
-  ),
-
-  updateCapacityInfo: asyncHandler(
-    async (req, res) => {
-    const market = await marketService.updateCapacityInfo(req.params.marketId, req.body);
-    return res.status(200).json(new ApiResponse({
-        statusCode: 200,
-        success: true,
-        data: market,
-        message: "Market's capacity info is updated successfully"
+        message: "Market is updated successfully"
     }))
   }
   ),
@@ -88,5 +64,15 @@ module.exports = {
         message: "Market list is feched successfully"
       })
     )
-  })
+  }),
+  deleteMarket: asyncHandler(
+    async (req, res) => {
+    await marketService.deleteMarket(req.params.marketId);
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        success: true,
+        message: "Market is deleted successfully"
+    }))
+  }
+  ),
 };

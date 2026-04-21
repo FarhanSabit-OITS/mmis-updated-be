@@ -51,7 +51,7 @@ module.exports = {
     return {markets, pagination: new PaginationResponse(total, page, limit)}
   },
   findMarketByName: async (name) =>
-    await prisma.market.findUnique({ where: { name } }),
+    await prisma.market.findFirst({ where: { name } }),
   getMarketNameList: async () => {
     return await prisma.market.findMany({
       select: {
@@ -61,6 +61,11 @@ module.exports = {
       orderBy: {
         name: "asc",
       },
+    });
+  },
+  deleteMarket: async (marketId) => {
+    return await prisma.market.delete({
+      where: { id: marketId },
     });
   },
 };
