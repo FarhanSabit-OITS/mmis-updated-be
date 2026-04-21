@@ -88,5 +88,15 @@ module.exports = {
         message: "Market list is feched successfully"
       })
     )
-  })
+  }),
+  deleteMarket: asyncHandler(
+    async (req, res) => {
+    await marketService.deleteMarket(req.params.marketId);
+    return res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        success: true,
+        message: "Market is deleted successfully"
+    }))
+  }
+  ),
 };

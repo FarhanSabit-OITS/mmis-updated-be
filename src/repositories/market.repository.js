@@ -63,4 +63,9 @@ module.exports = {
       },
     });
   },
+  deleteMarket: async (marketId) => {
+    return await prisma.market.delete({
+      where: { id: marketId },
+    });
+  },
 };

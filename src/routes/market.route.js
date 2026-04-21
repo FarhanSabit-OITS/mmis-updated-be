@@ -25,5 +25,6 @@ router.patch("/:marketId/operating", validate(updateOperatingSchema), marketCont
 router.patch("/:marketId/capacity", validate(updateCapacitySchema), marketController.updateCapacityInfo);
 
 router.get("/:marketId", marketController.getMarket);
+router.delete("/:marketId", marketController.deleteMarket);
 
 module.exports = router;

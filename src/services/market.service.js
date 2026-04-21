@@ -37,6 +37,9 @@ module.exports = {
       search: query.search,
       cityId: query.cityId,
     });
-  }
+  },
+  deleteMarket: async (marketId) => {
+    return await marketRepository.deleteMarket(marketId);
+  },
   
 };
