@@ -11,6 +11,7 @@ const shopRoutes = require("./shop.routes")
 const cityRoutes = require('./cities.routes')
 
 const configureRouter = (app)=>{
+    app.use('/api/markets', marketRoutes)
     app.use('/api/auth', authRoutes);
     app.use('/api/dashboard', dashboardRoutes);
     app.use('/api/vendors', vendorRoutes); 
@@ -21,7 +22,7 @@ const configureRouter = (app)=>{
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
     app.use('/api', paymentRoutes);
-    app.use('/api/markets', marketRoutes)
+    
     app.use('/api/shops', shopRoutes)
     app.use('/api/cities', cityRoutes)
 }
