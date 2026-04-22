@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/payment.controller');
+const billingController = require('../controllers/billing.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
 // All payment routes require authentication
@@ -21,5 +22,23 @@ router.get('/admin/payments/collections', paymentController.getAdminPaymentColle
 router.get('/admin/payments/outstanding', paymentController.getOutstandingPayments);
 router.get('/admin/payments/vendors', paymentController.getScopedVendorsWithPayments);
 router.post('/admin/payments/send-reminder', paymentController.sendPaymentReminder);
+
+// Invoice generation and billing routes
+router.post('/admin/invoices/generation-runs', billingController.createGenerationRun);
+router.get('/admin/invoices/generation-runs', billingController.listGenerationRuns);
+router.get('/admin/invoices/generation-runs/:id', billingController.getGenerationRun);
+router.get('/admin/invoices', billingController.listAdminInvoices);
+router.get('/admin/invoices/:invoiceId', billingController.getAdminInvoiceDetail);
+router.get('/admin/invoices/:invoiceId/pdf', billingController.downloadAdminInvoicePdf);
+router.get('/admin/payment-claims', billingController.listAdminPaymentClaims);
+router.get('/admin/payment-claims/:id', billingController.getAdminPaymentClaim);
+router.post('/admin/payment-claims/:id/approve', billingController.approvePaymentClaim);
+router.post('/admin/payment-claims/:id/reject', billingController.rejectPaymentClaim);
+
+router.get('/vendors/:vendorId/invoices', billingController.listVendorInvoices);
+router.get('/vendors/:vendorId/invoices/:invoiceId', billingController.getVendorInvoiceDetail);
+router.get('/vendors/:vendorId/invoices/:invoiceId/pdf', billingController.downloadVendorInvoicePdf);
+router.post('/vendors/:vendorId/payment-claims', billingController.submitVendorPaymentClaim);
+router.get('/vendors/:vendorId/payment-claims', billingController.listVendorPaymentClaims);
 
 module.exports = router;

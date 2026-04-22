@@ -1,5 +1,6 @@
 const prisma = require('../prisma');
 const crypto = require('crypto');
+const billingService = require('./billing.service');
 
 const toNumber = (value) => Number(value || 0);
 const startOfMonthUtc = (input) => {
@@ -842,6 +843,17 @@ class PaymentService {
     });
 
     const refreshedObligation = (await this.enrichRentPayments([updatedPayment]))[0];
+    await billingService.syncInvoiceAfterLegacyPayment({
+      vendorId,
+      rentPaymentId: paymentRow.id,
+      actorUserId,
+      paymentDate,
+      amount,
+      paymentMethod,
+      transactionId,
+      documentId,
+      notes,
+    });
     return {
       transaction: tx,
       payment: updatedPayment,
