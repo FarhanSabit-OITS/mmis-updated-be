@@ -7,6 +7,7 @@ const PAYABLE_STATUSES = ['OPEN', 'PARTIALLY_PAID', 'OVERDUE'];
 const FINAL_ATTEMPT_STATUSES = ['SUCCESSFUL', 'FAILED', 'ABANDONED', 'CANCELLED', 'EXPIRED', 'MISMATCH_REVIEW_REQUIRED'];
 const isWholePositiveAmount = (value) => Number.isInteger(value) && value > 0;
 const toNumber = (value) => Number(value || 0);
+const isUniqueConstraintError = (error) => error?.code === 'P2002';
 
 class PaymentAttemptService {
   generateAttemptReference() {
@@ -333,6 +334,15 @@ class PaymentAttemptService {
     if (!existing) {
       throw new Error('Payment attempt not found.');
     }
+    if (existing.status === status) {
+      return this.formatAttempt(await prisma.paymentAttempt.findUnique({
+        where: { id: attemptId },
+        include: {
+          selectedInvoices: true,
+          invoicePayment: true,
+        },
+      }));
+    }
     if (FINAL_ATTEMPT_STATUSES.includes(existing.status) && existing.status !== status) {
       throw new Error(`Cannot move finalized payment attempt from ${existing.status} to ${status}.`);
     }
@@ -417,40 +427,60 @@ class PaymentAttemptService {
       return updatedAttempt;
     }
 
-    const payment = await prisma.invoicePayment.create({
-      data: {
-        vendorId: attempt.vendorId,
-        marketId: attempt.marketId,
-        paymentAttemptId: attempt.id,
-        amount: confirmedAmount,
-        currencyCode: attempt.currencyCode,
-        paymentMethod: 'ONLINE',
-        paymentChannel: 'FLUTTERWAVE_HOSTED_CHECKOUT',
-        provider: 'FLUTTERWAVE',
-        providerReference: normalized.providerTransactionId || normalized.txRef,
-        providerPayload: normalized.raw,
-        status: 'CONFIRMED',
-        paymentDate: new Date(),
-        recordedByUserId: actorUserId || attempt.createdByUserId,
-        approvedByUserId: actorUserId || attempt.createdByUserId,
-        notes: 'Confirmed via Flutterwave verification',
-        metadata: {
-          attemptReference: attempt.attemptReference,
-          providerTxRef: normalized.txRef,
+    let payment;
+    let allocationResult = null;
+    try {
+      payment = await prisma.invoicePayment.create({
+        data: {
+          vendorId: attempt.vendorId,
+          marketId: attempt.marketId,
+          paymentAttemptId: attempt.id,
+          amount: confirmedAmount,
+          currencyCode: attempt.currencyCode,
+          paymentMethod: 'ONLINE',
+          paymentChannel: 'FLUTTERWAVE_HOSTED_CHECKOUT',
+          provider: 'FLUTTERWAVE',
+          providerReference: normalized.providerTransactionId || normalized.txRef,
+          providerPayload: normalized.raw,
+          status: 'CONFIRMED',
+          paymentDate: new Date(),
+          recordedByUserId: actorUserId || attempt.createdByUserId,
+          approvedByUserId: actorUserId || attempt.createdByUserId,
+          notes: 'Confirmed via Flutterwave verification',
+          metadata: {
+            attemptReference: attempt.attemptReference,
+            providerTxRef: normalized.txRef,
+          },
         },
-      },
-    });
+      });
 
-    const allocationResult = await billingService.allocatePaymentToInvoices(payment, attempt.vendorId, {
-      selectedInvoiceIds: attempt.selectedInvoices.map((item) => item.invoiceId),
-      restrictToSelected: true,
-    });
-    await billingService.createCompatibilityTransactionsForAllocations(
-      payment,
-      allocationResult.allocations,
-      actorUserId || attempt.createdByUserId
-    );
-    await billingService.evaluateVendorBillingStatus(attempt.vendorId);
+      allocationResult = await billingService.allocatePaymentToInvoices(payment, attempt.vendorId, {
+        selectedInvoiceIds: attempt.selectedInvoices.map((item) => item.invoiceId),
+        restrictToSelected: true,
+      });
+      await billingService.createCompatibilityTransactionsForAllocations(
+        payment,
+        allocationResult.allocations,
+        actorUserId || attempt.createdByUserId
+      );
+      await billingService.evaluateVendorBillingStatus(attempt.vendorId);
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      payment = await prisma.invoicePayment.findUnique({
+        where: { paymentAttemptId: attempt.id },
+        include: { allocations: true },
+      });
+      if (!payment) {
+        throw error;
+      }
+      allocationResult = {
+        allocations: payment.allocations || [],
+        remainingCredit: 0,
+      };
+    }
 
     const updatedAttempt = await this.updateAttemptStatus({
       attemptId,
@@ -477,7 +507,7 @@ class PaymentAttemptService {
     return {
       ...updatedAttempt,
       invoicePaymentId: payment.id,
-      allocations: allocationResult.allocations.map((allocation) => ({
+      allocations: (allocationResult.allocations || []).map((allocation) => ({
         ...allocation,
         allocatedAmount: toNumber(allocation.allocatedAmount),
       })),

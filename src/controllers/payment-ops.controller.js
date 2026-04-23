@@ -10,23 +10,53 @@ class PaymentOpsController {
       const txRef = req.body?.data?.tx_ref || null;
       const attempt = txRef ? await paymentAttemptService.findAttemptByReference(txRef) : null;
       const signatureValid = flutterwaveService.validateWebhookSignature(req.headers || {});
-      const event = await prisma.paymentWebhookEvent.create({
-        data: {
-          provider: 'FLUTTERWAVE',
-          eventReference: req.body?.eventReference || req.body?.id ? String(req.body?.id || req.body?.eventReference) : null,
-          eventType: req.body?.event || req.body?.eventType || 'UNKNOWN',
-          paymentAttemptId: attempt?.id || null,
-          vendorId: attempt?.vendorId || null,
-          marketId: attempt?.marketId || null,
-          providerTransactionId: req.body?.data?.id ? String(req.body.data.id) : null,
-          providerTxRef: txRef,
-          status: signatureValid ? 'RECEIVED' : 'PENDING_REVIEW',
-          signatureValid,
-          payload: req.body || null,
-          headers: req.headers || null,
-          processingNotes: signatureValid ? 'Webhook received and queued for verification.' : 'Webhook received without a valid configured signature.',
-        },
-      });
+      const eventReference = req.body?.eventReference || req.body?.id ? String(req.body?.id || req.body?.eventReference) : null;
+      let event = null;
+
+      if (eventReference) {
+        const existingEvent = await prisma.paymentWebhookEvent.findUnique({
+          where: { eventReference },
+        });
+        if (existingEvent) {
+          return res.json({
+            success: true,
+            message: 'Duplicate webhook ignored',
+            data: { id: existingEvent.id, signatureValid: existingEvent.signatureValid, duplicate: true },
+          });
+        }
+      }
+
+      try {
+        event = await prisma.paymentWebhookEvent.create({
+          data: {
+            provider: 'FLUTTERWAVE',
+            eventReference,
+            eventType: req.body?.event || req.body?.eventType || 'UNKNOWN',
+            paymentAttemptId: attempt?.id || null,
+            vendorId: attempt?.vendorId || null,
+            marketId: attempt?.marketId || null,
+            providerTransactionId: req.body?.data?.id ? String(req.body.data.id) : null,
+            providerTxRef: txRef,
+            status: signatureValid ? 'RECEIVED' : 'PENDING_REVIEW',
+            signatureValid,
+            payload: req.body || null,
+            headers: req.headers || null,
+            processingNotes: signatureValid ? 'Webhook received and queued for verification.' : 'Webhook received without a valid configured signature.',
+          },
+        });
+      } catch (error) {
+        if (error?.code === 'P2002' && eventReference) {
+          const existingEvent = await prisma.paymentWebhookEvent.findUnique({
+            where: { eventReference },
+          });
+          return res.json({
+            success: true,
+            message: 'Duplicate webhook ignored',
+            data: { id: existingEvent?.id || null, signatureValid: existingEvent?.signatureValid ?? signatureValid, duplicate: true },
+          });
+        }
+        throw error;
+      }
 
       if (signatureValid && attempt?.id && req.body?.data?.id) {
         await paymentAttemptService.verifyAndFinalizeAttempt({
