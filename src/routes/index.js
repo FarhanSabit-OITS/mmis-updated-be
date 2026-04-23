@@ -9,6 +9,8 @@ const tokenRoutes = require('./token.routes');
 const marketRoutes = require('./market.route')
 const shopRoutes = require("./shop.routes")
 const cityRoutes = require('./cities.routes')
+const marketLevelRoutes = require('./marketLevel.routes')
+const marketSectionRoutes = require('./marketSection.routes')
 
 const configureRouter = (app)=>{
     app.use('/api/markets', marketRoutes)
@@ -22,9 +24,10 @@ const configureRouter = (app)=>{
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
     app.use('/api', paymentRoutes);
-    
     app.use('/api/shops', shopRoutes)
     app.use('/api/cities', cityRoutes)
+    app.use('/api/marketLevels', marketLevelRoutes)
+    app.use('/api/marketSections', marketSectionRoutes)
 }
 
 
