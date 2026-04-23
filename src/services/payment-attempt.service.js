@@ -8,6 +8,16 @@ const FINAL_ATTEMPT_STATUSES = ['SUCCESSFUL', 'FAILED', 'ABANDONED', 'CANCELLED'
 const isWholePositiveAmount = (value) => Number.isInteger(value) && value > 0;
 const toNumber = (value) => Number(value || 0);
 const isUniqueConstraintError = (error) => error?.code === 'P2002';
+const SUCCESS_PROVIDER_STATUSES = ['successful', 'succeeded'];
+const PENDING_PROVIDER_STATUSES = ['pending', 'processing', 'queued', 'in_progress'];
+const sanitizeNamePart = (value, fallback) => {
+  const raw = String(value || '').trim();
+  const sanitized = raw.replace(/[^A-Za-z ,.'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (sanitized.length >= 2 && sanitized.length <= 50) {
+    return sanitized;
+  }
+  return fallback;
+};
 
 class PaymentAttemptService {
   generateAttemptReference() {
@@ -130,7 +140,47 @@ class PaymentAttemptService {
     };
   }
 
-  async createAttempt({ vendorId, actorUserId, marketScopeId = null, invoiceIds = [], selectionMode, amount }) {
+  buildFlutterwaveCustomer(vendor, customerOverride = null) {
+    const businessName = vendor.businessName || 'MMIS Vendor';
+    const fallbackDigits = String(vendor.stakeholder?.user?.phone || '').replace(/\D/g, '');
+    const overridePhoneDigits = String(
+      customerOverride?.phone?.number ||
+      customerOverride?.phone_number ||
+      customerOverride?.phoneNumber ||
+      ''
+    ).replace(/\D/g, '');
+    const phoneDigits = overridePhoneDigits || fallbackDigits;
+    const phoneCountryCode = String(
+      customerOverride?.phone?.country_code ||
+      customerOverride?.country_code ||
+      '256'
+    ).replace(/\D/g, '') || '256';
+    const baseName =
+      typeof customerOverride?.name === 'string'
+        ? customerOverride.name
+        : [customerOverride?.name?.first, customerOverride?.name?.last].filter(Boolean).join(' ').trim();
+    const businessParts = businessName.split(/\s+/).filter(Boolean);
+    const safeFirstFallback = sanitizeNamePart(businessParts[0], 'MMIS');
+    const safeLastFallback = sanitizeNamePart(businessParts.slice(1).join(' '), 'Vendor');
+    const normalizedName = {
+      first: sanitizeNamePart(customerOverride?.name?.first || baseName || businessName, safeFirstFallback),
+      last: sanitizeNamePart(customerOverride?.name?.last || businessParts.slice(1).join(' ') || 'Vendor', safeLastFallback),
+    };
+
+    return {
+      email: customerOverride?.email || vendor.stakeholder?.user?.email,
+      name: normalizedName,
+      phone: phoneDigits
+        ? {
+            country_code: phoneCountryCode,
+            number: phoneDigits.replace(new RegExp(`^${phoneCountryCode}`), '').replace(/^0/, ''),
+          }
+        : undefined,
+      address: customerOverride?.address,
+    };
+  }
+
+  async createAttempt({ vendorId, actorUserId, marketScopeId = null, invoiceIds = [], selectionMode, amount, paymentMethod = null, customer = null }) {
     const vendor = await this.getVendorCheckoutContext(vendorId);
     const selection = await this.buildSelection({
       vendorId,
@@ -145,11 +195,7 @@ class PaymentAttemptService {
       amount: selection.requestedAmount,
       currency: 'UGX',
       txRef: attemptReference,
-      customer: {
-        email: vendor.stakeholder?.user?.email,
-        name: vendor.businessName,
-        phonenumber: vendor.stakeholder?.user?.phone || undefined,
-      },
+      customer: this.buildFlutterwaveCustomer(vendor, customer),
       customizations: {
         title: 'MMIS Rent Payment',
         description: `Rent payment for ${vendor.businessName}`,
@@ -159,6 +205,7 @@ class PaymentAttemptService {
         invoiceIds: selection.selectedInvoices.map((invoice) => invoice.id),
         selectionMode,
       },
+      paymentMethod,
     });
 
     const attempt = await prisma.paymentAttempt.create({
@@ -172,6 +219,7 @@ class PaymentAttemptService {
         status: 'INITIATED',
         provider: 'FLUTTERWAVE',
         providerTxRef: attemptReference,
+        providerTransactionId: hostedCheckout.providerTransactionId,
         checkoutUrl: hostedCheckout.checkoutUrl,
         providerPayload: hostedCheckout.providerPayload,
         invoiceSelectionSnapshot: selection.selectedInvoices.map((invoice) => ({
@@ -186,6 +234,9 @@ class PaymentAttemptService {
         metadata: {
           redirectUrl: hostedCheckout.redirectUrl,
           flutterwaveIdempotencyKey: hostedCheckout.idempotencyKey,
+          flutterwaveTraceId: hostedCheckout.traceId || null,
+          flutterwaveNextAction: hostedCheckout.nextAction || null,
+          paymentMethodType: paymentMethod?.type || null,
         },
         selectedInvoices: {
           create: selection.selectedInvoices.map((invoice, index) => ({
@@ -263,13 +314,25 @@ class PaymentAttemptService {
         checkoutUrl: true,
         verifiedAt: true,
         updatedAt: true,
-        invoicePaymentId: true,
+        providerTransactionId: true,
+        metadata: true,
+        invoicePayment: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            paymentDate: true,
+          },
+        },
       },
     });
     if (!attempt) {
       throw new Error('Payment attempt not found.');
     }
-    return attempt;
+    return {
+      ...attempt,
+      invoicePaymentId: attempt.invoicePayment?.id || null,
+    };
   }
 
   async listAdminAttempts({ marketId = null, status = null, search = null, limit = 50 }) {
@@ -343,7 +406,11 @@ class PaymentAttemptService {
         },
       }));
     }
-    if (FINAL_ATTEMPT_STATUSES.includes(existing.status) && existing.status !== status) {
+    const canRecoverFromMismatch =
+      existing.status === 'MISMATCH_REVIEW_REQUIRED' &&
+      ['PENDING_VERIFICATION', 'SUCCESSFUL'].includes(status);
+
+    if (FINAL_ATTEMPT_STATUSES.includes(existing.status) && existing.status !== status && !canRecoverFromMismatch) {
       throw new Error(`Cannot move finalized payment attempt from ${existing.status} to ${status}.`);
     }
 
@@ -352,7 +419,9 @@ class PaymentAttemptService {
       data: {
         status,
         failureReason: failureReason || existing.failureReason,
-        mismatchReason: mismatchReason || existing.mismatchReason,
+        mismatchReason: status === 'PENDING_VERIFICATION' || status === 'SUCCESSFUL'
+          ? (mismatchReason || null)
+          : (mismatchReason || existing.mismatchReason),
         confirmedAmount: confirmedAmount == null ? existing.confirmedAmount : confirmedAmount,
         providerTransactionId: providerTransactionId || existing.providerTransactionId,
         redirectedAt: status === 'REDIRECTED' && !existing.redirectedAt ? new Date() : existing.redirectedAt,
@@ -391,7 +460,12 @@ class PaymentAttemptService {
     if (normalized.txRef !== attempt.attemptReference && normalized.txRef !== attempt.providerTxRef) {
       mismatchReasons.push('Transaction reference does not match MMIS attempt reference.');
     }
-    if (normalized.status !== 'successful') {
+    const normalizedStatus = String(normalized.status || '').toLowerCase();
+    if (
+      normalized.status &&
+      !SUCCESS_PROVIDER_STATUSES.includes(normalizedStatus) &&
+      !PENDING_PROVIDER_STATUSES.includes(normalizedStatus)
+    ) {
       mismatchReasons.push(`Provider status is ${normalized.status || 'unknown'} instead of successful.`);
     }
     if (normalized.currency !== attempt.currencyCode) {
@@ -427,6 +501,30 @@ class PaymentAttemptService {
       return updatedAttempt;
     }
 
+    if (PENDING_PROVIDER_STATUSES.includes(normalizedStatus)) {
+      const updatedAttempt = await this.updateAttemptStatus({
+        attemptId,
+        status: 'PENDING_VERIFICATION',
+        confirmedAmount,
+        providerTransactionId: normalized.providerTransactionId,
+      });
+      if (webhookEventId) {
+        await prisma.paymentWebhookEvent.update({
+          where: { id: webhookEventId },
+          data: {
+            paymentAttemptId: attempt.id,
+            vendorId: attempt.vendorId,
+            marketId: attempt.marketId,
+            status: 'PENDING_REVIEW',
+            invoicePaymentId: null,
+            processedAt: new Date(),
+            processingNotes: `Provider status is ${normalized.status || 'pending'}; awaiting final authorization/settlement.`,
+          },
+        });
+      }
+      return updatedAttempt;
+    }
+
     let payment;
     let allocationResult = null;
     try {
@@ -438,7 +536,7 @@ class PaymentAttemptService {
           amount: confirmedAmount,
           currencyCode: attempt.currencyCode,
           paymentMethod: 'ONLINE',
-          paymentChannel: 'FLUTTERWAVE_HOSTED_CHECKOUT',
+          paymentChannel: flutterwaveService.isOAuthMode() ? 'FLUTTERWAVE_DIRECT_CHARGE' : 'FLUTTERWAVE_HOSTED_CHECKOUT',
           provider: 'FLUTTERWAVE',
           providerReference: normalized.providerTransactionId || normalized.txRef,
           providerPayload: normalized.raw,

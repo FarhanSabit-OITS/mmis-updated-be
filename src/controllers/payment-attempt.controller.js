@@ -27,6 +27,8 @@ class PaymentAttemptController {
         invoiceIds: req.body.invoiceIds || [],
         selectionMode: req.body.selectionMode,
         amount: req.body.amount != null ? Number(req.body.amount) : null,
+        paymentMethod: req.body.paymentMethod || null,
+        customer: req.body.customer || null,
       });
       res.status(201).json({ success: true, data: attempt });
     } catch (error) {
