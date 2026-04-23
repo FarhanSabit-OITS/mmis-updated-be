@@ -7,14 +7,19 @@ const isAdmin = (user) => user.roleName === 'SuperAdmin' || user.roleName === 'M
 class PaymentOpsController {
   async receiveFlutterwaveWebhook(req, res) {
     try {
+      const txRef = req.body?.data?.tx_ref || null;
+      const attempt = txRef ? await paymentAttemptService.findAttemptByReference(txRef) : null;
       const signatureValid = flutterwaveService.validateWebhookSignature(req.headers || {});
       const event = await prisma.paymentWebhookEvent.create({
         data: {
           provider: 'FLUTTERWAVE',
           eventReference: req.body?.eventReference || req.body?.id ? String(req.body?.id || req.body?.eventReference) : null,
           eventType: req.body?.event || req.body?.eventType || 'UNKNOWN',
+          paymentAttemptId: attempt?.id || null,
+          vendorId: attempt?.vendorId || null,
+          marketId: attempt?.marketId || null,
           providerTransactionId: req.body?.data?.id ? String(req.body.data.id) : null,
-          providerTxRef: req.body?.data?.tx_ref || null,
+          providerTxRef: txRef,
           status: signatureValid ? 'RECEIVED' : 'PENDING_REVIEW',
           signatureValid,
           payload: req.body || null,
@@ -22,6 +27,15 @@ class PaymentOpsController {
           processingNotes: signatureValid ? 'Webhook received and queued for verification.' : 'Webhook received without a valid configured signature.',
         },
       });
+
+      if (signatureValid && attempt?.id && req.body?.data?.id) {
+        await paymentAttemptService.verifyAndFinalizeAttempt({
+          attemptId: attempt.id,
+          webhookEventId: event.id,
+          providerTransactionId: String(req.body.data.id),
+        });
+      }
+
       res.json({ success: true, message: 'Webhook received', data: { id: event.id, signatureValid } });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message || 'Failed to persist webhook event' });
@@ -62,7 +76,19 @@ class PaymentOpsController {
   }
 
   async reverifyAttempt(req, res) {
-    res.status(501).json({ success: false, message: 'Admin payment re-verification is not implemented yet.' });
+    try {
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to re-verify online payments' });
+      }
+      const result = await paymentAttemptService.verifyAndFinalizeAttempt({
+        attemptId: req.params.attemptId,
+        actorUserId: req.user.userId,
+        providerTransactionId: req.body?.providerTransactionId ? String(req.body.providerTransactionId) : null,
+      });
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message || 'Failed to re-verify payment attempt' });
+    }
   }
 
   async listWebhookEvents(req, res) {
@@ -86,7 +112,27 @@ class PaymentOpsController {
   }
 
   async reprocessWebhookEvent(req, res) {
-    res.status(501).json({ success: false, message: 'Webhook reprocessing is not implemented yet.' });
+    try {
+      if (!isAdmin(req.user)) {
+        return res.status(403).json({ success: false, message: 'Unauthorized to reprocess webhook events' });
+      }
+      const event = await prisma.paymentWebhookEvent.findUnique({ where: { id: req.params.eventId } });
+      if (!event) {
+        return res.status(404).json({ success: false, message: 'Webhook event not found' });
+      }
+      if (!event.paymentAttemptId) {
+        return res.status(400).json({ success: false, message: 'Webhook event is not linked to a payment attempt yet.' });
+      }
+      const result = await paymentAttemptService.verifyAndFinalizeAttempt({
+        attemptId: event.paymentAttemptId,
+        actorUserId: req.user.userId,
+        webhookEventId: event.id,
+        providerTransactionId: event.providerTransactionId || null,
+      });
+      res.json({ success: true, data: result });
+    } catch (error) {
+      res.status(400).json({ success: false, message: error.message || 'Failed to reprocess webhook event' });
+    }
   }
 }
 

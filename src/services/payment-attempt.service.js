@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const prisma = require('../prisma');
 const flutterwaveService = require('./flutterwave.service');
+const billingService = require('./billing.service');
 
 const PAYABLE_STATUSES = ['OPEN', 'PARTIALLY_PAID', 'OVERDUE'];
 const FINAL_ATTEMPT_STATUSES = ['SUCCESSFUL', 'FAILED', 'ABANDONED', 'CANCELLED', 'EXPIRED', 'MISMATCH_REVIEW_REQUIRED'];
@@ -353,6 +354,171 @@ class PaymentAttemptService {
       },
     });
     return this.formatAttempt(updated);
+  }
+
+  async finalizeVerifiedAttempt({ attemptId, verificationPayload, actorUserId = null, webhookEventId = null }) {
+    const attempt = await prisma.paymentAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        selectedInvoices: true,
+        invoicePayment: true,
+      },
+    });
+
+    if (!attempt) {
+      throw new Error('Payment attempt not found.');
+    }
+
+    if (attempt.invoicePayment) {
+      return this.formatAttempt(attempt);
+    }
+
+    const normalized = flutterwaveService.normalizeVerificationResponse(verificationPayload);
+    const expectedAmount = toNumber(attempt.requestedAmount);
+    const confirmedAmount = toNumber(normalized.amount);
+
+    const mismatchReasons = [];
+    if (normalized.txRef !== attempt.attemptReference && normalized.txRef !== attempt.providerTxRef) {
+      mismatchReasons.push('Transaction reference does not match MMIS attempt reference.');
+    }
+    if (normalized.status !== 'successful') {
+      mismatchReasons.push(`Provider status is ${normalized.status || 'unknown'} instead of successful.`);
+    }
+    if (normalized.currency !== attempt.currencyCode) {
+      mismatchReasons.push(`Currency mismatch. Expected ${attempt.currencyCode}, received ${normalized.currency || 'unknown'}.`);
+    }
+    if (confirmedAmount !== expectedAmount) {
+      mismatchReasons.push(`Amount mismatch. Expected ${expectedAmount}, received ${confirmedAmount}.`);
+    }
+
+    if (mismatchReasons.length) {
+      const mismatchReason = mismatchReasons.join(' ');
+      const updatedAttempt = await this.updateAttemptStatus({
+        attemptId,
+        status: 'MISMATCH_REVIEW_REQUIRED',
+        mismatchReason,
+        confirmedAmount,
+        providerTransactionId: normalized.providerTransactionId,
+      });
+      if (webhookEventId) {
+        await prisma.paymentWebhookEvent.update({
+          where: { id: webhookEventId },
+          data: {
+            paymentAttemptId: attempt.id,
+            vendorId: attempt.vendorId,
+            marketId: attempt.marketId,
+            status: 'PENDING_REVIEW',
+            invoicePaymentId: null,
+            processedAt: new Date(),
+            processingNotes: mismatchReason,
+          },
+        });
+      }
+      return updatedAttempt;
+    }
+
+    const payment = await prisma.invoicePayment.create({
+      data: {
+        vendorId: attempt.vendorId,
+        marketId: attempt.marketId,
+        paymentAttemptId: attempt.id,
+        amount: confirmedAmount,
+        currencyCode: attempt.currencyCode,
+        paymentMethod: 'ONLINE',
+        paymentChannel: 'FLUTTERWAVE_HOSTED_CHECKOUT',
+        provider: 'FLUTTERWAVE',
+        providerReference: normalized.providerTransactionId || normalized.txRef,
+        providerPayload: normalized.raw,
+        status: 'CONFIRMED',
+        paymentDate: new Date(),
+        recordedByUserId: actorUserId || attempt.createdByUserId,
+        approvedByUserId: actorUserId || attempt.createdByUserId,
+        notes: 'Confirmed via Flutterwave verification',
+        metadata: {
+          attemptReference: attempt.attemptReference,
+          providerTxRef: normalized.txRef,
+        },
+      },
+    });
+
+    const allocationResult = await billingService.allocatePaymentToInvoices(payment, attempt.vendorId, {
+      selectedInvoiceIds: attempt.selectedInvoices.map((item) => item.invoiceId),
+      restrictToSelected: true,
+    });
+    await billingService.createCompatibilityTransactionsForAllocations(
+      payment,
+      allocationResult.allocations,
+      actorUserId || attempt.createdByUserId
+    );
+    await billingService.evaluateVendorBillingStatus(attempt.vendorId);
+
+    const updatedAttempt = await this.updateAttemptStatus({
+      attemptId,
+      status: 'SUCCESSFUL',
+      confirmedAmount,
+      providerTransactionId: normalized.providerTransactionId,
+    });
+
+    if (webhookEventId) {
+      await prisma.paymentWebhookEvent.update({
+        where: { id: webhookEventId },
+        data: {
+          paymentAttemptId: attempt.id,
+          invoicePaymentId: payment.id,
+          vendorId: attempt.vendorId,
+          marketId: attempt.marketId,
+          status: 'PROCESSED',
+          processedAt: new Date(),
+          processingNotes: 'Webhook verified and payment finalized successfully.',
+        },
+      });
+    }
+
+    return {
+      ...updatedAttempt,
+      invoicePaymentId: payment.id,
+      allocations: allocationResult.allocations.map((allocation) => ({
+        ...allocation,
+        allocatedAmount: toNumber(allocation.allocatedAmount),
+      })),
+      remainingCredit: toNumber(allocationResult.remainingCredit),
+    };
+  }
+
+  async verifyAndFinalizeAttempt({ attemptId, actorUserId = null, webhookEventId = null, providerTransactionId = null }) {
+    const attempt = await prisma.paymentAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        selectedInvoices: true,
+        invoicePayment: true,
+        webhookEvents: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+    if (!attempt) {
+      throw new Error('Payment attempt not found.');
+    }
+    if (attempt.invoicePayment) {
+      return this.formatAttempt(attempt);
+    }
+
+    const resolvedTransactionId =
+      providerTransactionId ||
+      attempt.providerTransactionId ||
+      attempt.webhookEvents.find((event) => event.providerTransactionId)?.providerTransactionId;
+
+    if (!resolvedTransactionId) {
+      throw new Error('No provider transaction id is available yet for verification.');
+    }
+
+    const verificationPayload = await flutterwaveService.verifyTransaction(resolvedTransactionId);
+    return this.finalizeVerifiedAttempt({
+      attemptId,
+      verificationPayload,
+      actorUserId,
+      webhookEventId,
+    });
   }
 
   async findAttemptByReference(attemptReference) {
