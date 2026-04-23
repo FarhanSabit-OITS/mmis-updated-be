@@ -1,6 +1,7 @@
+
 const prisma = require('../prisma');
 const { sendSystemEmail } = require('./email.service');
-const { createSimplePdf } = require('../utils/simplePdf');
+const { renderInvoicePdf } = require('../utils/pdf/invoice.jsx')
 
 const toNumber = (value) => Number(value || 0);
 const toDecimal = (value) => Number(toNumber(value).toFixed(2));
@@ -590,35 +591,10 @@ class BillingService {
 
   async generateInvoicePdf(invoiceId) {
     const invoice = await this.getInvoiceById(invoiceId);
-    const lines = [
-      'MMIS Monthly Rent Invoice',
-      '',
-      `Invoice Number: ${invoice.invoiceNumber || invoice.id}`,
-      `Vendor: ${invoice.vendor.businessName}`,
-      `Shop: ${invoice.shop.shopNumber}`,
-      `Billing Month: ${invoice.billingYear}-${String(invoice.billingMonth).padStart(2, '0')}`,
-      `Billing Start Date: ${new Date(invoice.billingStartDate).toLocaleDateString('en-UG')}`,
-      `Issue Date: ${new Date(invoice.issueDate).toLocaleDateString('en-UG')}`,
-      `Due Date: ${new Date(invoice.dueDate).toLocaleDateString('en-UG')}`,
-      `Status: ${invoice.status}`,
-      '',
-      'Line Items:',
-      ...invoice.lineItems.map((line) => `- ${line.description}: ${toNumber(line.lineAmount).toLocaleString()} ${invoice.currencyCode}`),
-      '',
-      `Total Amount: ${toNumber(invoice.totalAmount).toLocaleString()} ${invoice.currencyCode}`,
-      `Paid Amount: ${toNumber(invoice.paidAmount).toLocaleString()} ${invoice.currencyCode}`,
-      `Outstanding Amount: ${toNumber(invoice.outstandingAmount).toLocaleString()} ${invoice.currencyCode}`,
-      '',
-      'Approved Payment Allocations:',
-      ...(invoice.allocations.length
-        ? invoice.allocations.map((allocation) => `- ${new Date(allocation.payment.paymentDate).toLocaleDateString('en-UG')} | ${toNumber(allocation.allocatedAmount).toLocaleString()} ${invoice.currencyCode} | ${allocation.payment.paymentMethod}`)
-        : ['- No approved payments allocated yet']),
-      '',
-      'This PDF is generated on demand from the current invoice state.',
-    ];
+    
     return {
       fileName: `${invoice.invoiceNumber || `invoice-${invoice.id}`}.pdf`,
-      buffer: createSimplePdf(lines),
+      buffer: await renderInvoicePdf(invoice),
       invoice,
     };
   }
