@@ -6,16 +6,19 @@ const createMarketLevelSchema = z.object({
   uniqueCode: z.string().max(50),
   name: z.string().max(100),
   description: z.string().optional(),
-
-  accessType: z.string().optional(),
+  accessType: z.enum([
+    "PUBLIC",
+    "RESTRICTED", 
+    "STAFF_ONLY",
+    "VIP",
+    "MEMBERS_ONLY"
+  ]).optional(),
   hasElevator: z.boolean().optional(),
   hasEscalator: z.boolean().optional(),
   hasRestrooms: z.boolean().optional(),
   hasParking: z.boolean().optional(),
-
   wheelchairAccess: z.boolean().optional(),
   emergencyExits: z.number().int().optional(),
-
 });
 
 const updateMarketLevelSchema = createMarketLevelSchema.partial();
