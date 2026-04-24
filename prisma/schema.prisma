@@ -224,6 +224,14 @@ enum MaritalStatus {
   WIDOWED
 }
 
+enum MarketStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  CLOSED
+  UNDER_RENOVATION
+}
+
 /**
  * ************
  * CORE USER & AUTH
@@ -342,7 +350,6 @@ model UserProfile {
   displayName String?   @db.VarChar(150)
   gender      Gender?
   dateOfBirth DateTime?
-  age         Int?
 
   nationalId      String? @unique @db.VarChar(50)
   nationalIdType  String? @default("NIN") @db.VarChar(20)
@@ -503,7 +510,7 @@ model Geolocation {
 
 model District {
   id            String   @id @default(uuid())
-  geolocationId String   @default("")
+  geolocationId String
   name          String   @db.VarChar(200)
   code          String   @unique @db.VarChar(20)
   districtType  String?  @db.VarChar(50)
@@ -584,7 +591,7 @@ model Market {
   securityDeposit       Decimal? @db.Decimal(12, 2)
   monthlyMaintenanceFee Decimal? @db.Decimal(10, 2)
 
-  status            String    @default("ACTIVE") @db.VarChar(50)
+  status            MarketStatus @default(ACTIVE)
   establishmentDate DateTime?
   lastRenovation    DateTime?
   notes             String?   @db.Text
@@ -615,6 +622,7 @@ model Market {
   vendorCredits    VendorCredit[]
 
   tokenGenerationConfigs TokenGenerationConfig[]
+  qrGenerationConfigs    QrGenerationConfig[]   @relation("MarketQrConfigs")
 
   gateEntries       GateEntry[]        @relation("MarketGateEntries")
   stockMovements    StockMovement[]    @relation("MarketStockMovements")
@@ -624,6 +632,10 @@ model Market {
   scannerDevices ScannerDevice[] @relation("MarketScannerDevices")
 
   invitations Invitation[] @relation("MarketInvitations")
+
+  marketRegulations MarketRegulation[] @relation("MarketRegulations")
+  businessLicenses  BusinessLicense[]  @relation("MarketBusinessLicenses")
+  deliveries        Delivery[]         @relation("MarketDeliveries")
 
   @@unique([cityId, name])
   @@index([cityId])
@@ -721,6 +733,8 @@ model MarketSection {
   sectionRules        Json?
   specialRequirements String? @db.VarChar(500)
 
+  stockCounters PseudoMarketAdmin[] @relation("StockCounterSection")
+
   @@unique([marketId, levelId, name])
   @@index([marketId])
   @@map("market_sections")
@@ -796,6 +810,8 @@ model Stakeholder {
   kycSubmissions KycSubmission[]
 
   auditLogs AuditLog[] @relation("StakeholderAuditLogs")
+
+  businessLicenses BusinessLicense[] @relation("StakeholderBusinessLicenses")
 
   @@map("stakeholders")
 }
@@ -1011,6 +1027,7 @@ model Shop {
   rentContracts RentContract[]
   rentInvoices  RentInvoice[]
   shopAssets    ShopAsset[]
+  qrConfigs     QrGenerationConfig[] @relation("ShopQrConfigs")
 
   @@unique([marketId, shopNumber])
   @@index([marketId])
@@ -1085,6 +1102,7 @@ model Stall {
   marketTokens MarketToken[]
 
   healthInspections HealthInspection[]
+  stockMovements    StockMovement[] // Flexible: present when stall-level stock is tracked
 
   @@unique([shopId, stallNumber])
   @@index([shopId])
@@ -1210,17 +1228,19 @@ model MarketMaster {
 }
 
 model PseudoMarketAdmin {
-  id              String           @id @default(uuid())
-  adminId         String           @unique
-  marketId        String
-  role            PseudoMarketRole
-  assignedSection String?          @db.VarChar(100)
-  specialization  String?          @db.VarChar(100)
-  workingHours    Json?
-  permissions     Json?
+  id                String           @id @default(uuid())
+  adminId           String           @unique
+  marketId          String
+  role              PseudoMarketRole
+  assignedSection   String?          @db.VarChar(100) // Text label (legacy)
+  assignedSectionId String?          // FK to MarketSection for Stock Counter scope
+  specialization    String?          @db.VarChar(100)
+  workingHours      Json?
+  permissions       Json?
 
-  admin  Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  market Market @relation(fields: [marketId], references: [id])
+  admin           Admin          @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  market          Market         @relation(fields: [marketId], references: [id])
+  sectionScope    MarketSection? @relation("StockCounterSection", fields: [assignedSectionId], references: [id])
 
   gateEntries        GateEntry[]        @relation("GateCounter")
   stockCounts        StockMovement[]    @relation("StockCounter")
@@ -1986,7 +2006,7 @@ model StockMovement {
   updatedAt   DateTime @updatedAt
 
   market      Market             @relation("MarketStockMovements", fields: [marketId], references: [id])
-  // stall             Stall?     @relation(fields: [stallId], references: [id])
+  stall       Stall?             @relation(fields: [stallId], references: [id]) // Flexible: populated when stallId is present; shopId navigable via stall
   inspectedBy PseudoMarketAdmin? @relation("StockCounter", fields: [inspectedById], references: [id])
   createdBy   User               @relation(fields: [createdById], references: [id])
 
@@ -2132,8 +2152,10 @@ model QrGenerationConfig {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // market            Market     @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  createdBy User @relation(fields: [createdById], references: [id])
+  market    Market @relation("MarketQrConfigs", fields: [marketId], references: [id], onDelete: Cascade)
+  shopId    String?
+  shop      Shop?  @relation("ShopQrConfigs", fields: [shopId], references: [id])
+  createdBy User   @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
   @@index([isActive])
@@ -2458,6 +2480,8 @@ model PaymentClaim {
   claimedForInvoice RentInvoice? @relation(fields: [claimedForInvoiceId], references: [id])
   proofDocument Document? @relation("PaymentClaimProofDocument", fields: [proofDocumentId], references: [id])
 
+  invoicePayments InvoicePayment[] @relation("InvoicePaymentClaim")
+
   @@index([vendorId])
   @@index([marketId])
   @@index([status])
@@ -2491,6 +2515,7 @@ model InvoicePayment {
   vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
   document Document? @relation("InvoicePaymentDocument", fields: [documentId], references: [id])
+  paymentClaim PaymentClaim? @relation("InvoicePaymentClaim", fields: [paymentClaimId], references: [id])
 
   allocations PaymentAllocation[]
   vendorCredits VendorCredit[]
@@ -2629,6 +2654,7 @@ model MarketRegulation {
   updatedAt   DateTime @updatedAt
 
   authority MarketAuthority @relation(fields: [authorityId], references: [id])
+  market    Market          @relation("MarketRegulations", fields: [marketId], references: [id])
   createdBy User            @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
@@ -2667,6 +2693,8 @@ model BusinessLicense {
   updatedAt   DateTime @updatedAt
 
   authority MarketAuthority @relation(fields: [authorityId], references: [id])
+  market    Market          @relation("MarketBusinessLicenses", fields: [marketId], references: [id])
+  licensee  Stakeholder     @relation("StakeholderBusinessLicenses", fields: [licenseeId], references: [id])
   createdBy User            @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
@@ -2982,6 +3010,7 @@ model Delivery {
 
   // Delivery Details
   supplierId   String
+  marketId     String
   stallId      String
   deliveryDate DateTime
   expectedDate DateTime?
@@ -3006,8 +3035,9 @@ model Delivery {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations 
+  // Relations
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  market     Market   @relation("MarketDeliveries", fields: [marketId], references: [id])
   verifiedBy User?    @relation("DeliveryVerifier", fields: [verifiedById], references: [id])
   createdBy  User     @relation("DeliveryCreator", fields: [createdById], references: [id])
 
@@ -3016,6 +3046,7 @@ model Delivery {
 
   // Indexes
   @@index([supplierId])
+  @@index([marketId])
   @@index([stallId])
   @@index([deliveryDate])
   @@index([status])

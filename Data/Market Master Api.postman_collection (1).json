@@ -1,0 +1,2420 @@
+{
+  "info": {
+    "_postman_id": "aef16135-f00e-4532-b2f6-2e578e096e87",
+    "name": "Market Master Api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51886976",
+    "_collection_link": "https://go.postman.co/collection/51886976-aef16135-f00e-4532-b2f6-2e578e096e87?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Vendor_Product_Management",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all Products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/vendors/:vendorId/products",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "vendors",
+                ":vendorId",
+                "products"
+              ],
+              "variable": [
+                {
+                  "key": "vendorId",
+                  "value": "vendor-azwad-1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product with filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Soft Delete Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Create - Products",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "bec4b94d-4f7f-4691-a353-bc23a2b69992",
+                  "src": "/C:/Users/dellG15/Documents/OITS_DHAKA/MarketMasterApi/products_bulk_import.csv"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/vendors/:vendorId/products/bulk-upload",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "vendors",
+                ":vendorId",
+                "products",
+                "bulk-upload"
+              ],
+              "variable": [
+                {
+                  "key": "vendorId",
+                  "value": "vendor-azwad-1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SuperAdmin",
+      "item": [
+        {
+          "name": "SuperAdmin Vendor",
+          "item": [
+            {
+              "name": "Get all vendors",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get all vendors (paginated)",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors?page=1&limit=20",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search vendors",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors?search=electronics",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ],
+                  "query": [
+                    {
+                      "key": "search",
+                      "value": "electronics"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Search vendors Copy",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors?page=1&limit=20",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Vendor",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"vendor_email2@example.com\",\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"businessName\": \"Doe Enterprises\",\r\n    \"businessType\": \"RETAIL\",      // Optional: RETAIL, WHOLESALE, SERVICE, FOOD\r\n    \"primaryMarketId\": \"m2\", // Optional\r\n    \"phone\": \"+2562562536\",            // Optional\r\n    \"vatRegistered\": true,          // Optional (boolean)\r\n    \"vatNumber\": \"VAT-1245\",       // Optional (required if vatRegistered is true)\r\n    \"password\": \"Vendor@123\"        // Optional (defaults to Vendor@123)\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Soft Delete Vendor via Superadmin",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\": \"vendor_email2@example.com\",\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"businessName\": \"Doe Enterprises\",\r\n    \"businessType\": \"RETAIL\",      // Optional: RETAIL, WHOLESALE, SERVICE, FOOD\r\n    \"primaryMarketId\": \"m2\", // Optional\r\n    \"phone\": \"+2562562536\",            // Optional\r\n    \"vatRegistered\": true,          // Optional (boolean)\r\n    \"vatNumber\": \"VAT-1245\",       // Optional (required if vatRegistered is true)\r\n    \"password\": \"Vendor@123\"        // Optional (defaults to Vendor@123)\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/vendors",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "vendors"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Azwad Fawad Hasan\",\r\n    \"email\": \"azwad@gmail.com\",\r\n    \"password\": \"superadmin123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/auth/register",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "if (response.success && response.data && response.data.accessToken) {",
+                  "    pm.environment.set(\"bearer_token\", response.data.accessToken);",
+                  "    console.log(\"Bearer token saved to environment\");",
+                  "} else {",
+                  "    console.error(\"Access token not found in response\");",
+                  "}",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "jwt",
+              "jwt": [
+                {
+                  "key": "isSecretBase64Encoded",
+                  "value": true,
+                  "type": "boolean"
+                },
+                {
+                  "key": "secret",
+                  "value": "YOUR_LOGIN_JWT",
+                  "type": "string"
+                },
+                {
+                  "key": "algorithm",
+                  "value": "HS256",
+                  "type": "string"
+                },
+                {
+                  "key": "payload",
+                  "value": "{}",
+                  "type": "string"
+                },
+                {
+                  "key": "addTokenTo",
+                  "value": "header",
+                  "type": "string"
+                },
+                {
+                  "key": "headerPrefix",
+                  "value": "Bearer",
+                  "type": "string"
+                },
+                {
+                  "key": "queryParamKey",
+                  "value": "token",
+                  "type": "string"
+                },
+                {
+                  "key": "header",
+                  "value": "{}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    // \"email\": \"azwadfawadhasan@gmail.com\",\r\n    // // \"email\": \"azwad@oitsdhaka.com\",\r\n    // \"password\": \"superadmin123\"\r\n\r\n\r\n    \"email\": \"superadmin@super.com\",\r\n    // \"email\": \"azwad@oitsdhaka.com\",\r\n    \"password\": \"superadmin1234\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/auth/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "verify email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/auth/verify-email?token=c0497eed8e8bc1afe18da97ede676d0fb5c249dba82f7c933310cca57d77adc5",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-email"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "c0497eed8e8bc1afe18da97ede676d0fb5c249dba82f7c933310cca57d77adc5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseURL}}/api/auth/me",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns the currently authenticated user's profile using the bearer token captured from login."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "markets",
+      "item": [
+        {
+          "name": "Create market",
+          "item": [
+            {
+              "name": "create Market",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2MjExNCwiZXhwIjoxNzc2NzYzMDE0fQ.ufgA5lM_TbTgOyp3mQr7a7bCBUl9AzqIMIRLtdVcqCk",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Kaliganj Central Market\",\r\n  \"cityId\": \"5aced079-c568-49d4-b559-6db6d70017d5\",\r\n  \"address\": \"Main Road, Kaliganj, Dhaka\",\r\n  \"marketType\": \"PERMANENT\",\r\n  \"description\": \"A large permanent market with shops and stalls.\",\r\n  \"website\": \"https://kaliganjmarket.com\",\r\n  \"status\": \"ACTIVE\",\r\n  \"openingTime\": \"06:00\",\r\n  \"closingTime\": \"20:00\",\r\n  \"operatingDays\": [\r\n    \"MONDAY\",\r\n    \"TUESDAY\",\r\n    \"WEDNESDAY\",\r\n    \"THURSDAY\",\r\n    \"FRIDAY\",\r\n    \"SATURDAY\"\r\n  ],\r\n  \"is24Hours\": false,\r\n  \"totalLevels\": 2,\r\n  \"totalSections\": 10\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/markets",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "markets"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "create Market",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"name\": \"Kaliganj Central Market\",\r\n  \"cityId\": \"5aced079-c568-49d4-b559-6db6d70017d5\",\r\n  \"address\": \"Main Road, Kaliganj, Dhaka\",\r\n  \"marketType\": \"PERMANENT\",\r\n  \"description\": \"A large permanent market with shops and stalls.\",\r\n  \"website\": \"https://kaliganjmarket.com\",\r\n  \"status\": \"ACTIVE\",\r\n  \"openingTime\": \"06:00\",\r\n  \"closingTime\": \"20:00\",\r\n  \"operatingDays\": [\r\n    \"MONDAY\",\r\n    \"TUESDAY\",\r\n    \"WEDNESDAY\",\r\n    \"THURSDAY\",\r\n    \"FRIDAY\",\r\n    \"SATURDAY\"\r\n  ],\r\n  \"is24Hours\": false,\r\n  \"totalLevels\": 2,\r\n  \"totalSections\": 10\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/api/markets",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "markets"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "1035"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"40b-/IRNghhuKoyZKUPTwVJvlkrR6rg\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Tue, 21 Apr 2026 09:03:34 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"Market is created successfully\",\n    \"data\": {\n        \"id\": \"460b206a-006e-4d77-b5e3-53d8ed42574c\",\n        \"cityId\": \"5aced079-c568-49d4-b559-6db6d70017d5\",\n        \"name\": \"Kaliganj Central Market\",\n        \"uniqueCode\": \"sampleCode\",\n        \"displayName\": null,\n        \"description\": \"A large permanent market with shops and stalls.\",\n        \"address\": \"Main Road, Kaliganj, Dhaka\",\n        \"marketType\": \"PERMANENT\",\n        \"categories\": [],\n        \"totalLevels\": 2,\n        \"totalSections\": 10,\n        \"totalShops\": 0,\n        \"totalStalls\": 0,\n        \"occupiedShops\": 0,\n        \"occupiedStalls\": 0,\n        \"maxCapacity\": null,\n        \"openingTime\": \"06:00\",\n        \"closingTime\": \"20:00\",\n        \"operatingDays\": [\n            \"MONDAY\",\n            \"TUESDAY\",\n            \"WEDNESDAY\",\n            \"THURSDAY\",\n            \"FRIDAY\",\n            \"SATURDAY\"\n        ],\n        \"is24Hours\": false,\n        \"holidaySchedule\": null,\n        \"contactPhone\": null,\n        \"contactEmail\": null,\n        \"website\": \"https://kaliganjmarket.com\",\n        \"managerName\": null,\n        \"averageRent\": null,\n        \"securityDeposit\": null,\n        \"monthlyMaintenanceFee\": null,\n        \"status\": \"ACTIVE\",\n        \"establishmentDate\": null,\n        \"lastRenovation\": null,\n        \"notes\": null,\n        \"createdByAdminId\": null,\n        \"createdAt\": \"2026-04-21T09:03:32.839Z\",\n        \"updatedAt\": \"2026-04-21T09:03:32.839Z\"\n    }\n}"
+                }
+              ]
+            },
+            {
+              "name": "update market by id",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2NDcyNSwiZXhwIjoxNzc2NzY1NjI1fQ.gTZr8ngcMjFAEBOtqraXzUfbVD6m6Uz84Vx5x0qfxu0",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Kaliganj Central Market\",\r\n  \"cityId\": \"5aced079-c568-49d4-b559-6db6d70017d5\",\r\n  \"address\": \"Main Road, Kaliganj, Dhaka\",\r\n  \"marketType\": \"PERMANENT\",\r\n  \"description\": \"A large permanent market with shops and stalls.\",\r\n  \"website\": \"https://kaliganjmarket.com\",\r\n  \"status\": \"ACTIVE\",\r\n  \"openingTime\": \"06:00\",\r\n  \"closingTime\": \"21:00\",\r\n  \"operatingDays\": [\r\n    \"MONDAY\",\r\n    \"TUESDAY\",\r\n    \"WEDNESDAY\",\r\n    \"THURSDAY\",\r\n    \"FRIDAY\",\r\n    \"SATURDAY\"\r\n  ],\r\n  \"is24Hours\": false,\r\n  \"totalLevels\": 2,\r\n  \"totalSections\": 10\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/markets/7673604b-5e42-48cb-ad78-b3bdf0cc8e4d",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "markets",
+                    "7673604b-5e42-48cb-ad78-b3bdf0cc8e4d"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "market level",
+          "item": [
+            {
+              "name": "Create Market Level",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1MzE4MSwiZXhwIjoxNzc2OTU0MDgxfQ.C4WM2KUxigRDqtzhqnSQawCEJrQzaO1G5PylVMW4nPI",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\r\n  \"levelNumber\": 1,\r\n  \"uniqueCode\": \"LEVEL-1\",\r\n  \"name\": \"Ground Floor\",\r\n  \"description\": \"Main entrance level\",\r\n  \"accessType\": \"PUBLIC\",\r\n  \"hasElevator\": true,\r\n  \"hasEscalator\": true,\r\n  \"hasRestrooms\": true,\r\n  \"hasParking\": false,\r\n  \"wheelchairAccess\": true,\r\n  \"emergencyExits\": 3\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/marketLevels",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketLevels"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Create Market Level",
+                  "originalRequest": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\r\n  \"levelNumber\": 1,\r\n  \"uniqueCode\": \"LEVEL-1\",\r\n  \"name\": \"Ground Floor\",\r\n  \"description\": \"Main entrance level\",\r\n  \"accessType\": \"PUBLIC\",\r\n  \"hasElevator\": true,\r\n  \"hasEscalator\": true,\r\n  \"hasRestrooms\": true,\r\n  \"hasParking\": false,\r\n  \"wheelchairAccess\": true,\r\n  \"emergencyExits\": 3\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/api/marketLevels",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "marketLevels"
+                      ]
+                    }
+                  },
+                  "status": "Created",
+                  "code": 201,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "637"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"27d-4P6SgGSodWgpUE31f+dxX22FctM\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Thu, 23 Apr 2026 14:20:04 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"success\",\n    \"data\": {\n        \"id\": \"b041fa94-76d6-41ea-844c-4174fcaa3a4f\",\n        \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\n        \"levelNumber\": 1,\n        \"uniqueCode\": \"LEVEL-1\",\n        \"name\": \"Ground Floor\",\n        \"description\": \"Main entrance level\",\n        \"accessType\": \"PUBLIC\",\n        \"hasElevator\": true,\n        \"hasEscalator\": true,\n        \"hasRestrooms\": true,\n        \"hasParking\": false,\n        \"totalSections\": 0,\n        \"totalShops\": 0,\n        \"totalStalls\": 0,\n        \"wheelchairAccess\": true,\n        \"emergencyExits\": 3,\n        \"status\": \"ACTIVE\",\n        \"isOperational\": true,\n        \"lastInspection\": null,\n        \"createdById\": \"b7263200-ff0d-4de5-a32b-29d72e993e89\",\n        \"createdAt\": \"2026-04-23T14:20:03.843Z\",\n        \"updatedAt\": \"2026-04-23T14:20:03.843Z\"\n    }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get market level by market Id",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/marketLevels/b041fa94-76d6-41ea-844c-4174fcaa3a4f",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketLevels",
+                    "b041fa94-76d6-41ea-844c-4174fcaa3a4f"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Get market level by market Id",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseURL}}/api/marketLevels/b041fa94-76d6-41ea-844c-4174fcaa3a4f",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "marketLevels",
+                        "b041fa94-76d6-41ea-844c-4174fcaa3a4f"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "680"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"2a8-1pQCft9mSFJh3kJ/2+NPXilTLdc\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Thu, 23 Apr 2026 14:23:36 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Market level is fetched successfully\",\n    \"data\": {\n        \"id\": \"b041fa94-76d6-41ea-844c-4174fcaa3a4f\",\n        \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\n        \"levelNumber\": 1,\n        \"uniqueCode\": \"LEVEL-1\",\n        \"name\": \"Ground Floor\",\n        \"description\": \"Main entrance level\",\n        \"accessType\": \"PUBLIC\",\n        \"hasElevator\": true,\n        \"hasEscalator\": true,\n        \"hasRestrooms\": true,\n        \"hasParking\": false,\n        \"totalSections\": 0,\n        \"totalShops\": 0,\n        \"totalStalls\": 0,\n        \"wheelchairAccess\": true,\n        \"emergencyExits\": 3,\n        \"status\": \"ACTIVE\",\n        \"isOperational\": true,\n        \"lastInspection\": null,\n        \"createdById\": \"b7263200-ff0d-4de5-a32b-29d72e993e89\",\n        \"createdAt\": \"2026-04-23T14:20:03.843Z\",\n        \"updatedAt\": \"2026-04-23T14:20:03.843Z\",\n        \"sections\": []\n    }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Get all market levels",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/marketLevels",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketLevels"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Get all market levels",
+                  "originalRequest": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{baseURL}}/api/marketLevels",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "marketLevels"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "1267"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"4f3-qvygbp8M4C+xAUgaigxPn1spDnc\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Thu, 23 Apr 2026 14:24:42 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"All market level is fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"2b255912-8d1b-4ff5-8ba4-3df7fede8b82\",\n            \"marketId\": \"5cd2b25f-9dc2-48b4-9df3-b06815abc8d3\",\n            \"levelNumber\": 1,\n            \"uniqueCode\": \"MKT-KBL-001-LVL-1\",\n            \"name\": \"Main Level\",\n            \"description\": null,\n            \"accessType\": null,\n            \"hasElevator\": false,\n            \"hasEscalator\": false,\n            \"hasRestrooms\": true,\n            \"hasParking\": false,\n            \"totalSections\": 0,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"wheelchairAccess\": false,\n            \"emergencyExits\": 2,\n            \"status\": \"ACTIVE\",\n            \"isOperational\": true,\n            \"lastInspection\": null,\n            \"createdById\": \"ccae5ce9-b485-42a2-9c80-7c72b50d64f2\",\n            \"createdAt\": \"2026-04-10T04:49:57.639Z\",\n            \"updatedAt\": \"2026-04-10T04:49:57.639Z\",\n            \"sections\": []\n        },\n        {\n            \"id\": \"b041fa94-76d6-41ea-844c-4174fcaa3a4f\",\n            \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\n            \"levelNumber\": 1,\n            \"uniqueCode\": \"LEVEL-1\",\n            \"name\": \"Ground Floor\",\n            \"description\": \"Main entrance level\",\n            \"accessType\": \"PUBLIC\",\n            \"hasElevator\": true,\n            \"hasEscalator\": true,\n            \"hasRestrooms\": true,\n            \"hasParking\": false,\n            \"totalSections\": 0,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"wheelchairAccess\": true,\n            \"emergencyExits\": 3,\n            \"status\": \"ACTIVE\",\n            \"isOperational\": true,\n            \"lastInspection\": null,\n            \"createdById\": \"b7263200-ff0d-4de5-a32b-29d72e993e89\",\n            \"createdAt\": \"2026-04-23T14:20:03.843Z\",\n            \"updatedAt\": \"2026-04-23T14:20:03.843Z\",\n            \"sections\": []\n        }\n    ]\n}"
+                }
+              ]
+            },
+            {
+              "name": "Update market level",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"name\": \"Updated Ground Floor\",\r\n  \"description\": \"Renovated main level\",\r\n  \"hasParking\": true,\r\n  \"emergencyExits\": 4\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/marketLevels/b041fa94-76d6-41ea-844c-4174fcaa3a4f",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketLevels",
+                    "b041fa94-76d6-41ea-844c-4174fcaa3a4f"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "Update market level",
+                  "originalRequest": {
+                    "method": "PUT",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"name\": \"Updated Ground Floor\",\r\n  \"description\": \"Renovated main level\",\r\n  \"hasParking\": true,\r\n  \"emergencyExits\": 4\r\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/api/marketLevels/b041fa94-76d6-41ea-844c-4174fcaa3a4f",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "marketLevels",
+                        "b041fa94-76d6-41ea-844c-4174fcaa3a4f"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "678"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"2a6-iM8TMKrz6X4jNmrLiKIKSGQQVEM\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Thu, 23 Apr 2026 14:26:19 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"All market level is updated successfully\",\n    \"data\": {\n        \"id\": \"b041fa94-76d6-41ea-844c-4174fcaa3a4f\",\n        \"marketId\": \"6cac3722-3fe5-49bc-bf8e-15ddc950b732\",\n        \"levelNumber\": 1,\n        \"uniqueCode\": \"LEVEL-1\",\n        \"name\": \"Updated Ground Floor\",\n        \"description\": \"Renovated main level\",\n        \"accessType\": \"PUBLIC\",\n        \"hasElevator\": true,\n        \"hasEscalator\": true,\n        \"hasRestrooms\": true,\n        \"hasParking\": true,\n        \"totalSections\": 0,\n        \"totalShops\": 0,\n        \"totalStalls\": 0,\n        \"wheelchairAccess\": true,\n        \"emergencyExits\": 4,\n        \"status\": \"ACTIVE\",\n        \"isOperational\": true,\n        \"lastInspection\": null,\n        \"createdById\": \"b7263200-ff0d-4de5-a32b-29d72e993e89\",\n        \"createdAt\": \"2026-04-23T14:20:03.843Z\",\n        \"updatedAt\": \"2026-04-23T14:26:18.767Z\"\n    }\n}"
+                }
+              ]
+            },
+            {
+              "name": "Delete market level",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "response": [
+                {
+                  "name": "New Request",
+                  "originalRequest": {
+                    "method": "DELETE",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\r\n  \"name\": \"Updated Ground Floor\",\r\n  \"description\": \"Renovated main level\",\r\n  \"hasParking\": true,\r\n  \"emergencyExits\": 4\r\n}"
+                    },
+                    "url": {
+                      "raw": "{{baseURL}}/api/marketLevels/b041fa94-76d6-41ea-844c-4174fcaa3a4f",
+                      "host": [
+                        "{{baseURL}}"
+                      ],
+                      "path": [
+                        "api",
+                        "marketLevels",
+                        "b041fa94-76d6-41ea-844c-4174fcaa3a4f"
+                      ]
+                    }
+                  },
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "Text",
+                  "header": [
+                    {
+                      "key": "X-Powered-By",
+                      "value": "Express"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Origin",
+                      "value": "http://localhost:5173"
+                    },
+                    {
+                      "key": "Vary",
+                      "value": "Origin"
+                    },
+                    {
+                      "key": "Access-Control-Allow-Credentials",
+                      "value": "true"
+                    },
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json; charset=utf-8"
+                    },
+                    {
+                      "key": "Content-Length",
+                      "value": "94"
+                    },
+                    {
+                      "key": "ETag",
+                      "value": "W/\"5e-pxDUo7wPh6o8OVlXuzDlUj/D7h0\""
+                    },
+                    {
+                      "key": "Date",
+                      "value": "Thu, 23 Apr 2026 14:27:21 GMT"
+                    },
+                    {
+                      "key": "Connection",
+                      "value": "keep-alive"
+                    },
+                    {
+                      "key": "Keep-Alive",
+                      "value": "timeout=5"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Market level is deleted successfully\",\n    \"data\": null\n}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "get market list",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwMTgzODMsImV4cCI6MTc3NTA1NDM4M30.mOE2O3E9HX_kIwWWMFmG6tslH53RkonON7lWl9KvKHk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/markets",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "markets"
+              ],
+              "query": [
+                {
+                  "key": "cityId",
+                  "value": "c1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "Nakasero Market",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/markets",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "markets"
+                  ],
+                  "query": [
+                    {
+                      "key": "cityId",
+                      "value": "c1",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "page",
+                      "value": "2",
+                      "disabled": true
+                    },
+                    {
+                      "key": "limit",
+                      "value": "1",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "Nakasero Market",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "3805"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"edd-LE5+o0mn9dqz/NJPPxrrgl/fy64\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 09 Apr 2026 06:19:13 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Market list is fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"ca583661-df10-4644-8f87-df13e6b0d9bc\",\n            \"cityId\": \"bf868e65-0489-4cf2-9780-c498922762ab\",\n            \"name\": \"Kabale Central Market\",\n            \"uniqueCode\": \"KABALE_CENTRAL_001\",\n            \"displayName\": \"Kabale Central Market FTS\",\n            \"description\": \"Central market in Kabale District - Food, Textile, and Service vendors\",\n            \"address\": \"Kabale Town, Kabale District, Uganda\",\n            \"marketType\": \"PERMANENT\",\n            \"categories\": [\n                \"Food Stuff\",\n                \"Textile\",\n                \"Retail\",\n                \"Service\"\n            ],\n            \"totalLevels\": 1,\n            \"totalSections\": 6,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"occupiedShops\": 0,\n            \"occupiedStalls\": 0,\n            \"maxCapacity\": null,\n            \"openingTime\": \"06:00\",\n            \"closingTime\": \"20:00\",\n            \"operatingDays\": [\n                \"MONDAY\",\n                \"TUESDAY\",\n                \"WEDNESDAY\",\n                \"THURSDAY\",\n                \"FRIDAY\",\n                \"SATURDAY\"\n            ],\n            \"is24Hours\": false,\n            \"holidaySchedule\": null,\n            \"contactPhone\": null,\n            \"contactEmail\": null,\n            \"website\": null,\n            \"managerName\": null,\n            \"averageRent\": null,\n            \"securityDeposit\": null,\n            \"monthlyMaintenanceFee\": null,\n            \"status\": \"ACTIVE\",\n            \"establishmentDate\": null,\n            \"lastRenovation\": null,\n            \"notes\": null,\n            \"createdByAdminId\": null,\n            \"createdAt\": \"2026-04-08T05:47:33.444Z\",\n            \"updatedAt\": \"2026-04-08T05:47:33.444Z\"\n        },\n        {\n            \"id\": \"m2\",\n            \"cityId\": \"c1\",\n            \"name\": \"Owino Market\",\n            \"uniqueCode\": \"OWI-001\",\n            \"displayName\": null,\n            \"description\": null,\n            \"address\": \"Downtown Kampala\",\n            \"marketType\": \"PERMANENT\",\n            \"categories\": [],\n            \"totalLevels\": 1,\n            \"totalSections\": 0,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"occupiedShops\": 0,\n            \"occupiedStalls\": 0,\n            \"maxCapacity\": null,\n            \"openingTime\": \"06:00\",\n            \"closingTime\": \"20:00\",\n            \"operatingDays\": [\n                \"MONDAY\",\n                \"TUESDAY\",\n                \"WEDNESDAY\",\n                \"THURSDAY\",\n                \"FRIDAY\",\n                \"SATURDAY\"\n            ],\n            \"is24Hours\": false,\n            \"holidaySchedule\": null,\n            \"contactPhone\": null,\n            \"contactEmail\": null,\n            \"website\": null,\n            \"managerName\": null,\n            \"averageRent\": null,\n            \"securityDeposit\": null,\n            \"monthlyMaintenanceFee\": null,\n            \"status\": \"ACTIVE\",\n            \"establishmentDate\": null,\n            \"lastRenovation\": null,\n            \"notes\": null,\n            \"createdByAdminId\": null,\n            \"createdAt\": \"2026-04-06T05:13:52.786Z\",\n            \"updatedAt\": \"2026-04-06T05:13:52.786Z\"\n        },\n        {\n            \"id\": \"m1\",\n            \"cityId\": \"c1\",\n            \"name\": \"Nakasero Market\",\n            \"uniqueCode\": \"NAK-001\",\n            \"displayName\": null,\n            \"description\": null,\n            \"address\": \"Nakasero, Kampala\",\n            \"marketType\": \"PERMANENT\",\n            \"categories\": [],\n            \"totalLevels\": 1,\n            \"totalSections\": 0,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"occupiedShops\": 0,\n            \"occupiedStalls\": 0,\n            \"maxCapacity\": null,\n            \"openingTime\": \"06:00\",\n            \"closingTime\": \"20:00\",\n            \"operatingDays\": [\n                \"MONDAY\",\n                \"TUESDAY\",\n                \"WEDNESDAY\",\n                \"THURSDAY\",\n                \"FRIDAY\",\n                \"SATURDAY\"\n            ],\n            \"is24Hours\": false,\n            \"holidaySchedule\": null,\n            \"contactPhone\": null,\n            \"contactEmail\": null,\n            \"website\": null,\n            \"managerName\": null,\n            \"averageRent\": null,\n            \"securityDeposit\": null,\n            \"monthlyMaintenanceFee\": null,\n            \"status\": \"ACTIVE\",\n            \"establishmentDate\": null,\n            \"lastRenovation\": null,\n            \"notes\": null,\n            \"createdByAdminId\": null,\n            \"createdAt\": \"2026-04-06T05:13:50.497Z\",\n            \"updatedAt\": \"2026-04-06T05:13:50.497Z\"\n        },\n        {\n            \"id\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n            \"cityId\": \"f7e26441-2f27-4ace-ab6c-5efffc3c9621\",\n            \"name\": \"Kabale Central Market\",\n            \"uniqueCode\": \"MKT-KBL-001\",\n            \"displayName\": \"Kabale Central Market\",\n            \"description\": null,\n            \"address\": \"Market Road, Kabale Municipality\",\n            \"marketType\": \"PERMANENT\",\n            \"categories\": [\n                \"FOOD\",\n                \"CLOTHING\",\n                \"RETAIL\",\n                \"SERVICE\",\n                \"GENERAL\"\n            ],\n            \"totalLevels\": 1,\n            \"totalSections\": 0,\n            \"totalShops\": 0,\n            \"totalStalls\": 0,\n            \"occupiedShops\": 0,\n            \"occupiedStalls\": 0,\n            \"maxCapacity\": null,\n            \"openingTime\": \"07:00\",\n            \"closingTime\": \"19:00\",\n            \"operatingDays\": [\n                \"MONDAY\",\n                \"TUESDAY\",\n                \"WEDNESDAY\",\n                \"THURSDAY\",\n                \"FRIDAY\",\n                \"SATURDAY\"\n            ],\n            \"is24Hours\": false,\n            \"holidaySchedule\": null,\n            \"contactPhone\": \"+256700000099\",\n            \"contactEmail\": null,\n            \"website\": null,\n            \"managerName\": null,\n            \"averageRent\": null,\n            \"securityDeposit\": null,\n            \"monthlyMaintenanceFee\": null,\n            \"status\": \"ACTIVE\",\n            \"establishmentDate\": null,\n            \"lastRenovation\": null,\n            \"notes\": null,\n            \"createdByAdminId\": \"bfcba003-2ef7-42a1-9e4d-9ba94540db5e\",\n            \"createdAt\": \"2026-04-06T05:07:08.301Z\",\n            \"updatedAt\": \"2026-04-06T05:07:08.301Z\"\n        }\n    ],\n    \"pagination\": {\n        \"total\": 4,\n        \"page\": 1,\n        \"limit\": 10,\n        \"totalPages\": 1,\n        \"hasNextPage\": false,\n        \"hasPreviousPage\": false\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "get market name list",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMTQ2NCwiZXhwIjoxNzc1ODEyMzY0fQ.2Ll_-xQliIquQqaeYmCmVYYXX9XPz8ylUPRrXnCamOc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/markets/market-name-list",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "markets",
+                "market-name-list"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get market details by market id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMjk0MywiZXhwIjoxNzc1ODEzODQzfQ.qtqt7etAY2ixacQre5ROHVpz2ZStJXa08VoY5YS5bk0",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/markets/{{market_id}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "markets",
+                "{{market_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/markets/{{market_id}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "markets",
+                    "{{market_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "1088"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"440-FFNYsKvOAjmWh2HYSUVdMfwu1Cg\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 10 Apr 2026 09:25:46 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"Market details is fetched successfully\",\n    \"data\": {\n        \"id\": \"e803c8a6-1931-4055-a1f1-0479987eb969\",\n        \"cityId\": \"d6188fc0-1541-4a07-8b57-21cd47d6157c\",\n        \"name\": \"Kabale Central Market\",\n        \"uniqueCode\": \"MKT-KBL-001\",\n        \"displayName\": \"Kabale Central Market\",\n        \"description\": null,\n        \"address\": \"Market Road, Kabale Municipality\",\n        \"marketType\": \"PERMANENT\",\n        \"categories\": [\n            \"FOOD\",\n            \"CLOTHING\",\n            \"RETAIL\",\n            \"SERVICE\",\n            \"GENERAL\"\n        ],\n        \"totalLevels\": 1,\n        \"totalSections\": 0,\n        \"totalShops\": 0,\n        \"totalStalls\": 0,\n        \"occupiedShops\": 0,\n        \"occupiedStalls\": 0,\n        \"maxCapacity\": null,\n        \"openingTime\": \"07:00\",\n        \"closingTime\": \"19:00\",\n        \"operatingDays\": [\n            \"MONDAY\",\n            \"TUESDAY\",\n            \"WEDNESDAY\",\n            \"THURSDAY\",\n            \"FRIDAY\",\n            \"SATURDAY\"\n        ],\n        \"is24Hours\": false,\n        \"holidaySchedule\": null,\n        \"contactPhone\": \"+256708000099\",\n        \"contactEmail\": null,\n        \"website\": null,\n        \"managerName\": null,\n        \"averageRent\": null,\n        \"securityDeposit\": null,\n        \"monthlyMaintenanceFee\": null,\n        \"status\": \"ACTIVE\",\n        \"establishmentDate\": null,\n        \"lastRenovation\": null,\n        \"notes\": null,\n        \"createdByAdminId\": \"baaa340a-dd88-4b70-88df-8a2158c8df11\",\n        \"createdAt\": \"2026-04-10T06:59:57.685Z\",\n        \"updatedAt\": \"2026-04-10T06:59:57.685Z\"\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete market by market Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2MzExNywiZXhwIjoxNzc2NzY0MDE3fQ.n1QiESatIfHsAFYlP-YW4ZfkUOJj7LaBGL1eeKoWG9g",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/markets/460b206a-006e-4d77-b5e3-53d8ed42574c",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "markets",
+                "460b206a-006e-4d77-b5e3-53d8ed42574c"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Delete market by market Id",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/markets/460b206a-006e-4d77-b5e3-53d8ed42574c",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "markets",
+                    "460b206a-006e-4d77-b5e3-53d8ed42574c"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "88"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"58-+BKmQA0dtPsSoYq1bRoTh8zNV50\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 21 Apr 2026 09:30:52 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Market is deleted successfully\",\n    \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "shops",
+      "item": [
+        {
+          "name": "get shop list",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMjAxNywiZXhwIjoxNzc1ODEyOTE3fQ.SOmS-qDEJfPP52yFvoxvCXIBH9nL6CRE1JBgttBjrjk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/shops?marketId=e803c8a6-1931-4055-a1f1-0479987eb969",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "shops"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "MONDAY FREDERICK",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "marketId",
+                  "value": "e803c8a6-1931-4055-a1f1-0479987eb969",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "get shop list",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/shops?limit=1",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "MONDAY FREDERICK",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "limit",
+                      "value": "1",
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "1610"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"64a-0pS5iBt15rwsNUAEMvBI4plPHH4\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 01 Apr 2026 11:31:36 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Shop list is fetced successfully\",\n    \"data\": [\n        {\n            \"id\": \"9a1bd9c2-77d9-4d32-8ded-95ef50350b14\",\n            \"marketId\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n            \"levelId\": \"c8e83c05-9e81-4682-a7cc-1be9af87c00e\",\n            \"sectionId\": \"b973ac69-ea80-46ac-af11-9f880029be34\",\n            \"memberId\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\",\n            \"uniqueCode\": \"MKT-KBL-001-0055\",\n            \"shopNumber\": \"AX-55G\",\n            \"displayName\": null,\n            \"shopName\": \"MONDAY FREDERICK\",\n            \"shopType\": \"FOOD\",\n            \"subType\": null,\n            \"categoryTags\": [\n                \"FOOD\"\n            ],\n            \"locationDescription\": null,\n            \"accessPoints\": [],\n            \"hasElectricity\": true,\n            \"hasWaterSupply\": true,\n            \"hasStorage\": false,\n            \"hasAirConditioning\": false,\n            \"hasDisplayWindow\": true,\n            \"hasSecurityShutter\": true,\n            \"electricityMeterNumber\": null,\n            \"waterMeterNumber\": null,\n            \"internetConnection\": false,\n            \"monthlyRent\": \"150000\",\n            \"securityDeposit\": \"300000\",\n            \"maintenanceFee\": null,\n            \"electricityRate\": null,\n            \"waterRate\": null,\n            \"contractStartDate\": \"2024-01-01T00:00:00.000Z\",\n            \"contractEndDate\": \"2025-12-31T00:00:00.000Z\",\n            \"paymentDay\": 1,\n            \"gracePeriodDays\": 5,\n            \"status\": \"ACTIVE\",\n            \"occupationStatus\": \"OCCUPIED\",\n            \"lastRenovation\": null,\n            \"inspectionDueDate\": null,\n            \"inventoryValue\": null,\n            \"createdById\": \"008a2c16-021a-43c2-a029-0a5157b50af3\",\n            \"marketMasterId\": \"82f219b9-dcce-451f-82f1-5e22da8f7bde\",\n            \"createdAt\": \"2026-03-30T17:04:03.181Z\",\n            \"updatedAt\": \"2026-03-30T17:04:03.181Z\",\n            \"market\": {\n                \"id\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n                \"name\": \"Kabale Central Market\",\n                \"address\": \"Market Road, Kabale Municipality\",\n                \"status\": \"ACTIVE\"\n            },\n            \"member\": {\n                \"id\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\"\n            }\n        }\n    ],\n    \"pagination\": {\n        \"total\": 10,\n        \"page\": 1,\n        \"limit\": 1,\n        \"totalPages\": 10,\n        \"hasNextPage\": true,\n        \"hasPreviousPage\": false\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "get shop  by shop id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwNjEwMzEsImV4cCI6MTc3NTA5NzAzMX0.Em7PtkvK4wzLMwbpVqt0CR9WbmfFng4E7u4aGvUO3a4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/shops/{{shop_id}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "shops",
+                "{{shop_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "get shop  by shop id",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/shops/{{shop_id}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops",
+                    "{{shop_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "2643"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"a53-bRfkXuONVIwmMePULTFymTAIyYM\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 01 Apr 2026 17:00:13 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Shop details fetched successfully\",\n    \"data\": {\n        \"id\": \"9a1bd9c2-77d9-4d32-8ded-95ef50350b14\",\n        \"marketId\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n        \"levelId\": \"c8e83c05-9e81-4682-a7cc-1be9af87c00e\",\n        \"sectionId\": \"b973ac69-ea80-46ac-af11-9f880029be34\",\n        \"memberId\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\",\n        \"uniqueCode\": \"MKT-KBL-001-0055\",\n        \"shopNumber\": \"AX-55G\",\n        \"displayName\": \"Monday Frederick Food Shop\",\n        \"shopName\": \"MONDAY FREDERICK - UPDATED\",\n        \"shopType\": \"FOOD\",\n        \"subType\": \"Fast Food\",\n        \"categoryTags\": [\n            \"FOOD\",\n            \"RESTAURANT\"\n        ],\n        \"locationDescription\": \"Ground Floor, Market East Wing\",\n        \"accessPoints\": [\n            \"Main Entrance\",\n            \"Side Door\"\n        ],\n        \"hasElectricity\": true,\n        \"hasWaterSupply\": true,\n        \"hasStorage\": true,\n        \"hasAirConditioning\": true,\n        \"hasDisplayWindow\": true,\n        \"hasSecurityShutter\": true,\n        \"electricityMeterNumber\": \"EL-KBL-001\",\n        \"waterMeterNumber\": \"WR-KBL-001\",\n        \"internetConnection\": true,\n        \"monthlyRent\": \"175000\",\n        \"securityDeposit\": \"350000\",\n        \"maintenanceFee\": \"5000\",\n        \"electricityRate\": \"2500\",\n        \"waterRate\": \"1500\",\n        \"contractStartDate\": \"2024-01-01T00:00:00.000Z\",\n        \"contractEndDate\": \"2025-12-31T00:00:00.000Z\",\n        \"paymentDay\": 5,\n        \"gracePeriodDays\": 7,\n        \"status\": \"ACTIVE\",\n        \"occupationStatus\": \"OCCUPIED\",\n        \"lastRenovation\": \"2026-03-15T00:00:00.000Z\",\n        \"inspectionDueDate\": \"2026-06-01T00:00:00.000Z\",\n        \"inventoryValue\": \"500000\",\n        \"createdById\": \"008a2c16-021a-43c2-a029-0a5157b50af3\",\n        \"marketMasterId\": \"82f219b9-dcce-451f-82f1-5e22da8f7bde\",\n        \"createdAt\": \"2026-03-30T17:04:03.181Z\",\n        \"updatedAt\": \"2026-04-01T16:58:55.472Z\",\n        \"market\": {\n            \"id\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n            \"name\": \"Kabale Central Market\",\n            \"address\": \"Market Road, Kabale Municipality\",\n            \"status\": \"ACTIVE\"\n        },\n        \"member\": {\n            \"id\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\",\n            \"stakeholderId\": \"47e69817-88e0-482c-808f-735d9359048e\",\n            \"membershipNumber\": \"MEM-KBL-0055\",\n            \"membershipType\": \"REGULAR\",\n            \"membershipSince\": \"2026-03-30T17:03:46.517Z\",\n            \"membershipExpiry\": null,\n            \"businessName\": \"MONDAY FREDERICK\",\n            \"businessType\": \"Cereal Produce\",\n            \"registrationNumber\": \"REG-KBL-000055\",\n            \"taxIdNumber\": \"CM5800910016PC\",\n            \"tradeLicenseNumber\": \"TL-KBL-AX-55G\",\n            \"yearsInBusiness\": null,\n            \"stakeholder\": {\n                \"id\": \"47e69817-88e0-482c-808f-735d9359048e\",\n                \"userId\": \"4c8540f4-8016-415a-896f-b5a6b9aa8427\",\n                \"stakeholderType\": \"MEMBER\",\n                \"kycStatus\": \"VERIFIED\",\n                \"kycSubmittedAt\": null,\n                \"kycVerifiedAt\": \"2026-03-30T17:03:46.514Z\",\n                \"kycVerifiedByAdminId\": null,\n                \"kycDocuments\": null,\n                \"bankAccountDetails\": null,\n                \"taxComplianceStatus\": \"COMPLIANT\",\n                \"businessRating\": 5,\n                \"notes\": null,\n                \"createdAt\": \"2026-03-30T17:03:46.517Z\",\n                \"updatedAt\": \"2026-03-30T17:03:46.517Z\",\n                \"user\": {\n                    \"id\": \"4c8540f4-8016-415a-896f-b5a6b9aa8427\",\n                    \"email\": \"monday.frederick.55@kabalemarket.ug\",\n                    \"phone\": \"+256784937901\"\n                }\n            }\n        }\n    },\n    \"pagination\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "update shop by shop id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwNjEwMzEsImV4cCI6MTc3NTA5NzAzMX0.Em7PtkvK4wzLMwbpVqt0CR9WbmfFng4E7u4aGvUO3a4",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"shopName\": \"MONDAY FREDERICK - UPDATED\",\r\n  \"displayName\": \"Monday Frederick Food Shop\",\r\n  \"shopType\": \"FOOD\",\r\n  \"subType\": \"Fast Food\",\r\n  \"categoryTags\": [\"FOOD\", \"RESTAURANT\"],\r\n  \"locationDescription\": \"Ground Floor, Market East Wing\",\r\n  \"accessPoints\": [\"Main Entrance\", \"Side Door\"],\r\n  \"monthlyRent\": \"175000\",\r\n  \"securityDeposit\": \"350000\",\r\n  \"maintenanceFee\": \"5000\",\r\n  \"electricityRate\": \"2500\",\r\n  \"waterRate\": \"1500\",\r\n  \"internetConnection\": true,\r\n  \"hasElectricity\": true,\r\n  \"hasWaterSupply\": true,\r\n  \"hasStorage\": true,\r\n  \"hasAirConditioning\": true,\r\n  \"hasDisplayWindow\": true,\r\n  \"hasSecurityShutter\": true,\r\n  \"electricityMeterNumber\": \"EL-KBL-001\",\r\n  \"waterMeterNumber\": \"WR-KBL-001\",\r\n  \"status\": \"ACTIVE\",\r\n  \"occupationStatus\": \"OCCUPIED\",\r\n  \"paymentDay\": 5,\r\n  \"gracePeriodDays\": 7,\r\n  \"lastRenovation\": \"2026-03-15T00:00:00.000Z\",\r\n  \"inspectionDueDate\": \"2026-06-01T00:00:00.000Z\",\r\n  \"inventoryValue\": \"500000\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/shops/{{shop_id}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "shops",
+                "{{shop_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "update shop by shop id",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"shopName\": \"MONDAY FREDERICK - UPDATED\",\r\n  \"displayName\": \"Monday Frederick Food Shop\",\r\n  \"shopType\": \"FOOD\",\r\n  \"subType\": \"Fast Food\",\r\n  \"categoryTags\": [\"FOOD\", \"RESTAURANT\"],\r\n  \"locationDescription\": \"Ground Floor, Market East Wing\",\r\n  \"accessPoints\": [\"Main Entrance\", \"Side Door\"],\r\n  \"monthlyRent\": \"175000\",\r\n  \"securityDeposit\": \"350000\",\r\n  \"maintenanceFee\": \"5000\",\r\n  \"electricityRate\": \"2500\",\r\n  \"waterRate\": \"1500\",\r\n  \"internetConnection\": true,\r\n  \"hasElectricity\": true,\r\n  \"hasWaterSupply\": true,\r\n  \"hasStorage\": true,\r\n  \"hasAirConditioning\": true,\r\n  \"hasDisplayWindow\": true,\r\n  \"hasSecurityShutter\": true,\r\n  \"electricityMeterNumber\": \"EL-KBL-001\",\r\n  \"waterMeterNumber\": \"WR-KBL-001\",\r\n  \"status\": \"ACTIVE\",\r\n  \"occupationStatus\": \"OCCUPIED\",\r\n  \"paymentDay\": 5,\r\n  \"gracePeriodDays\": 7,\r\n  \"lastRenovation\": \"2026-03-15T00:00:00.000Z\",\r\n  \"inspectionDueDate\": \"2026-06-01T00:00:00.000Z\",\r\n  \"inventoryValue\": \"500000\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/shops/{{shop_id}}",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops",
+                    "{{shop_id}}"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "2635"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"a4b-7QO8fJZ2YbRXDlCcZE+vCXEqA3Q\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 01 Apr 2026 16:58:58 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Shop updated successfully\",\n    \"data\": {\n        \"id\": \"9a1bd9c2-77d9-4d32-8ded-95ef50350b14\",\n        \"marketId\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n        \"levelId\": \"c8e83c05-9e81-4682-a7cc-1be9af87c00e\",\n        \"sectionId\": \"b973ac69-ea80-46ac-af11-9f880029be34\",\n        \"memberId\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\",\n        \"uniqueCode\": \"MKT-KBL-001-0055\",\n        \"shopNumber\": \"AX-55G\",\n        \"displayName\": \"Monday Frederick Food Shop\",\n        \"shopName\": \"MONDAY FREDERICK - UPDATED\",\n        \"shopType\": \"FOOD\",\n        \"subType\": \"Fast Food\",\n        \"categoryTags\": [\n            \"FOOD\",\n            \"RESTAURANT\"\n        ],\n        \"locationDescription\": \"Ground Floor, Market East Wing\",\n        \"accessPoints\": [\n            \"Main Entrance\",\n            \"Side Door\"\n        ],\n        \"hasElectricity\": true,\n        \"hasWaterSupply\": true,\n        \"hasStorage\": true,\n        \"hasAirConditioning\": true,\n        \"hasDisplayWindow\": true,\n        \"hasSecurityShutter\": true,\n        \"electricityMeterNumber\": \"EL-KBL-001\",\n        \"waterMeterNumber\": \"WR-KBL-001\",\n        \"internetConnection\": true,\n        \"monthlyRent\": \"175000\",\n        \"securityDeposit\": \"350000\",\n        \"maintenanceFee\": \"5000\",\n        \"electricityRate\": \"2500\",\n        \"waterRate\": \"1500\",\n        \"contractStartDate\": \"2024-01-01T00:00:00.000Z\",\n        \"contractEndDate\": \"2025-12-31T00:00:00.000Z\",\n        \"paymentDay\": 5,\n        \"gracePeriodDays\": 7,\n        \"status\": \"ACTIVE\",\n        \"occupationStatus\": \"OCCUPIED\",\n        \"lastRenovation\": \"2026-03-15T00:00:00.000Z\",\n        \"inspectionDueDate\": \"2026-06-01T00:00:00.000Z\",\n        \"inventoryValue\": \"500000\",\n        \"createdById\": \"008a2c16-021a-43c2-a029-0a5157b50af3\",\n        \"marketMasterId\": \"82f219b9-dcce-451f-82f1-5e22da8f7bde\",\n        \"createdAt\": \"2026-03-30T17:04:03.181Z\",\n        \"updatedAt\": \"2026-04-01T16:58:55.472Z\",\n        \"market\": {\n            \"id\": \"17bc6f6f-35cb-44a9-9c78-54c049c2fa29\",\n            \"name\": \"Kabale Central Market\",\n            \"address\": \"Market Road, Kabale Municipality\",\n            \"status\": \"ACTIVE\"\n        },\n        \"member\": {\n            \"id\": \"403fd9e6-c387-4b00-8da8-2cbbe384a5c9\",\n            \"stakeholderId\": \"47e69817-88e0-482c-808f-735d9359048e\",\n            \"membershipNumber\": \"MEM-KBL-0055\",\n            \"membershipType\": \"REGULAR\",\n            \"membershipSince\": \"2026-03-30T17:03:46.517Z\",\n            \"membershipExpiry\": null,\n            \"businessName\": \"MONDAY FREDERICK\",\n            \"businessType\": \"Cereal Produce\",\n            \"registrationNumber\": \"REG-KBL-000055\",\n            \"taxIdNumber\": \"CM5800910016PC\",\n            \"tradeLicenseNumber\": \"TL-KBL-AX-55G\",\n            \"yearsInBusiness\": null,\n            \"stakeholder\": {\n                \"id\": \"47e69817-88e0-482c-808f-735d9359048e\",\n                \"userId\": \"4c8540f4-8016-415a-896f-b5a6b9aa8427\",\n                \"stakeholderType\": \"MEMBER\",\n                \"kycStatus\": \"VERIFIED\",\n                \"kycSubmittedAt\": null,\n                \"kycVerifiedAt\": \"2026-03-30T17:03:46.514Z\",\n                \"kycVerifiedByAdminId\": null,\n                \"kycDocuments\": null,\n                \"bankAccountDetails\": null,\n                \"taxComplianceStatus\": \"COMPLIANT\",\n                \"businessRating\": 5,\n                \"notes\": null,\n                \"createdAt\": \"2026-03-30T17:03:46.517Z\",\n                \"updatedAt\": \"2026-03-30T17:03:46.517Z\",\n                \"user\": {\n                    \"id\": \"4c8540f4-8016-415a-896f-b5a6b9aa8427\",\n                    \"email\": \"monday.frederick.55@kabalemarket.ug\",\n                    \"phone\": \"+256784937901\"\n                }\n            }\n        }\n    },\n    \"pagination\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "create shops",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk0Nzc2NiwiZXhwIjoxNzc2OTQ4NjY2fQ.JbuVLCyuvplWdgWSUrxtuKQCC7BvFIFPA4MUvI6hZKU",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"shopName\": \"Byaruhanga General Store\",\r\n  \"shopNumber\": \"SHOP-999\",\r\n  \"memberId\": \"1\",\r\n  \"displayName\": \"Byaruhanga's Store\",\r\n  \"monthlyRent\": 150000,\r\n  \"securityDeposit\": 300000,\r\n  \"maintenanceFee\": 20000,\r\n  \"electricityRate\": 5000,\r\n  \"waterRate\": 3000,\r\n  \"contractStartDate\": \"2024-01-01T00:00:00.000Z\",\r\n  \"contractEndDate\": \"2025-12-31T00:00:00.000Z\",\r\n  \"paymentDay\": 1,\r\n  \"gracePeriodDays\": 5,\r\n  \"shopType\": \"RETAIL\",\r\n  \"categoryTags\": [\"RETAIL\", \"GENERAL\"],\r\n  \"subType\": \"General Merchandise\",\r\n  \"locationDescription\": \"Ground floor, near main entrance\",\r\n  \"levelId\": \"1\",\r\n  \"sectionId\": \"1\",\r\n  \"hasElectricity\": true,\r\n  \"hasWaterSupply\": true,\r\n  \"hasStorage\": true,\r\n  \"hasAirConditioning\": false,\r\n  \"hasDisplayWindow\": true,\r\n  \"hasSecurityShutter\": true,\r\n  \"internetConnection\": false,\r\n  \"notes\": \"Corner shop with good visibility\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/shops/markets/6cac3722-3fe5-49bc-bf8e-15ddc950b732/shops",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "shops",
+                "markets",
+                "6cac3722-3fe5-49bc-bf8e-15ddc950b732",
+                "shops"
+              ]
+            },
+            "description": "## Request Body\n\n| Field | Type | Required | Description | Example |\n| --- | --- | --- | --- | --- |\n| `shopName` | String | Yes | Official name of the shop | `Rahman Electronics` |\n| `shopNumber` | String | Yes | Unique shop/unit number within the market | `GF-A-101` |\n| `marketId` | String (UUID) | Yes | ID of the market where the shop is located | `6cac3722-3fe5-49bc-bf8e-15ddc950b732` |\n| `memberId` | String (UUID) | Yes | ID of the member who owns or occupies the shop | `b7263200-ff0d-4de5-a32b-29d72e993e89` |\n| `monthlyRent` | Number | Yes | Monthly rental amount | `25000` |\n| `contractStartDate` | String (ISO 8601) | Yes | Start date of the rental contract | `2026-05-01T00:00:00.000Z` |\n| `contractEndDate` | String (ISO 8601) | Yes | End date of the rental contract | `2027-04-30T23:59:59.999Z` |\n| `displayName` | String | No | Public or display name of the shop | `Rahman Electronics & Gadgets` |\n| `levelId` | String (UUID) | No | ID of the market level/floor | `3e6b6f91-7f3e-4b16-9d7a-c9c8b2f5d7a1` |\n| `sectionId` | String (UUID) | No | ID of the market section | `2d1f0c84-0e59-4f45-8f6d-18c39d4e2f12` |\n| `shopType` | String | No | Type of shop | `RETAIL` |\n| `categoryTags` | Array of Strings | No | Categories associated with the shop | `[\"mobile\", \"laptop\", \"accessories\"]` |\n| `subType` | String | No | More specific classification of the shop | `ELECTRONICS` |\n| `locationDescription` | String | No | Detailed location description within the market | `Ground Floor, Electronics Zone, near Main Entrance` |\n| `hasElectricity` | Boolean | No | Whether electricity is available | `true` |\n| `hasWaterSupply` | Boolean | No | Whether water supply is available | `false` |\n| `hasStorage` | Boolean | No | Whether storage space is available | `true` |\n| `hasAirConditioning` | Boolean | No | Whether air conditioning is available | `true` |\n| `hasDisplayWindow` | Boolean | No | Whether the shop has a display window | `true` |\n| `hasSecurityShutter` | Boolean | No | Whether the shop has a security shutter | `true` |\n| `internetConnection` | Boolean | No | Whether internet connection is available | `true` |\n| `securityDeposit` | Number | No | Security deposit amount | `50000` |\n| `maintenanceFee` | Number | No | Monthly maintenance fee | `2000` |\n| `electricityRate` | Number | No | Electricity billing rate | `12.5` |\n| `waterRate` | Number | No | Water billing rate | `5.0` |\n| `paymentDay` | Integer | No | Day of the month rent is due (1–31) | `5` |\n| `gracePeriodDays` | Integer | No | Number of grace days after due date | `7` |"
+          },
+          "response": [
+            {
+              "name": "create shops",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n  \"shopName\": \"Rahman Electronics\",\r\n  \"displayName\": \"Rahman Electronics & Gadgets\",\r\n  \"shopNumber\": \"GF-A-101\",\r\n  \"marketId\": \"5cd2b25f-9dc2-48b4-9df3-b06815abc8d3\",\r\n  \"memberId\": \"001202f7-fa49-48c3-b9fc-1d99a4381577\",\r\n  \"levelId\": \"2b255912-8d1b-4ff5-8ba4-3df7fede8b82\",\r\n  \"shopType\": \"RETAIL\",\r\n  \"subType\": \"ELECTRONICS\",\r\n  \"categoryTags\": [\r\n    \"mobile\",\r\n    \"laptop\",\r\n    \"accessories\"\r\n  ],\r\n\r\n  \"locationDescription\": \"Ground Floor, Electronics Zone, near Main Entrance\",\r\n\r\n  \"hasElectricity\": true,\r\n  \"hasWaterSupply\": false,\r\n  \"hasStorage\": true,\r\n  \"hasAirConditioning\": true,\r\n  \"hasDisplayWindow\": true,\r\n  \"hasSecurityShutter\": true,\r\n  \"internetConnection\": true,\r\n\r\n  \"monthlyRent\": 25000,\r\n  \"securityDeposit\": 50000,\r\n  \"maintenanceFee\": 2000,\r\n  \"electricityRate\": 12.5,\r\n  \"waterRate\": 5.0,\r\n\r\n  \"contractStartDate\": \"2026-05-01T00:00:00.000Z\",\r\n  \"contractEndDate\": \"2027-04-30T23:59:59.999Z\",\r\n  \"paymentDay\": 5,\r\n  \"gracePeriodDays\": 7\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/shops",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops"
+                  ]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "1738"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"6ca-U47nq6Pbnk0Fy500OsaMPUoxIiY\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Fri, 24 Apr 2026 02:55:20 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 201,\n    \"success\": true,\n    \"message\": \"Shop created successfully\",\n    \"data\": {\n        \"id\": \"f6775909-66cd-4f2b-a130-a207deff231a\",\n        \"marketId\": \"5cd2b25f-9dc2-48b4-9df3-b06815abc8d3\",\n        \"levelId\": \"2b255912-8d1b-4ff5-8ba4-3df7fede8b82\",\n        \"sectionId\": null,\n        \"memberId\": \"001202f7-fa49-48c3-b9fc-1d99a4381577\",\n        \"uniqueCode\": \"SHOP-5CD2B25F-GF-A-101\",\n        \"shopNumber\": \"GF-A-101\",\n        \"displayName\": \"Rahman Electronics & Gadgets\",\n        \"shopName\": \"Rahman Electronics\",\n        \"shopType\": \"RETAIL\",\n        \"subType\": \"ELECTRONICS\",\n        \"categoryTags\": [\n            \"mobile\",\n            \"laptop\",\n            \"accessories\"\n        ],\n        \"locationDescription\": \"Ground Floor, Electronics Zone, near Main Entrance\",\n        \"accessPoints\": [],\n        \"hasElectricity\": true,\n        \"hasWaterSupply\": false,\n        \"hasStorage\": true,\n        \"hasAirConditioning\": true,\n        \"hasDisplayWindow\": true,\n        \"hasSecurityShutter\": true,\n        \"electricityMeterNumber\": null,\n        \"waterMeterNumber\": null,\n        \"internetConnection\": true,\n        \"monthlyRent\": \"25000\",\n        \"securityDeposit\": \"50000\",\n        \"maintenanceFee\": \"2000\",\n        \"electricityRate\": \"12.5\",\n        \"waterRate\": \"5\",\n        \"contractStartDate\": \"2026-05-01T00:00:00.000Z\",\n        \"contractEndDate\": \"2027-04-30T23:59:59.999Z\",\n        \"paymentDay\": 5,\n        \"gracePeriodDays\": 7,\n        \"status\": \"ACTIVE\",\n        \"occupationStatus\": \"OCCUPIED\",\n        \"lastRenovation\": null,\n        \"inspectionDueDate\": null,\n        \"inventoryValue\": null,\n        \"createdById\": \"ccae5ce9-b485-42a2-9c80-7c72b50d64f2\",\n        \"marketMasterId\": null,\n        \"createdAt\": \"2026-04-24T02:55:13.420Z\",\n        \"updatedAt\": \"2026-04-24T02:55:13.420Z\",\n        \"market\": {\n            \"id\": \"5cd2b25f-9dc2-48b4-9df3-b06815abc8d3\",\n            \"name\": \"Kabale Central Market\"\n        },\n        \"member\": {\n            \"id\": \"001202f7-fa49-48c3-b9fc-1d99a4381577\",\n            \"membershipNumber\": \"MEM-KBL-0005\",\n            \"businessName\": \"Mugarura Ambrose\"\n        },\n        \"level\": {\n            \"id\": \"2b255912-8d1b-4ff5-8ba4-3df7fede8b82\",\n            \"name\": \"Main Level\"\n        },\n        \"section\": null,\n        \"createdBy\": {\n            \"id\": \"ccae5ce9-b485-42a2-9c80-7c72b50d64f2\",\n            \"email\": \"superadmin@marketmaster.com\"\n        }\n    }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete shop by Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk5OTI5MywiZXhwIjoxNzc3MDAwMTkzfQ.3cRPBaNh3CjqsXgEY6CY2IhWPe10wCyFytDwL_kDDl8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/shops/f6775909-66cd-4f2b-a130-a207deff231a",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "shops",
+                "f6775909-66cd-4f2b-a130-a207deff231a"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vendor",
+      "item": [
+        {
+          "name": "get all vendors",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTZhYTE4ZC1kMzYyLTQ1MmQtOGUwNy03NDNkZjFkZDZlYmUiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTcwNzYxNCwiZXhwIjoxNzc1NzA4NTE0fQ.A13vEaLtGk4tSE7vjHxT5hq6O8c3Tr6jWjvT39jhlLA",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/vendors",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "vendors"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/vendors",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "vendors"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "Server",
+                  "value": "nginx/1.18.0 (Ubuntu)"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 09 Apr 2026 04:29:31 GMT"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "10375"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://43.205.254.212"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"2887-rtANbtdcDTsuX947Au145OXSELo\""
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"\",\n    \"data\": [\n        {\n            \"id\": \"c63c44ff-193a-4cda-bf1e-90d4fb566da4\",\n            \"vendorCode\": \"VND-0497E47B\",\n            \"businessName\": \"Vamode General Store\",\n            \"businessType\": \"RETAIL\",\n            \"primaryMarketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n            \"stakeholder\": {\n                \"id\": \"745ce62e-3e36-4894-81ad-04e1e661ff8a\",\n                \"kycStatus\": \"NOT_SUBMITTED\",\n                \"user\": {\n                    \"id\": \"b4b202f2-fdd9-4fcf-940e-62b94db3dc32\",\n                    \"email\": \"vamode5227@fpxnet.com\",\n                    \"phone\": \"+25634234234\",\n                    \"status\": \"ACTIVE\",\n                    \"emailVerified\": true,\n                    \"profile\": {\n                        \"id\": \"deee833e-835c-4dfd-a8a9-905129496102\",\n                        \"userId\": \"b4b202f2-fdd9-4fcf-940e-62b94db3dc32\",\n                        \"title\": null,\n                        \"firstName\": \"Vamode\",\n                        \"middleName\": null,\n                        \"lastName\": \"Fpxnet\",\n                        \"displayName\": null,\n                        \"gender\": null,\n                        \"dateOfBirth\": null,\n                        \"age\": null,\n                        \"nationalId\": null,\n                        \"nationalIdType\": \"NIN\",\n                        \"passportNumber\": null,\n                        \"passportCountry\": null,\n                        \"taxIdNumber\": null,\n                        \"primaryPhone\": \"+25634234234\",\n                        \"secondaryPhone\": null,\n                        \"emergencyPhone\": null,\n                        \"emergencyContact\": null,\n                        \"primaryEmail\": \"vamode5227@fpxnet.com\",\n                        \"secondaryEmail\": null,\n                        \"residentialAddress\": null,\n                        \"permanentAddress\": null,\n                        \"city\": null,\n                        \"district\": null,\n                        \"country\": \"Uganda\",\n                        \"postalCode\": null,\n                        \"occupation\": null,\n                        \"companyName\": null,\n                        \"designation\": null,\n                        \"yearsOfExperience\": null,\n                        \"maritalStatus\": null,\n                        \"spouseName\": null,\n                        \"religion\": null,\n                        \"language\": [\n                            \"en\",\n                            \"sw\"\n                        ],\n                        \"profilePictureUrl\": null,\n                        \"signatureUrl\": null,\n                        \"preferredLanguage\": \"en\",\n                        \"timezone\": \"Africa/Kampala\",\n                        \"currency\": \"UGX\",\n                        \"notificationPreferences\": null,\n                        \"verificationLevel\": \"BASIC\",\n                        \"verifiedByAdminId\": null,\n                        \"verificationDate\": null,\n                        \"personalQRCode\": null,\n                        \"qrCodeExpiry\": null,\n                        \"bankName\": null,\n                        \"bankAccountNumber\": null,\n                        \"bankAccountName\": null,\n                        \"metadata\": null,\n                        \"version\": 1,\n                        \"createdAt\": \"2026-04-08T11:06:46.365Z\",\n                        \"updatedAt\": \"2026-04-08T11:06:46.365Z\",\n                        \"lastProfileUpdate\": null\n                    }\n                }\n            },\n            \"stalls\": [\n                {\n                    \"id\": \"7a844bcf-4f94-4b51-b499-92246cfd7a39\",\n                    \"shopId\": \"06eab307-691e-48a2-ad8a-1861f714ee0d\",\n                    \"vendorId\": \"c63c44ff-193a-4cda-bf1e-90d4fb566da4\",\n                    \"sectionId\": null,\n                    \"aisleId\": null,\n                    \"levelId\": null,\n                    \"uniqueCode\": \"STL-IKG0-3BF5\",\n                    \"stallNumber\": \"S-EDA3\",\n                    \"displayName\": \"Vamode Fpxnet's Shop\",\n                    \"stallType\": \"PERMANENT\",\n                    \"category\": \"Retail\",\n                    \"subCategories\": [],\n                    \"specialization\": null,\n                    \"hasDisplayCounter\": true,\n                    \"hasStorage\": false,\n                    \"hasLighting\": true,\n                    \"hasPowerOutlet\": true,\n                    \"hasCashRegister\": false,\n                    \"dailyRate\": \"0\",\n                    \"monthlyRate\": \"130000\",\n                    \"securityDeposit\": null,\n                    \"billingCycle\": \"DAILY\",\n                    \"contractStartDate\": \"2026-04-08T11:20:31.488Z\",\n                    \"contractEndDate\": \"2027-04-08T11:20:31.488Z\",\n                    \"agreementTerms\": null,\n                    \"openingTime\": null,\n                    \"closingTime\": null,\n                    \"operatingDays\": [\n                        \"MONDAY\",\n                        \"TUESDAY\",\n                        \"WEDNESDAY\",\n                        \"THURSDAY\",\n                        \"FRIDAY\",\n                        \"SATURDAY\"\n                    ],\n                    \"status\": \"ACTIVE\",\n                    \"operationalStatus\": \"OPERATIONAL\",\n                    \"lastStockCheck\": null,\n                    \"lastCleaning\": null,\n                    \"visitCount\": 0,\n                    \"qrCode\": null,\n                    \"createdById\": \"b4b202f2-fdd9-4fcf-940e-62b94db3dc32\",\n                    \"marketMasterId\": null,\n                    \"marketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                    \"createdAt\": \"2026-04-08T11:20:31.489Z\",\n                    \"updatedAt\": \"2026-04-08T11:20:31.489Z\",\n                    \"shop\": {\n                        \"id\": \"06eab307-691e-48a2-ad8a-1861f714ee0d\",\n                        \"marketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                        \"levelId\": \"05f548de-974d-4fd0-b6dc-3bc74995b6cf\",\n                        \"sectionId\": null,\n                        \"memberId\": \"9fdab905-466f-4aee-82b4-3b228e625587\",\n                        \"uniqueCode\": \"SHP-IIH5-29CA\",\n                        \"shopNumber\": \"SHOP-3768\",\n                        \"displayName\": null,\n                        \"shopName\": \"Vamode Fpxnet's Shop\",\n                        \"shopType\": \"RETAIL\",\n                        \"subType\": null,\n                        \"categoryTags\": [],\n                        \"locationDescription\": null,\n                        \"accessPoints\": [],\n                        \"hasElectricity\": true,\n                        \"hasWaterSupply\": true,\n                        \"hasStorage\": false,\n                        \"hasAirConditioning\": false,\n                        \"hasDisplayWindow\": true,\n                        \"hasSecurityShutter\": true,\n                        \"electricityMeterNumber\": null,\n                        \"waterMeterNumber\": null,\n                        \"internetConnection\": false,\n                        \"monthlyRent\": \"130000\",\n                        \"securityDeposit\": null,\n                        \"maintenanceFee\": \"0\",\n                        \"electricityRate\": null,\n                        \"waterRate\": null,\n                        \"contractStartDate\": \"2026-04-08T11:20:28.937Z\",\n                        \"contractEndDate\": \"2027-04-08T11:20:28.937Z\",\n                        \"paymentDay\": 1,\n                        \"gracePeriodDays\": 5,\n                        \"status\": \"ACTIVE\",\n                        \"occupationStatus\": \"OCCUPIED\",\n                        \"lastRenovation\": null,\n                        \"inspectionDueDate\": null,\n                        \"inventoryValue\": null,\n                        \"createdById\": \"b4b202f2-fdd9-4fcf-940e-62b94db3dc32\",\n                        \"marketMasterId\": null,\n                        \"createdAt\": \"2026-04-08T11:20:28.938Z\",\n                        \"updatedAt\": \"2026-04-08T11:20:28.938Z\"\n                    },\n                    \"market\": {\n                        \"id\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                        \"cityId\": \"f7e26441-2f27-4ace-ab6c-5efffc3c9621\",\n                        \"name\": \"Kabale Central Market\",\n                        \"uniqueCode\": \"MKT-KBL-001\",\n                        \"displayName\": \"Kabale Central Market\",\n                        \"description\": null,\n                        \"address\": \"Market Road, Kabale Municipality\",\n                        \"marketType\": \"PERMANENT\",\n                        \"categories\": [\n                            \"FOOD\",\n                            \"CLOTHING\",\n                            \"RETAIL\",\n                            \"SERVICE\",\n                            \"GENERAL\"\n                        ],\n                        \"totalLevels\": 1,\n                        \"totalSections\": 0,\n                        \"totalShops\": 0,\n                        \"totalStalls\": 0,\n                        \"occupiedShops\": 0,\n                        \"occupiedStalls\": 0,\n                        \"maxCapacity\": null,\n                        \"openingTime\": \"07:00\",\n                        \"closingTime\": \"19:00\",\n                        \"operatingDays\": [\n                            \"MONDAY\",\n                            \"TUESDAY\",\n                            \"WEDNESDAY\",\n                            \"THURSDAY\",\n                            \"FRIDAY\",\n                            \"SATURDAY\"\n                        ],\n                        \"is24Hours\": false,\n                        \"holidaySchedule\": null,\n                        \"contactPhone\": \"+256700000099\",\n                        \"contactEmail\": null,\n                        \"website\": null,\n                        \"managerName\": null,\n                        \"averageRent\": null,\n                        \"securityDeposit\": null,\n                        \"monthlyMaintenanceFee\": null,\n                        \"status\": \"ACTIVE\",\n                        \"establishmentDate\": null,\n                        \"lastRenovation\": null,\n                        \"notes\": null,\n                        \"createdByAdminId\": \"bfcba003-2ef7-42a1-9e4d-9ba94540db5e\",\n                        \"createdAt\": \"2026-04-06T05:07:08.301Z\",\n                        \"updatedAt\": \"2026-04-06T05:07:08.301Z\"\n                    }\n                }\n            ],\n            \"stats\": {\n                \"totalStalls\": 1,\n                \"activeStalls\": 1,\n                \"totalGateEntries\": 0\n            },\n            \"approvedBy\": null,\n            \"createdAt\": \"2026-04-08T11:06:48.000Z\",\n            \"updatedAt\": \"2026-04-08T11:06:48.000Z\"\n        },\n        {\n            \"id\": \"13790d18-9768-44fb-8685-fa2e171f7829\",\n            \"vendorCode\": \"VND-53C32D98\",\n            \"businessName\": \"Hixejof General Store\",\n            \"businessType\": \"RETAIL\",\n            \"primaryMarketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n            \"stakeholder\": {\n                \"id\": \"f1288b64-c4af-4581-ac79-491a89bd3083\",\n                \"kycStatus\": \"NOT_SUBMITTED\",\n                \"user\": {\n                    \"id\": \"f3f53ec4-02d0-498f-a4e8-766a1cd77641\",\n                    \"email\": \"hixejof220@fpxnet.com\",\n                    \"phone\": \"+2561212121212\",\n                    \"status\": \"ACTIVE\",\n                    \"emailVerified\": true,\n                    \"profile\": {\n                        \"id\": \"4e6a4a15-7989-4e39-a3f5-74b93044f5c0\",\n                        \"userId\": \"f3f53ec4-02d0-498f-a4e8-766a1cd77641\",\n                        \"title\": null,\n                        \"firstName\": \"Hixejof\",\n                        \"middleName\": null,\n                        \"lastName\": \"Fpxnet\",\n                        \"displayName\": null,\n                        \"gender\": null,\n                        \"dateOfBirth\": null,\n                        \"age\": null,\n                        \"nationalId\": null,\n                        \"nationalIdType\": \"NIN\",\n                        \"passportNumber\": null,\n                        \"passportCountry\": null,\n                        \"taxIdNumber\": null,\n                        \"primaryPhone\": \"+2561212121212\",\n                        \"secondaryPhone\": null,\n                        \"emergencyPhone\": null,\n                        \"emergencyContact\": null,\n                        \"primaryEmail\": \"hixejof220@fpxnet.com\",\n                        \"secondaryEmail\": null,\n                        \"residentialAddress\": null,\n                        \"permanentAddress\": null,\n                        \"city\": null,\n                        \"district\": null,\n                        \"country\": \"Uganda\",\n                        \"postalCode\": null,\n                        \"occupation\": null,\n                        \"companyName\": null,\n                        \"designation\": null,\n                        \"yearsOfExperience\": null,\n                        \"maritalStatus\": null,\n                        \"spouseName\": null,\n                        \"religion\": null,\n                        \"language\": [\n                            \"en\",\n                            \"sw\"\n                        ],\n                        \"profilePictureUrl\": null,\n                        \"signatureUrl\": null,\n                        \"preferredLanguage\": \"en\",\n                        \"timezone\": \"Africa/Kampala\",\n                        \"currency\": \"UGX\",\n                        \"notificationPreferences\": null,\n                        \"verificationLevel\": \"BASIC\",\n                        \"verifiedByAdminId\": null,\n                        \"verificationDate\": null,\n                        \"personalQRCode\": null,\n                        \"qrCodeExpiry\": null,\n                        \"bankName\": null,\n                        \"bankAccountNumber\": null,\n                        \"bankAccountName\": null,\n                        \"metadata\": null,\n                        \"version\": 1,\n                        \"createdAt\": \"2026-04-07T14:43:15.390Z\",\n                        \"updatedAt\": \"2026-04-07T14:43:15.390Z\",\n                        \"lastProfileUpdate\": null\n                    }\n                }\n            },\n            \"stalls\": [\n                {\n                    \"id\": \"67b5422c-3c33-4b70-b4c8-c84c92f3ac66\",\n                    \"shopId\": \"7cbb9345-3076-4130-a83c-8b5216e058ce\",\n                    \"vendorId\": \"13790d18-9768-44fb-8685-fa2e171f7829\",\n                    \"sectionId\": null,\n                    \"aisleId\": null,\n                    \"levelId\": null,\n                    \"uniqueCode\": \"STL-E8B1-1B9B\",\n                    \"stallNumber\": \"S-B7B9\",\n                    \"displayName\": \"hixejof220's Shop\",\n                    \"stallType\": \"PERMANENT\",\n                    \"category\": \"Retail\",\n                    \"subCategories\": [],\n                    \"specialization\": null,\n                    \"hasDisplayCounter\": true,\n                    \"hasStorage\": false,\n                    \"hasLighting\": true,\n                    \"hasPowerOutlet\": true,\n                    \"hasCashRegister\": false,\n                    \"dailyRate\": \"0\",\n                    \"monthlyRate\": \"150000\",\n                    \"securityDeposit\": null,\n                    \"billingCycle\": \"DAILY\",\n                    \"contractStartDate\": \"2026-04-07T14:45:26.029Z\",\n                    \"contractEndDate\": \"2027-04-07T14:45:26.029Z\",\n                    \"agreementTerms\": null,\n                    \"openingTime\": null,\n                    \"closingTime\": null,\n                    \"operatingDays\": [\n                        \"MONDAY\",\n                        \"TUESDAY\",\n                        \"WEDNESDAY\",\n                        \"THURSDAY\",\n                        \"FRIDAY\",\n                        \"SATURDAY\"\n                    ],\n                    \"status\": \"ACTIVE\",\n                    \"operationalStatus\": \"OPERATIONAL\",\n                    \"lastStockCheck\": null,\n                    \"lastCleaning\": null,\n                    \"visitCount\": 0,\n                    \"qrCode\": null,\n                    \"createdById\": \"f3f53ec4-02d0-498f-a4e8-766a1cd77641\",\n                    \"marketMasterId\": null,\n                    \"marketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                    \"createdAt\": \"2026-04-07T14:45:26.030Z\",\n                    \"updatedAt\": \"2026-04-07T14:45:26.030Z\",\n                    \"shop\": {\n                        \"id\": \"7cbb9345-3076-4130-a83c-8b5216e058ce\",\n                        \"marketId\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                        \"levelId\": \"05f548de-974d-4fd0-b6dc-3bc74995b6cf\",\n                        \"sectionId\": null,\n                        \"memberId\": \"d09103d2-3683-48d7-beb9-657db1b35d6f\",\n                        \"uniqueCode\": \"SHP-E6BL-D6FC\",\n                        \"shopNumber\": \"SHOP-6423\",\n                        \"displayName\": null,\n                        \"shopName\": \"hixejof220's Shop\",\n                        \"shopType\": \"RETAIL\",\n                        \"subType\": null,\n                        \"categoryTags\": [],\n                        \"locationDescription\": null,\n                        \"accessPoints\": [],\n                        \"hasElectricity\": true,\n                        \"hasWaterSupply\": true,\n                        \"hasStorage\": false,\n                        \"hasAirConditioning\": false,\n                        \"hasDisplayWindow\": true,\n                        \"hasSecurityShutter\": true,\n                        \"electricityMeterNumber\": null,\n                        \"waterMeterNumber\": null,\n                        \"internetConnection\": false,\n                        \"monthlyRent\": \"150000\",\n                        \"securityDeposit\": null,\n                        \"maintenanceFee\": \"0\",\n                        \"electricityRate\": null,\n                        \"waterRate\": null,\n                        \"contractStartDate\": \"2026-04-07T14:45:23.457Z\",\n                        \"contractEndDate\": \"2027-04-07T14:45:23.457Z\",\n                        \"paymentDay\": 1,\n                        \"gracePeriodDays\": 5,\n                        \"status\": \"ACTIVE\",\n                        \"occupationStatus\": \"OCCUPIED\",\n                        \"lastRenovation\": null,\n                        \"inspectionDueDate\": null,\n                        \"inventoryValue\": null,\n                        \"createdById\": \"f3f53ec4-02d0-498f-a4e8-766a1cd77641\",\n                        \"marketMasterId\": null,\n                        \"createdAt\": \"2026-04-07T14:45:23.459Z\",\n                        \"updatedAt\": \"2026-04-07T14:45:23.459Z\"\n                    },\n                    \"market\": {\n                        \"id\": \"ea3bad80-2928-4691-b5e9-cb45e8740099\",\n                        \"cityId\": \"f7e26441-2f27-4ace-ab6c-5efffc3c9621\",\n                        \"name\": \"Kabale Central Market\",\n                        \"uniqueCode\": \"MKT-KBL-001\",\n                        \"displayName\": \"Kabale Central Market\",\n                        \"description\": null,\n                        \"address\": \"Market Road, Kabale Municipality\",\n                        \"marketType\": \"PERMANENT\",\n                        \"categories\": [\n                            \"FOOD\",\n                            \"CLOTHING\",\n                            \"RETAIL\",\n                            \"SERVICE\",\n                            \"GENERAL\"\n                        ],\n                        \"totalLevels\": 1,\n                        \"totalSections\": 0,\n                        \"totalShops\": 0,\n                        \"totalStalls\": 0,\n                        \"occupiedShops\": 0,\n                        \"occupiedStalls\": 0,\n                        \"maxCapacity\": null,\n                        \"openingTime\": \"07:00\",\n                        \"closingTime\": \"19:00\",\n                        \"operatingDays\": [\n                            \"MONDAY\",\n                            \"TUESDAY\",\n                            \"WEDNESDAY\",\n                            \"THURSDAY\",\n                            \"FRIDAY\",\n                            \"SATURDAY\"\n                        ],\n                        \"is24Hours\": false,\n                        \"holidaySchedule\": null,\n                        \"contactPhone\": \"+256700000099\",\n                        \"contactEmail\": null,\n                        \"website\": null,\n                        \"managerName\": null,\n                        \"averageRent\": null,\n                        \"securityDeposit\": null,\n                        \"monthlyMaintenanceFee\": null,\n                        \"status\": \"ACTIVE\",\n                        \"establishmentDate\": null,\n                        \"lastRenovation\": null,\n                        \"notes\": null,\n                        \"createdByAdminId\": \"bfcba003-2ef7-42a1-9e4d-9ba94540db5e\",\n                        \"createdAt\": \"2026-04-06T05:07:08.301Z\",\n                        \"updatedAt\": \"2026-04-06T05:07:08.301Z\"\n                    }\n                }\n            ],\n            \"stats\": {\n                \"totalStalls\": 1,\n                \"activeStalls\": 1,\n                \"totalGateEntries\": 0\n            },\n            \"approvedBy\": null,\n            \"createdAt\": \"2026-04-07T14:43:17.078Z\",\n            \"updatedAt\": \"2026-04-07T14:43:17.078Z\"\n        }\n    ],\n    \"pagination\": {\n        \"total\": 1,\n        \"page\": 1,\n        \"limit\": 20,\n        \"totalPages\": 1,\n        \"hasNextPage\": false,\n        \"hasPreviousPage\": false\n    }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "city",
+      "item": [
+        {
+          "name": "get cities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": [
+            {
+              "name": "get cities",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/cities",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "cities"
+                  ],
+                  "query": [
+                    {
+                      "key": "cityId",
+                      "value": "c1",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "page",
+                      "value": "2",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "limit",
+                      "value": "1",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "Nakasero Market",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [
+                {
+                  "key": "X-Powered-By",
+                  "value": "Express"
+                },
+                {
+                  "key": "Access-Control-Allow-Origin",
+                  "value": "http://localhost:5173"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Access-Control-Allow-Credentials",
+                  "value": "true"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json; charset=utf-8"
+                },
+                {
+                  "key": "Content-Length",
+                  "value": "264"
+                },
+                {
+                  "key": "ETag",
+                  "value": "W/\"108-y6AS8FkeHpajCHUnewoXSUZYEDs\""
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 21 Apr 2026 09:22:06 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=5"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"statusCode\": 200,\n    \"success\": true,\n    \"message\": \"Cities list have been fetched successfully\",\n    \"data\": [\n        {\n            \"id\": \"cfa62cfa-fcf2-458c-ad71-980c381adee3\",\n            \"name\": \"Kabale\",\n            \"cityType\": \"MUNICIPALITY\"\n        },\n        {\n            \"id\": \"5aced079-c568-49d4-b559-6db6d70017d5\",\n            \"name\": \"Kampala\",\n            \"cityType\": null\n        }\n    ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Number Of Users Under Me",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwZGE4NGU0Ni0xNDQyLTRhZjgtODEzZi03NjIwOGY0YzQwOGMiLCJlbWFpbCI6ImF6d2FkZmF3YWRoYXNhbkBnbWFpbC5jb20iLCJyb2xlTmFtZSI6Ikd1ZXN0Iiwicm9sZUxldmVsIjpudWxsLCJpYXQiOjE3Njc2OTk1ODgsImV4cCI6MTc2NzcwMDQ4OH0.jNV9_YGKCp9z8o2APIfmkYynZMsFqq5cZ-0gV0aS4d0",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwZGE4NGU0Ni0xNDQyLTRhZjgtODEzZi03NjIwOGY0YzQwOGMiLCJlbWFpbCI6ImF6d2FkZmF3YWRoYXNhbkBnbWFpbC5jb20iLCJyb2xlTmFtZSI6Ikd1ZXN0Iiwicm9sZUxldmVsIjpudWxsLCJpYXQiOjE3Njc2OTk3MzYsImV4cCI6MTc2NzcwMDYzNn0.WEYf48Pnmf9-ZjLQNahsXyP2H-zN7AhXQZ0cbWLjrvk",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}/api/dashboard/users/under-me/count",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "dashboard",
+            "users",
+            "under-me",
+            "count"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "gate-token",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWI3MmZjMC04MjhkLTQ3MTgtOGZiMC1lMDJkY2NmN2I3ZjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzQ4NjIwMTIsImV4cCI6MTc3NDg2MjkxMn0.zjtdwCdLU-9LwOIzRMSluFmEdwall-TwTM-C6P0jTzU",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"gateId\": \"53a00e4f-988e-4c3e-bb02-d044c4e830d5\" //Taken from market_gates.id \r\n  ///api/auth/gate-token/0da84e46-1442-4af8-813f-76208f4c408c (taken from users.id column)\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}/api/auth/gate-token/0da84e46-1442-4af8-813f-76208f4c408c",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "gate-token",
+            "0da84e46-1442-4af8-813f-76208f4c408c"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": ""
+    }
+  ]
+}
