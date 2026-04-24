@@ -13,10 +13,39 @@
         {
           "name": "Create Product",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "url": {
-              "raw": ""
+              "raw": "{{baseURL}}/api/vendors/:vendorId/products",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "vendors",
+                ":vendorId",
+                "products"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Organic Tomatoes\",\n    \"category\": \"VEGETABLES\",\n    \"price\": 2000,\n    \"currentStock\": 100,\n    \"unit\": \"KG\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -88,10 +117,38 @@
         {
           "name": "Update product",
           "request": {
-            "method": "GET",
+            "method": "PATCH",
             "header": [],
             "url": {
-              "raw": ""
+              "raw": "{{baseURL}}/api/products/:productId",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                ":productId"
+              ],
+              "query": []
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"price\": 2200\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
           "response": []
@@ -458,49 +515,7 @@
           ],
           "request": {
             "auth": {
-              "type": "jwt",
-              "jwt": [
-                {
-                  "key": "isSecretBase64Encoded",
-                  "value": true,
-                  "type": "boolean"
-                },
-                {
-                  "key": "secret",
-                  "value": "YOUR_LOGIN_JWT",
-                  "type": "string"
-                },
-                {
-                  "key": "algorithm",
-                  "value": "HS256",
-                  "type": "string"
-                },
-                {
-                  "key": "payload",
-                  "value": "{}",
-                  "type": "string"
-                },
-                {
-                  "key": "addTokenTo",
-                  "value": "header",
-                  "type": "string"
-                },
-                {
-                  "key": "headerPrefix",
-                  "value": "Bearer",
-                  "type": "string"
-                },
-                {
-                  "key": "queryParamKey",
-                  "value": "token",
-                  "type": "string"
-                },
-                {
-                  "key": "header",
-                  "value": "{}",
-                  "type": "string"
-                }
-              ]
+              "type": "noauth"
             },
             "method": "POST",
             "header": [],
@@ -584,7 +599,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2MjExNCwiZXhwIjoxNzc2NzYzMDE0fQ.ufgA5lM_TbTgOyp3mQr7a7bCBUl9AzqIMIRLtdVcqCk",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -695,7 +710,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2NDcyNSwiZXhwIjoxNzc2NzY1NjI1fQ.gTZr8ngcMjFAEBOtqraXzUfbVD6m6Uz84Vx5x0qfxu0",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -738,7 +753,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1MzE4MSwiZXhwIjoxNzc2OTU0MDgxfQ.C4WM2KUxigRDqtzhqnSQawCEJrQzaO1G5PylVMW4nPI",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -849,7 +864,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -944,7 +959,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -1037,7 +1052,7 @@
                   "bearer": [
                     {
                       "key": "token",
-                      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk1NDE5NSwiZXhwIjoxNzc2OTU1MDk1fQ.86_XlHciTpWA2OmoXEL8_XwOld9oXpIWtu7SF0UkmYc",
+                      "value": "{{bearer_token}}",
                       "type": "string"
                     }
                   ]
@@ -1230,7 +1245,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwMTgzODMsImV4cCI6MTc3NTA1NDM4M30.mOE2O3E9HX_kIwWWMFmG6tslH53RkonON7lWl9KvKHk",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1373,7 +1388,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMTQ2NCwiZXhwIjoxNzc1ODEyMzY0fQ.2Ll_-xQliIquQqaeYmCmVYYXX9XPz8ylUPRrXnCamOc",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1402,7 +1417,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMjk0MywiZXhwIjoxNzc1ODEzODQzfQ.qtqt7etAY2ixacQre5ROHVpz2ZStJXa08VoY5YS5bk0",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1497,7 +1512,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njc2MzExNywiZXhwIjoxNzc2NzY0MDE3fQ.n1QiESatIfHsAFYlP-YW4ZfkUOJj7LaBGL1eeKoWG9g",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1597,7 +1612,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNGQxYjBkNS1iOWM0LTQ0YzgtYjQ4Ni0zN2UzYTJjZGY1ZTIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTgxMjAxNywiZXhwIjoxNzc1ODEyOTE3fQ.SOmS-qDEJfPP52yFvoxvCXIBH9nL6CRE1JBgttBjrjk",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1734,7 +1749,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwNjEwMzEsImV4cCI6MTc3NTA5NzAzMX0.Em7PtkvK4wzLMwbpVqt0CR9WbmfFng4E7u4aGvUO3a4",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1829,7 +1844,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzN2M4ZjNlMC05ZGQ2LTRmOTAtOTEzMy05NzUxNGZmNWU5YjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzUwNjEwMzEsImV4cCI6MTc3NTA5NzAzMX0.Em7PtkvK4wzLMwbpVqt0CR9WbmfFng4E7u4aGvUO3a4",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -1950,7 +1965,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNzI2MzIwMC1mZjBkLTRkZTUtYTMyYi0yOWQ3MmU5OTNlODkiLCJlbWFpbCI6ImthYmFsZS5tYXN0ZXJAa2FiYWxlbWFya2V0LnVnIiwicm9sZU5hbWUiOiJHdWVzdCIsInJvbGVMZXZlbCI6bnVsbCwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk0Nzc2NiwiZXhwIjoxNzc2OTQ4NjY2fQ.JbuVLCyuvplWdgWSUrxtuKQCC7BvFIFPA4MUvI6hZKU",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -2065,7 +2080,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2FlNWNlOS1iNDg1LTQyYTItOWM4MC03YzcyYjUwZDY0ZjIiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3Njk5OTI5MywiZXhwIjoxNzc3MDAwMTkzfQ.3cRPBaNh3CjqsXgEY6CY2IhWPe10wCyFytDwL_kDDl8",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -2099,7 +2114,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1YTZhYTE4ZC1kMzYyLTQ1MmQtOGUwNy03NDNkZjFkZDZlYmUiLCJlbWFpbCI6InN1cGVyYWRtaW5AbWFya2V0bWFzdGVyLmNvbSIsInJvbGVOYW1lIjoiU3VwZXJBZG1pbiIsInJvbGVMZXZlbCI6IlNVUEVSX0FETUlOIiwibWFya2V0SWQiOm51bGwsImlhdCI6MTc3NTcwNzYxNCwiZXhwIjoxNzc1NzA4NTE0fQ.A13vEaLtGk4tSE7vjHxT5hq6O8c3Tr6jWjvT39jhlLA",
+                  "value": "{{bearer_token}}",
                   "type": "string"
                 }
               ]
@@ -2298,7 +2313,7 @@
           "bearer": [
             {
               "key": "token",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIwZGE4NGU0Ni0xNDQyLTRhZjgtODEzZi03NjIwOGY0YzQwOGMiLCJlbWFpbCI6ImF6d2FkZmF3YWRoYXNhbkBnbWFpbC5jb20iLCJyb2xlTmFtZSI6Ikd1ZXN0Iiwicm9sZUxldmVsIjpudWxsLCJpYXQiOjE3Njc2OTk1ODgsImV4cCI6MTc2NzcwMDQ4OH0.jNV9_YGKCp9z8o2APIfmkYynZMsFqq5cZ-0gV0aS4d0",
+              "value": "{{bearer_token}}",
               "type": "string"
             }
           ]
@@ -2335,7 +2350,7 @@
           "bearer": [
             {
               "key": "token",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyNWI3MmZjMC04MjhkLTQ3MTgtOGZiMC1lMDJkY2NmN2I3ZjYiLCJlbWFpbCI6InRoYW53aW5obGluZTg0QGdtYWlsLmNvbSIsInJvbGVOYW1lIjoiR3Vlc3QiLCJyb2xlTGV2ZWwiOm51bGwsIm1hcmtldElkIjpudWxsLCJpYXQiOjE3NzQ4NjIwMTIsImV4cCI6MTc3NDg2MjkxMn0.zjtdwCdLU-9LwOIzRMSluFmEdwall-TwTM-C6P0jTzU",
+              "value": "{{bearer_token}}",
               "type": "string"
             }
           ]
@@ -2365,6 +2380,1514 @@
         }
       },
       "response": []
+    },
+    {
+      "name": "Facility_Management",
+      "item": [
+        {
+          "name": "Shops",
+          "item": [
+            {
+              "name": "List Shops",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/shops",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops"
+                  ],
+                  "query": [
+                    {
+                      "key": "marketId",
+                      "value": ""
+                    }
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Shop Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/shops/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops",
+                    ":id"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Shop",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"marketId\": \"uuid\",\n    \"levelId\": \"uuid\",\n    \"memberId\": \"uuid\",\n    \"shopNumber\": \"SH-001\",\n    \"shopName\": \"Bakery\",\n    \"shopType\": \"RETAIL\",\n    \"monthlyRent\": 500000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/shops",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Shop",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"shopName\": \"Updated Bakery\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/shops/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "shops",
+                    ":id"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Stalls",
+          "item": [
+            {
+              "name": "List Stalls",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/stalls",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "stalls"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Stall Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/stalls/:id",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "stalls",
+                    ":id"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Stall",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"marketId\": \"uuid\",\n    \"vendorId\": \"uuid\",\n    \"stallNumber\": \"STL-01\",\n    \"monthlyRate\": 100000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/stalls",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "stalls"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Market_Gates",
+          "item": [
+            {
+              "name": "List Gates",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/marketGates",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketGates"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Gate",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"marketId\": \"uuid\",\n    \"gateName\": \"Main North Gate\",\n    \"gateType\": \"ENTRY_EXIT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/marketGates",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "marketGates"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Access_Control_Operations",
+      "item": [
+        {
+          "name": "QR_Codes",
+          "item": [
+            {
+              "name": "List QR Codes",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/qrcodes",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "qrcodes"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Generate QR",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"entityType\": \"VEHICLE\",\n    \"entityId\": \"plate-abc-123\",\n    \"purpose\": \"ENTRY\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/qrcodes/generate",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "qrcodes",
+                    "generate"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Scan QR",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"qrCode\": \"token-string\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/qrcodes/scan",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "qrcodes",
+                    "scan"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Gate_Operations",
+          "item": [
+            {
+              "name": "List Logs",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/gateOperations",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "gateOperations"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Log Entry/Exit",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"gateId\": \"uuid\",\n    \"operationType\": \"ENTRY\",\n    \"entityType\": \"VEHICLE\",\n    \"entityIdentifier\": \"UAB 123X\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/gateOperations/log",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "gateOperations",
+                    "log"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Market_Tokens",
+          "item": [
+            {
+              "name": "Generate Entry Token",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"plate\": \"UAB 123X\",\n    \"category\": \"TRUCK\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/market/tokens/entry",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "market",
+                    "tokens",
+                    "entry"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Token Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/market/tokens/:code",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "market",
+                    "tokens",
+                    ":code"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Record Exit",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"code\": \"token-code\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/market/tokens/exit",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "market",
+                    "tokens",
+                    "exit"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Supply_Chain",
+      "item": [
+        {
+          "name": "Suppliers",
+          "item": [
+            {
+              "name": "List Suppliers",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/suppliers",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "suppliers"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Supplier",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"companyName\": \"Agro Supplies Ltd\",\n    \"contactPerson\": \"Jane Doe\",\n    \"email\": \"agro@example.com\",\n    \"phone\": \"+256000000\",\n    \"category\": \"FOOD\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/superadmin/suppliers",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "superadmin",
+                    "suppliers"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Deliveries",
+          "item": [
+            {
+              "name": "List Deliveries",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseURL}}/api/deliveries",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "deliveries"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Create Delivery",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{bearer_token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"supplierId\": \"uuid\",\n    \"stallId\": \"uuid\",\n    \"deliveryDate\": \"2026-05-01\",\n    \"items\": [\n        {\n            \"name\": \"Matooke\",\n            \"quantity\": 10,\n            \"unit\": \"Bunches\"\n        }\n    ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseURL}}/api/deliveries",
+                  "host": [
+                    "{{baseURL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "deliveries"
+                  ],
+                  "query": []
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compliance_KYC",
+      "item": [
+        {
+          "name": "Submit KYC",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"stakeholderId\": \"uuid\",\n    \"taxIdNumber\": \"100200300\",\n    \"identificationType\": \"NIN\",\n    \"identificationNumber\": \"CM900...\",\n    \"address\": \"Kampala, Central\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/kyc/submit",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "kyc",
+                "submit"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get KYC Detail",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/kyc/:stakeholderId",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "kyc",
+                ":stakeholderId"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review KYC",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": \"VERIFIED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/kyc/:stakeholderId/review",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "kyc",
+                ":stakeholderId",
+                "review"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/documents/upload",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "documents",
+                "upload"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Finance_Contracts",
+      "item": [
+        {
+          "name": "List Contracts",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/rentContracts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "rentContracts"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Contract",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"shopId\": \"uuid\",\n    \"tenantId\": \"uuid\",\n    \"startDate\": \"2026-05-01\",\n    \"monthlyRent\": 500000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/rentContracts",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "rentContracts"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Record Rent Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearer_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"vendorId\": \"uuid\",\n    \"amount\": 500000,\n    \"paymentMethod\": \"MTN MOMO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/payments/rent/record",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "payments",
+                "rent",
+                "record"
+              ],
+              "query": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Gate Terminal",
+      "item": [
+        {
+          "name": "Get Fees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/gate/fees?category=TRUCK",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "gate",
+                "fees"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "TRUCK"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Entry Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"plate\": \"UAB 123X\",\n    \"category\": \"CAR\",\n    \"paymentRef\": \"PAY-998877\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/gate/entry",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "gate",
+                "entry"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Scan for Exit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tokenCode\": \"G-ABC123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/gate/scan-exit",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "gate",
+                "scan-exit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Process Exit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"tokenCode\": \"G-ABC123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/gate/exit",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "gate",
+                "exit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Gate Entry (Generate Token)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate\": \"UBA 123A\",\n  \"category\": \"TRUCK\",\n  \"paymentRef\": \"PAY-123\",\n  \"marketId\": \"{{market_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gate/entry",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gate",
+                "entry"
+              ]
+            },
+            "description": "Returns tokenCode, shortCode, and qrPayload."
+          }
+        },
+        {
+          "name": "Scan for Exit (Lookup by Code/ShortCode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenCode\": \"G-A1B2C3\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/gate/scan-exit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "gate",
+                "scan-exit"
+              ]
+            },
+            "description": "Checks duration and overstay fees."
+          }
+        }
+      ]
+    },
+    {
+      "name": "KYC Compliance",
+      "item": [
+        {
+          "name": "Submit KYC",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"nationalId\": \"CM1234567890\",\n    \"nationalIdType\": \"NIN\",\n    \"residentialAddress\": \"123 Market St, Kampala\",\n    \"businessType\": \"RETAIL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/kyc/submit",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "kyc",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get KYC Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/kyc/status",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "kyc",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Financials",
+      "item": [
+        {
+          "name": "Process General Payment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 5000,\n    \"method\": \"MOBILE_MONEY\",\n    \"description\": \"Daily market fee\",\n    \"taxAmount\": 900\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/financials/pay",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "financials",
+                "pay"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Onboarding",
+      "item": [
+        {
+          "name": "Setup Supplier Profile (With TIN Upload)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "marketId",
+                  "value": "{{marketId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "businessName",
+                  "value": "Global Supplies Ltd",
+                  "type": "text"
+                },
+                {
+                  "key": "businessType",
+                  "value": "WHOLESALE",
+                  "type": "text"
+                },
+                {
+                  "key": "taxIdNumber",
+                  "value": "200XXXXXXXX",
+                  "type": "text"
+                },
+                {
+                  "key": "tinDocument",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "bankName",
+                  "value": "Standard Chartered",
+                  "type": "text"
+                },
+                {
+                  "key": "bankAccountNumber",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "mobileMoneyNumber",
+                  "value": "256770000000",
+                  "type": "text"
+                },
+                {
+                  "key": "mobileMoneyNetwork",
+                  "value": "MTN",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/suppliers/setup-profile",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "setup-profile"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login (Hardened)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vendor@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Returns needsOnboarding flag. If true, redirect user to Onboarding."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Onboarding & KYC",
+      "item": [
+        {
+          "name": "Setup Shop (Multipart TIN Upload)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "marketId",
+                  "value": "{{market_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "shopName",
+                  "value": "My Hardened Shop",
+                  "type": "text"
+                },
+                {
+                  "key": "taxIdNumber",
+                  "value": "1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "tinDocument",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "bankName",
+                  "value": "Standard Chartered",
+                  "type": "text"
+                },
+                {
+                  "key": "bankAccountNumber",
+                  "value": "123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "mobileMoneyNumber",
+                  "value": "256770000000",
+                  "type": "text"
+                },
+                {
+                  "key": "mobileMoneyNetwork",
+                  "value": "MTN",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/vendors/setup-shop",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "setup-shop"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Setup Supplier Profile (Hardened)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "businessName",
+                  "value": "Bulk Agro Suppliers Ltd",
+                  "type": "text"
+                },
+                {
+                  "key": "businessType",
+                  "value": "WHOLESALE",
+                  "type": "text"
+                },
+                {
+                  "key": "taxIdNumber",
+                  "value": "9876543210",
+                  "type": "text"
+                },
+                {
+                  "key": "tinDocument",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "mobileMoneyNumber",
+                  "value": "256780000000",
+                  "type": "text"
+                },
+                {
+                  "key": "mobileMoneyNetwork",
+                  "value": "AIRTEL",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/vendors/setup-profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "setup-profile"
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [

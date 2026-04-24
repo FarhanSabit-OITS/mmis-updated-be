@@ -1,0 +1,177 @@
+To enhance the Auth/me endpoint for the current MarketMasterERP schema, we need to transition from a simple user return to a multi-role, context-aware profile.
+
+Based on the provided SRS and the existing Prisma schema references, the response should now include the Role Level (SuperAdmin, MarketAdmin, etc.), KYC Status, and Tenant/Market context.
+
+1. Enhanced JSON Response Object
+This structure aligns with the current project's RBAC (Role-Based Access Control) and Market Registry modules.
+
+JSON
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "User profile fetched successfully",
+  "data": {
+    "id": "u-123-uuid",
+    "email": "farhan@mmis.tevas.ug",
+    "phone": "+256784937901",
+    "status": "ACTIVE",
+    "emailVerified": true,
+    "role": {
+      "name": "MarketAdmin",
+      "level": "MARKET_ADMIN", // Critical for frontend routing
+      "permissions": ["MANAGE_VENDORS", "VIEW_REVENUE", "GATE_CONTROL"]
+    },
+    "profile": {
+      "firstName": "Farhan",
+      "lastName": "Sabit",
+      "displayName": "Farhan Admin",
+      "profilePictureUrl": "https://cdn.mmis.ug/profiles/u123.jpg",
+      "kycStatus": "VERIFIED" // Taken from Stakeholder model
+    },
+    "context": {
+      "marketId": "m-kabale-uuid",
+      "marketName": "Kabale Central Market",
+      "cityId": "c-kabale-uuid",
+      "assignedShopId": null // Populated only for Vendors
+    },
+    "stats": {
+      "totalUsersUnderMe": 45, // Computed for Admins
+      "lastLogin": "2026-04-24T10:00:00Z"
+    }
+  }
+}
+2. Implementation Checklist (Backend)
+To support this in your MarketMasterApi, the auth.controller.js should be updated to include the following Prisma relations:
+
+Role & Permissions: Include the Role model to determine roleLevel.
+
+Stakeholder Relation: Link to the Stakeholder model to retrieve kycStatus and businessRating.
+
+Market Context: If the user is a MarketAdmin or Vendor, join with the Market or Shop models.
+
+Dynamic Counts: For the "Users Under Me" feature seen in your Postman collection, include a count query filtered by the createdByAdminId.
+
+3. Postman Configuration Update
+Update your Get My Profile (Me) request in the collection to ensure it handles the new metadata for environment variables:
+
+Tests Script:
+
+JavaScript
+const response = pm.response.json();
+
+if (response.success && response.data) {
+    // Save context for other requests
+    pm.environment.set("current_role", response.data.role.level);
+    pm.environment.set("current_market_id", response.data.context.marketId);
+    
+    // Log KYC status for debugging onboarding flows
+    console.log(`User KYC Status: ${response.data.profile.kycStatus}`);
+}
+4. Why this matters for the 2026 Schema
+The 2026 Tax Landscape in Uganda requires strict identification. By including the kycStatus and marketId in the Auth/me call, the frontend can:
+
+Block Actions: Use a "Compliance Guardian" interceptor to stop vendors with a NOT_VERIFIED status from generating EFRIS invoices.
+
+Auto-Filter: Automatically set the marketId in the Market Registry view without requiring the user to select it manually.
+
+Would you like me to draft the specific Prisma Service method to query these relations for the backend?
+
+To ensure the **`Auth/me`** endpoint provides "Zero-Failure" data for operational staff, I have drafted the **Zod validation schema** and the **Prisma migration logic**. 
+
+This schema enforces the data integrity required for physical assignments in the [Vehicle & Gate Management](https://github.com/oits-dhaka/MarketMasterERP/tree/dev) and [Stock Offloading](https://notebooklm.google.com/notebook/65ff8552-eedd-44b0-923e-95e000ada9c6) modules.
+
+### 1. Zod Validation Schema
+This schema should be used in your `auth.controller.js` to validate the profile before sending it to the frontend. It specifically targets the context needed for **Gate Counters** and **Stock Counters**.
+
+```typescript
+import { z } from "zod";
+
+export const AuthMeResponseSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  role: z.object({
+    name: z.string(),
+    level: z.enum(["SUPER_ADMIN", "MARKET_ADMIN", "VENDOR", "GATE_STAFF", "STOCK_STAFF"]),
+  }),
+  context: z.object({
+    marketId: z.string().uuid(),
+    marketName: z.string(),
+    // Staff/Vendor Specifics
+    assignedShopId: z.string().uuid().nullable(),
+    assignedShopName: z.string().nullable(),
+    assignedGateId: z.string().uuid().nullable(),    // For Gate Entry tracking
+    assignedCounterId: z.string().uuid().nullable(), // For Stock verification
+    assignedSectionId: z.string().uuid().nullable(), 
+  }),
+  kycStatus: z.enum(["NOT_SUBMITTED", "PENDING", "VERIFIED", "REJECTED"]),
+});
+```
+
+---
+
+### 2. Prisma Model Update (Migration)
+If your current `schema.prisma` doesn't explicitly link staff users to physical gates, you should add a `StaffAssignment` model. This allows the `Auth/me` call to return the **Gate ID** or **Counter ID** without guessing.
+
+```prisma
+// Update your prisma/schema.prisma
+model StaffAssignment {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  marketId         String
+  market           Market   @relation(fields: [marketId], references: [id])
+  
+  // Physical Post Assignments
+  assignedGateId   String?  // Links to MarketGate model
+  assignedCounterId String? // Links to StockCounter model
+  assignedSectionId String? // Links to MarketSection model
+  
+  status           AssignmentStatus @default(ACTIVE)
+  updatedAt        DateTime @updatedAt
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+}
+```
+
+---
+
+### 3. Implementation in the Auth Controller
+In your [MarketMasterApi controller](https://github.com/oits-dhaka/MarketMasterApi/tree/MME-177-invoice-generation-api), update the `getMe` logic to include these relations:
+
+```javascript
+const getMe = async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    include: {
+      role: true,
+      stakeholder: {
+        include: {
+          vendor: { include: { stalls: true } }, // To get shopName/shopId
+          staffAssignment: true                  // To get gate/counter context
+        }
+      }
+    }
+  });
+
+  // Map the Prisma result to the Zod-validated context
+  const context = {
+    marketId: user.marketId,
+    assignedShopId: user.stakeholder?.vendor?.stalls[0]?.shopId || null,
+    assignedShopName: user.stakeholder?.vendor?.stalls[0]?.displayName || null,
+    assignedGateId: user.stakeholder?.staffAssignment?.assignedGateId || null,
+    assignedCounterId: user.stakeholder?.staffAssignment?.assignedCounterId || null,
+  };
+
+  res.status(200).json({ success: true, data: { ...user, context } });
+};
+```
+
+### 4. Operational Benefit for 2026
+* **Gate Control:** By returning the `assignedGateId`, the mobile app used by [Gate/Stock Staff](https://github.com/oits-dhaka/MarketMasterERP/tree/dev) can automatically filter QR scans to only accept vehicles assigned to their specific gate.
+* **Stock Ledger:** When offloading goods, the `assignedCounterId` is used to trigger the [T130 Stock Sync](https://notebooklm.google.com/notebook/65ff8552-eedd-44b0-923e-95e000ada9c6) to URA, verifying that the stock has moved from the vehicle into the market's digital custody.
+
+Would you like me to help you draft the **Prisma seeding script** to populate these assignments for your test staff users?

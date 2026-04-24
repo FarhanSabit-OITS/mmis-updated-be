@@ -8,5 +8,6 @@ router.post('/entry', authMiddleware, tokenController.generateEntryToken);
 router.get('/:code', authMiddleware, tokenController.getTokenDetails);
 router.post('/dispatch', authMiddleware, tokenController.recordStockDispatch);
 router.post('/exit', authMiddleware, tokenController.recordExit);
+router.post('/:code/revoke', authMiddleware, tokenController.revokeToken);
 
 module.exports = router;

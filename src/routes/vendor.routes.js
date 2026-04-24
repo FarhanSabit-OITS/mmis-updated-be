@@ -16,14 +16,18 @@ const adminMiddleware = require('../middleware/admin.middleware');
 
 router.use(authMiddleware);
 
+const upload = require('../middleware/upload.middleware');
+
 // =====================
 // Vendor Self-Onboarding
 // =====================
 /**
  * Setup Shop and Stall for new Vendor
  * POST /api/vendors/setup-shop
+ * Body: { marketId, shopName, stallNumber, monthlyRent, taxIdNumber }
+ * File: tinDocument
  */
-router.post('/setup-shop', vendorOnboardingController.setupShop);
+router.post('/setup-shop', upload.single('tinDocument'), vendorOnboardingController.setupShop);
 
 // router.use(adminMiddleware); // Removed to allow fallthrough for non-admin routes like products
 

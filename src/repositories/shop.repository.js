@@ -92,4 +92,34 @@ module.exports = {
 
     return shop;
   },
+
+  createShop: async (shopData) => {
+    return await prisma.shop.create({
+      data: shopData,
+      include: {
+        market: {
+          select: { id: true, name: true, address: true, status: true }
+        },
+        member: {
+          include: {
+            stakeholder: {
+              include: {
+                user: {
+                  select: { id: true, email: true, phone: true }
+                }
+              }
+            }
+          }
+        },
+      },
+    });
+  },
+
+  deleteShop: async (shopId) => {
+    // We soft-delete or hard delete. For shops, let's just mark status as INACTIVE
+    return await prisma.shop.update({
+      where: { id: shopId },
+      data: { status: "INACTIVE" }
+    });
+  }
 };

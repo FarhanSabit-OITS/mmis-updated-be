@@ -399,6 +399,8 @@ model UserProfile {
   bankName          String? @db.VarChar(100)
   bankAccountNumber String? @db.VarChar(50)
   bankAccountName   String? @db.VarChar(150)
+  mobileMoneyNumber  String? @db.VarChar(20)
+  mobileMoneyNetwork String? @db.VarChar(50) // e.g., MTN, Airtel
 
   metadata          Json?
   version           Int       @default(1)
@@ -3007,6 +3009,7 @@ model StallAsset {
 
 model Delivery {
   id String @id @default(uuid())
+  deliveryCode String @unique @db.VarChar(50)
 
   // Delivery Details
   supplierId   String

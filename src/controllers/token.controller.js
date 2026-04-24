@@ -282,3 +282,35 @@ exports.recordExit = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
+
+/**
+ * POST /api/market/tokens/:code/revoke
+ * Revoke a token
+ */
+exports.revokeToken = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const { marketId } = req.user;
+
+        const token = await prisma.marketToken.findFirst({
+            where: { shortCode: code, marketId }
+        });
+
+        if (!token) {
+            return res.status(404).json({ success: false, message: 'Token not found' });
+        }
+
+        await prisma.marketToken.update({
+            where: { id: token.id },
+            data: { status: 'REVOKED' }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Token revoked successfully'
+        });
+    } catch (err) {
+        console.error('revokeToken error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};

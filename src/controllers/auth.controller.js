@@ -721,6 +721,7 @@ exports.login = async (req, res) => {
             role: true,
           },
         },
+        profile: true,
         stakeholder: {
           include: {
             vendor: { include: { stalls: true } },
@@ -855,7 +856,10 @@ exports.login = async (req, res) => {
           requiresAccountClaim: isKabaleSeededEmail(user.email),
           kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
           vendorId: user.stakeholder?.vendor?.id || null,
-          stalls: user.stakeholder?.vendor?.stalls || []
+          supplierId: user.stakeholder?.supplier?.id || null,
+          stalls: user.stakeholder?.vendor?.stalls || [],
+          needsOnboarding: (roleName === 'Vendor' && (!user.stakeholder?.vendor?.id || !user.profile?.taxIdNumber)) ||
+                           (roleName === 'Supplier' && (!user.stakeholder?.supplier?.id || !user.profile?.taxIdNumber))
         },
       },
     });
@@ -1647,17 +1651,33 @@ exports.getMe = async (req, res) => {
         profile: true,
         stakeholder: {
           include: {
-            vendor: { include: { primaryMarket: true, stalls: true } },
+            vendor: {
+              include: {
+                primaryMarket: true,
+                stalls: { include: { shop: true } }
+              }
+            },
             supplier: true
           }
         },
         admin: {
           include: {
-            marketMaster: { include: { market: true } }
+            marketMaster: { include: { market: true } },
+            pseudoMarketAdmin: {
+              include: {
+                market: true,
+                sectionScope: true,
+                assignedGatesAsCounter: true
+              }
+            }
           }
         },
         userRoles: {
-          include: { role: true }
+          include: {
+            role: {
+              include: { rolePermissions: true }
+            }
+          }
         }
       }
     });
@@ -1691,7 +1711,27 @@ exports.getMe = async (req, res) => {
     } else if (user.stakeholder?.supplier) {
       businessId = user.stakeholder.supplier.supplierCode;
       secondaryLabel = `Supplier ID: ${businessId}`;
+    } else if (user.admin?.pseudoMarketAdmin) {
+      marketName = user.admin.pseudoMarketAdmin.market?.name || 'N/A';
+      businessId = user.admin.id;
+      secondaryLabel = `${user.admin.pseudoMarketAdmin.role.replace(/_/g, ' ')}`;
     }
+
+    // Get active role
+    const activeUserRole = user.userRoles.find(ur => ur.isActive) || user.userRoles[0];
+    const roleObj = activeUserRole?.role || { name: 'Guest', level: null };
+    
+    // Build permissions array
+    const permissions = roleObj.rolePermissions?.map(rp => `${rp.resource.toLowerCase()}.${rp.action.toLowerCase()}`) || [];
+
+    // Extract Vendor fields (Prefill/Lock requirements)
+    const vendorStall = user.stakeholder?.vendor?.stalls?.[0];
+    const shop = vendorStall?.shop;
+
+    // Extract PseudoAdmin fields (Gate/Stock counters)
+    const pseudoAdmin = user.admin?.pseudoMarketAdmin;
+    const gateId = pseudoAdmin?.assignedGatesAsCounter?.[0]?.id || null;
+    const sectionScope = pseudoAdmin?.sectionScope;
 
     return res.status(200).json({
       success: true,
@@ -1700,16 +1740,31 @@ exports.getMe = async (req, res) => {
         email: user.email,
         phone: user.phone || profile?.primaryPhone || 'No phone set',
         name: fullName,
-        role: user.userRoles[0]?.role?.name || 'Guest',
+        role: {
+          name: roleObj.name,
+          level: roleObj.level
+        },
         requiresAccountClaim: isKabaleSeededEmail(user.email),
         kycStatus: user.stakeholder?.kycStatus || 'NOT_SUBMITTED',
         businessId,
         vendorId: user.stakeholder?.vendor?.id || null, // Actual UUID
-        marketId: user.admin?.marketMaster?.marketId || user.stakeholder?.vendor?.primaryMarketId || null,
+        marketId: user.admin?.marketMaster?.marketId || user.admin?.pseudoMarketAdmin?.marketId || user.stakeholder?.vendor?.primaryMarketId || null,
         marketName,
         secondaryLabel,
-        shopNumber: user.stakeholder?.vendor?.stalls?.[0]?.stallNumber || null,
-        stalls: user.stakeholder?.vendor?.stalls || []
+        
+        // Shop & Stall Info
+        shopId: shop?.id || null,
+        shopName: shop?.shopNumber ? `Shop ${shop.shopNumber}` : null,
+        shopNumber: shop?.shopNumber || null,
+        stallId: vendorStall?.id || null,
+        stalls: user.stakeholder?.vendor?.stalls || [],
+        
+        // Scope Info
+        gateId,
+        sectionId: sectionScope?.id || null,
+        sectionName: sectionScope?.name || null,
+        
+        permissions
       }
     });
   } catch (err) {

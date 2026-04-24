@@ -58,4 +58,38 @@ module.exports = {
       })
     );
   }),
+
+  createShop: asyncHandler(async (req, res) => {
+    const adminId = req.user.id;
+    const newShop = await shopService.createShop(req.body, adminId);
+    
+    res.status(201).json(
+      new ApiResponse({
+        statusCode: 201,
+        success: true,
+        data: newShop,
+        message: "Shop created successfully"
+      })
+    );
+  }),
+
+  deleteShop: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    
+    const existingShop = await shopService.getShopDetailsById(id);
+    if (!existingShop) {
+      throw new NotFoundError("Shop not found");
+    }
+
+    await shopService.deleteShop(id);
+
+    res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: null,
+        message: "Shop deleted successfully"
+      })
+    );
+  })
 };

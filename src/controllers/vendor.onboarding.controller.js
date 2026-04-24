@@ -1,13 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const crypto = require('crypto');
 const prisma = new PrismaClient();
-
-// Helper to generate unique codes
-const generateUniqueCode = (prefix) => {
-    const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
-    const random = crypto.randomBytes(2).toString('hex').toUpperCase();
-    return `${prefix}-${timestamp}-${random}`;
-};
+const { generateUniqueCode } = require('../utils/identifier');
 
 const SYSTEM_LANDLORD_EMAIL = 'market.administration@marketmaster.local';
 
@@ -49,7 +43,7 @@ const ensureSystemLandlordMember = async (tx) => {
         member = await tx.member.create({
             data: {
                 stakeholderId: stakeholder.id,
-                membershipNumber: generateUniqueCode('LLD'),
+                membershipNumber: generateUniqueCode('MEMBER'),
                 membershipType: 'FULL',
                 businessName: 'Market Administration',
                 registrationNumber: generateUniqueCode('LAND')
@@ -66,13 +60,38 @@ const ensureSystemLandlordMember = async (tx) => {
 exports.setupShop = async (req, res) => {
     try {
         const userId = req.user.userId || req.user.id;
-        const { marketId, shopName, stallNumber, monthlyRent } = req.body;
-        const parsedMonthlyRent = Number(monthlyRent);
+        const { 
+            marketId, shopName, stallNumber, monthlyRent, taxIdNumber,
+            bankName, bankAccountNumber, bankAccountName,
+            mobileMoneyNumber, mobileMoneyNetwork
+        } = req.body;
+        const tinDocument = req.file;
+        let parsedMonthlyRent = Number(monthlyRent);
 
-        if (!marketId || !shopName) {
+        // Prefill rent from market if not provided
+        if (!parsedMonthlyRent || isNaN(parsedMonthlyRent)) {
+            const market = await prisma.market.findUnique({
+                where: { id: marketId },
+                select: { averageRent: true }
+            });
+            if (market && market.averageRent) {
+                parsedMonthlyRent = Number(market.averageRent);
+            } else {
+                parsedMonthlyRent = 0; // Fallback if no rate set
+            }
+        }
+
+        if (!marketId || !shopName || !taxIdNumber) {
             return res.status(400).json({
                 success: false,
-                message: 'Market selection and Shop Name are required'
+                message: 'Market selection, Shop Name, and TIN Number are required'
+            });
+        }
+
+        if (!tinDocument) {
+            return res.status(400).json({
+                success: false,
+                message: 'TIN Document upload is required for onboarding'
             });
         }
 
@@ -195,7 +214,7 @@ exports.setupShop = async (req, res) => {
             const level = await tx.marketLevel.findFirst({ where: { marketId } });
             const levelId = level ? level.id : null;
 
-            const shopUniqueCode = generateUniqueCode('SHP');
+            const shopUniqueCode = generateUniqueCode('SHOP');
             const shopNumberVal = `SHOP-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
 
             const shop = await tx.shop.create({
@@ -218,7 +237,7 @@ exports.setupShop = async (req, res) => {
             });
 
             // D. Create Stall
-            const stallUniqueCode = generateUniqueCode('STL');
+            const stallUniqueCode = generateUniqueCode('STALL');
             const stallNumVal = stallNumber || `S-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
 
             const stall = await tx.stall.create({
@@ -240,8 +259,40 @@ exports.setupShop = async (req, res) => {
                 }
             });
 
+            // E. Create Document for TIN
+            await tx.document.create({
+                data: {
+                    stakeholderId: stakeholderId,
+                    documentType: 'TAX_REGISTRATION',
+                    fileName: tinDocument.filename,
+                    fileUrl: `/uploads/${tinDocument.filename}`,
+                    fileSize: tinDocument.size,
+                    mimeType: tinDocument.mimetype,
+                    uploadedById: userId,
+                    verificationStatus: 'PENDING',
+                    metadata: {
+                        field: 'TIN',
+                        taxIdNumber: taxIdNumber
+                    }
+                }
+            });
+
+            // F. Update UserProfile with TIN and Payment Info
+            await tx.userProfile.update({
+                where: { userId },
+                data: { 
+                    taxIdNumber,
+                    bankName,
+                    bankAccountNumber,
+                    bankAccountName,
+                    mobileMoneyNumber,
+                    mobileMoneyNetwork
+                }
+            });
+
+            // G. Create Rent Contract
             const landlordMember = await ensureSystemLandlordMember(tx);
-            await tx.rentContract.create({
+            const contract = await tx.rentContract.create({
                 data: {
                     shopId: shop.id,
                     landlordId: landlordMember.id,
@@ -253,7 +304,7 @@ exports.setupShop = async (req, res) => {
                     paymentDay: shop.paymentDay || 1,
                     status: 'ACTIVE',
                     isActive: true,
-                    contractNumber: generateUniqueCode('CTR'),
+                    contractNumber: generateUniqueCode('CONTRACT'),
                     metadata: {
                         source: 'VENDOR_ONBOARDING',
                         autoGenerated: true
@@ -262,13 +313,80 @@ exports.setupShop = async (req, res) => {
                 }
             });
 
+            // H. Create Initial Rent Invoice
+            await tx.rentInvoice.create({
+                data: {
+                    shopId: shop.id,
+                    contractId: contract.id,
+                    amount: parsedMonthlyRent.toFixed(2),
+                    taxAmount: (parsedMonthlyRent * 0.18).toFixed(2), // Assume 18% VAT
+                    totalAmount: (parsedMonthlyRent * 1.18).toFixed(2),
+                    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Due in 7 days
+                    periodStart: new Date(),
+                    periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                    status: 'PENDING',
+                    invoiceNumber: generateUniqueCode('INV'),
+                    marketId: marketId
+                }
+            });
+
+            // I. Upgrade Role to Vendor if it was Guest
+            const vendorRole = await tx.role.findUnique({ where: { name: 'Vendor' } });
+            if (vendorRole) {
+                // Check if user already has Vendor role
+                const hasVendorRole = await tx.userRole.findFirst({
+                    where: { userId, roleId: vendorRole.id }
+                });
+
+                if (!hasVendorRole) {
+                    // Remove old roles (like Guest)
+                    await tx.userRole.deleteMany({ where: { userId } });
+                    // Add Vendor role
+                    await tx.userRole.create({
+                        data: {
+                            userId,
+                            roleId: vendorRole.id
+                        }
+                    });
+                }
+            }
+
             return { shop, stall, vendor };
         }, {
-            maxWait: 5000, // default: 2000
-            timeout: 20000 // default: 5000
+            maxWait: 5000,
+            timeout: 20000
         });
 
-        // 3. Return updated info
+        // 3. Notify Market Masters for TIN Verification
+        try {
+            const marketMasters = await prisma.marketMaster.findMany({
+                where: { marketId },
+                include: { stakeholder: { include: { user: true } } }
+            });
+
+            const notificationPromises = marketMasters.map(mm => {
+                return prisma.notification.create({
+                    data: {
+                        userId: mm.stakeholder.userId,
+                        title: 'New TIN Verification Required',
+                        message: `Vendor "${shopName}" has completed onboarding. Please verify their TIN: ${taxIdNumber}`,
+                        type: 'KYC_PENDING',
+                        priority: 'HIGH',
+                        metadata: {
+                            vendorId: result.vendor.id,
+                            shopId: result.shop.id,
+                            taxIdNumber
+                        }
+                    }
+                });
+            });
+            await Promise.all(notificationPromises);
+        } catch (notifError) {
+            console.error("Failed to send onboarding notifications:", notifError);
+            // Don't fail the whole request if notifications fail
+        }
+
+        // 4. Return updated info
         // Fetch refreshed user data to return exact same structure as login
         const updatedUser = await prisma.user.findUnique({
             where: { id: userId },
@@ -307,6 +425,162 @@ exports.setupShop = async (req, res) => {
             success: false,
             message: 'Failed to create shop: ' + error.message,
             error: process.env.NODE_ENV === 'development' ? error : undefined
+        });
+    }
+};
+
+/**
+ * Setup Supplier Profile for new or seeded Supplier
+ * POST /api/suppliers/setup-profile
+ * Body: { marketId, businessName, businessType, taxIdNumber }
+ * File: tinDocument
+ */
+exports.setupSupplier = async (req, res) => {
+    try {
+        const userId = req.user.userId || req.user.id;
+        const { 
+            marketId, businessName, businessType, taxIdNumber,
+            bankName, bankAccountNumber, bankAccountName,
+            mobileMoneyNumber, mobileMoneyNetwork
+        } = req.body;
+        const tinDocument = req.file;
+
+        if (!marketId || !businessName || !taxIdNumber) {
+            return res.status(400).json({
+                success: false,
+                message: 'Market selection, Business Name, and TIN Number are required'
+            });
+        }
+
+        if (!tinDocument) {
+            return res.status(400).json({
+                success: false,
+                message: 'TIN Document upload is required for onboarding'
+            });
+        }
+
+        const result = await prisma.$transaction(async (tx) => {
+            // 1. Ensure Stakeholder exists
+            const stakeholder = await tx.stakeholder.upsert({
+                where: { userId: userId },
+                update: {
+                    displayName: businessName,
+                    stakeholderType: 'ORGANIZATION'
+                },
+                create: {
+                    userId: userId,
+                    displayName: businessName,
+                    stakeholderType: 'ORGANIZATION',
+                    kycStatus: 'PENDING'
+                }
+            });
+
+            const stakeholderId = stakeholder.id;
+
+            // 2. Create/Update Supplier record
+            const supplier = await tx.supplier.upsert({
+                where: { stakeholderId: stakeholderId },
+                update: {
+                    companyName: businessName,
+                    supplierType: businessType || 'GENERAL',
+                    status: 'ACTIVE'
+                },
+                create: {
+                    stakeholderId: stakeholderId,
+                    companyName: businessName,
+                    supplierCode: `SUP-${Date.now().toString().slice(-6)}`,
+                    supplierType: businessType || 'GENERAL',
+                    status: 'ACTIVE'
+                }
+            });
+
+            // 3. Update UserProfile with TIN and Payment Info
+            await tx.userProfile.update({
+                where: { userId },
+                data: { 
+                    taxIdNumber,
+                    bankName,
+                    bankAccountNumber,
+                    bankAccountName,
+                    mobileMoneyNumber,
+                    mobileMoneyNetwork
+                }
+            });
+
+            // 4. Create Document for TIN
+            await tx.document.create({
+                data: {
+                    stakeholderId: stakeholderId,
+                    documentType: 'TAX_REGISTRATION',
+                    fileName: tinDocument.filename,
+                    fileUrl: `/uploads/${tinDocument.filename}`,
+                    fileSize: tinDocument.size,
+                    mimeType: tinDocument.mimetype,
+                    uploadedById: userId,
+                    verificationStatus: 'PENDING',
+                    metadata: {
+                        field: 'TIN',
+                        taxIdNumber: taxIdNumber,
+                        onboardingType: 'SUPPLIER'
+                    }
+                }
+            });
+
+            // 5. Upgrade Role to Supplier if it was Guest
+            const supplierRole = await tx.role.findUnique({ where: { name: 'Supplier' } });
+            if (supplierRole) {
+                // Remove old roles (like Guest)
+                await tx.userRole.deleteMany({ where: { userId } });
+                // Add Supplier role
+                await tx.userRole.create({
+                    data: {
+                        userId,
+                        roleId: supplierRole.id
+                    }
+                });
+            }
+
+            return { supplier };
+        }, {
+            maxWait: 5000,
+            timeout: 20000
+        });
+
+        // 6. Return updated info
+        const updatedUser = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                profile: true,
+                stakeholder: {
+                    include: {
+                        supplier: true
+                    }
+                },
+                userRoles: { include: { role: true } }
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Supplier profile setup successfully',
+            data: {
+                supplierId: result.supplier.id,
+                user: {
+                    id: updatedUser.id,
+                    email: updatedUser.email,
+                    role: updatedUser.userRoles[0]?.role?.name || 'Supplier',
+                    status: 'ACTIVE',
+                    supplierId: updatedUser.stakeholder?.supplier?.id,
+                    kycStatus: updatedUser.stakeholder?.kycStatus
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Setup Supplier Error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to setup supplier profile: ' + error.message
         });
     }
 };

@@ -17,11 +17,11 @@ module.exports = {
     return await prisma.market.findUnique({
       where: { id: marketId },
       include: {
-        // levels: true,
-        // sections: true,
+        levels: true,
+        sections: true,
         // shops: true,
         // stalls: true,
-        // gates: true,
+        gates: true,
       },
     });
   },

@@ -23,7 +23,7 @@ const BILLING_ONLY_ALLOWED_PATTERNS = [
   /^\/api\/payments(?:\/|$)/,
 ];
 
-module.exports = function authMiddleware(req, res, next) {
+function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
 
   if (!authHeader) {
@@ -111,4 +111,20 @@ module.exports = function authMiddleware(req, res, next) {
       message: 'Unauthorized: Invalid or expired token',
     });
   }
-};
+}
+
+function requireRole(allowedRoles) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return res.status(401).json({ success: false, message: "Unauthorized" });
+        }
+        if (!allowedRoles.includes(req.user.roleName)) {
+            return res.status(403).json({ success: false, message: `Forbidden: Requires one of [${allowedRoles.join(", ")}] roles` });
+        }
+        next();
+    };
+}
+
+module.exports = authMiddleware;
+module.exports.verifyToken = authMiddleware;
+module.exports.requireRole = requireRole;
