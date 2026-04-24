@@ -7,10 +7,23 @@ const isAdmin = (user) => user.roleName === 'SuperAdmin' || user.roleName === 'M
 class PaymentOpsController {
   async receiveFlutterwaveWebhook(req, res) {
     try {
-      const txRef = req.body?.data?.tx_ref || null;
+      const providerData = req.body?.data || {};
+      const txRef =
+        providerData?.tx_ref ||
+        providerData?.txRef ||
+        providerData?.reference ||
+        req.body?.tx_ref ||
+        req.body?.reference ||
+        null;
       const attempt = txRef ? await paymentAttemptService.findAttemptByReference(txRef) : null;
       const signatureValid = flutterwaveService.validateWebhookSignature(req.headers || {});
       const eventReference = req.body?.eventReference || req.body?.id ? String(req.body?.id || req.body?.eventReference) : null;
+      const providerTransactionId =
+        providerData?.id
+          ? String(providerData.id)
+          : providerData?.charge_id
+            ? String(providerData.charge_id)
+            : null;
       let event = null;
 
       if (eventReference) {
@@ -35,7 +48,7 @@ class PaymentOpsController {
             paymentAttemptId: attempt?.id || null,
             vendorId: attempt?.vendorId || null,
             marketId: attempt?.marketId || null,
-            providerTransactionId: req.body?.data?.id ? String(req.body.data.id) : null,
+            providerTransactionId,
             providerTxRef: txRef,
             status: signatureValid ? 'RECEIVED' : 'PENDING_REVIEW',
             signatureValid,
@@ -58,11 +71,11 @@ class PaymentOpsController {
         throw error;
       }
 
-      if (signatureValid && attempt?.id && req.body?.data?.id) {
+      if (signatureValid && attempt?.id && providerTransactionId) {
         await paymentAttemptService.verifyAndFinalizeAttempt({
           attemptId: attempt.id,
           webhookEventId: event.id,
-          providerTransactionId: String(req.body.data.id),
+          providerTransactionId,
         });
       }
 

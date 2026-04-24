@@ -92,9 +92,9 @@ class FlutterwaveService {
     }
   }
 
-  async createHostedCheckout({ amount, currency = 'UGX', txRef, customer, customizations = {}, meta = {}, paymentMethod = null }) {
+  async createHostedCheckout({ amount, currency = 'UGX', txRef, customer, customizations = {}, meta = {}, paymentMethod = null, sandboxScenario = null }) {
     if (this.isOAuthMode()) {
-      return this.createV4Charge({ amount, currency, txRef, customer, meta, paymentMethod });
+      return this.createV4Charge({ amount, currency, txRef, customer, meta, paymentMethod, sandboxScenario });
     }
 
     const redirectUrl = this.buildReturnUrl(txRef);
@@ -150,7 +150,15 @@ class FlutterwaveService {
     return payload;
   }
 
-  async createV4Charge({ amount, currency = 'UGX', txRef, customer, meta = {}, paymentMethod = null }) {
+  resolveSandboxScenarioHeader(sandboxScenario = null) {
+    const resolvedScenario = sandboxScenario || process.env.FLUTTERWAVE_TEST_SCENARIO || null;
+    if (!resolvedScenario) return {};
+    return {
+      'X-Scenario-Key': `scenario:${resolvedScenario}`,
+    };
+  }
+
+  async createV4Charge({ amount, currency = 'UGX', txRef, customer, meta = {}, paymentMethod = null, sandboxScenario = null }) {
     if (!paymentMethod?.type) {
       throw new Error('Flutterwave v4 payment initiation requires a paymentMethod object with a type.');
     }
@@ -166,6 +174,7 @@ class FlutterwaveService {
       reference: txRef,
       customer_id: customerResult.id,
       payment_method_id: paymentMethodResult.id,
+      redirect_url: redirectUrl,
     };
     const response = await fetch(`${this.baseUrl}/charges`, {
       method: 'POST',
@@ -174,6 +183,7 @@ class FlutterwaveService {
         'Content-Type': 'application/json',
         'X-Trace-Id': traceId,
         'X-Idempotency-Key': idempotencyKey,
+        ...this.resolveSandboxScenarioHeader(sandboxScenario),
       },
       body: JSON.stringify(chargePayload),
     });
@@ -198,6 +208,7 @@ class FlutterwaveService {
       nextAction: payload?.data?.next_action || null,
       customerId: customerResult.id,
       paymentMethodId: paymentMethodResult.id,
+      sandboxScenario: sandboxScenario || process.env.FLUTTERWAVE_TEST_SCENARIO || null,
     };
   }
 

@@ -180,7 +180,7 @@ class PaymentAttemptService {
     };
   }
 
-  async createAttempt({ vendorId, actorUserId, marketScopeId = null, invoiceIds = [], selectionMode, amount, paymentMethod = null, customer = null }) {
+  async createAttempt({ vendorId, actorUserId, marketScopeId = null, invoiceIds = [], selectionMode, amount, paymentMethod = null, customer = null, sandboxScenario = null }) {
     const vendor = await this.getVendorCheckoutContext(vendorId);
     const selection = await this.buildSelection({
       vendorId,
@@ -206,6 +206,7 @@ class PaymentAttemptService {
         selectionMode,
       },
       paymentMethod,
+      sandboxScenario,
     });
 
     const attempt = await prisma.paymentAttempt.create({
@@ -237,6 +238,7 @@ class PaymentAttemptService {
           flutterwaveTraceId: hostedCheckout.traceId || null,
           flutterwaveNextAction: hostedCheckout.nextAction || null,
           paymentMethodType: paymentMethod?.type || null,
+          flutterwaveSandboxScenario: hostedCheckout.sandboxScenario || sandboxScenario || null,
         },
         selectedInvoices: {
           create: selection.selectedInvoices.map((invoice, index) => ({
