@@ -22,6 +22,7 @@ router.post('/vendors/:vendorId/payments/attempts', paymentAttemptController.cre
 router.get('/vendors/:vendorId/payments/attempts', paymentAttemptController.listVendorAttempts);
 router.get('/vendors/:vendorId/payments/attempts/:attemptId', paymentAttemptController.getVendorAttemptDetail);
 router.get('/vendors/:vendorId/payments/attempts/:attemptId/status', paymentAttemptController.getVendorAttemptStatus);
+router.post('/vendors/:vendorId/payments/attempts/:attemptId/refresh', paymentAttemptController.refreshVendorAttempt);
 router.get('/vendors/:vendorId/payments/receipts/:paymentId/pdf', paymentAttemptController.downloadVendorReceiptPdf);
 
 // Payment processing routes

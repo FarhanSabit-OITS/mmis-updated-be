@@ -651,6 +651,37 @@ class PaymentAttemptService {
     });
   }
 
+  async refreshVendorAttempt({ vendorId, attemptId, actorUserId = null }) {
+    const attempt = await prisma.paymentAttempt.findFirst({
+      where: {
+        id: attemptId,
+        vendorId,
+      },
+      include: {
+        selectedInvoices: true,
+        invoicePayment: true,
+        webhookEvents: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!attempt) {
+      throw new Error('Payment attempt not found.');
+    }
+
+    if (attempt.invoicePayment || ['SUCCESSFUL', 'FAILED', 'ABANDONED', 'CANCELLED', 'EXPIRED'].includes(attempt.status)) {
+      return this.formatAttempt(attempt);
+    }
+
+    const refreshedAttempt = await this.verifyAndFinalizeAttempt({
+      attemptId: attempt.id,
+      actorUserId,
+    });
+
+    return this.formatAttempt(refreshedAttempt);
+  }
+
   async findAttemptByReference(attemptReference) {
     return prisma.paymentAttempt.findUnique({
       where: { attemptReference },

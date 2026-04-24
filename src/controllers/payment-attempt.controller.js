@@ -81,6 +81,21 @@ class PaymentAttemptController {
     }
   }
 
+  async refreshVendorAttempt(req, res) {
+    try {
+      await resolveVendorAccess(req.params.vendorId, req.user);
+      const attempt = await paymentAttemptService.refreshVendorAttempt({
+        vendorId: req.params.vendorId,
+        attemptId: req.params.attemptId,
+        actorUserId: req.user.userId,
+      });
+      res.json({ success: true, data: attempt });
+    } catch (error) {
+      const status = error.message.includes('Unauthorized') ? 403 : error.message.includes('not found') ? 404 : 400;
+      res.status(status).json({ success: false, message: error.message || 'Failed to refresh payment attempt' });
+    }
+  }
+
   async downloadVendorReceiptPdf(req, res) {
     try {
       await resolveVendorAccess(req.params.vendorId, req.user);
