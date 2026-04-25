@@ -62,6 +62,8 @@ exports.getGateCounters = async (req, res) => {
             marketName: gc.market?.name,
             marketId: gc.marketId,
             status: gc.admin?.user?.status,
+            staffStatus: gc.staffStatus || 'ACTIVE',
+            shift: gc.shift || 'Not Assigned',
             assignedSection: gc.assignedSection
         }));
 
@@ -85,7 +87,7 @@ exports.getGateCounters = async (req, res) => {
 exports.createGateCounter = async (req, res) => {
     try {
         const { roleName, marketId: managerMarketId } = req.user;
-        let { name, email, phone, password, marketId } = req.body;
+        let { name, email, phone, password, marketId, shift, staffStatus } = req.body;
 
         // RBAC check for marketId
         if (roleName === 'MarketMaster') {
@@ -208,7 +210,9 @@ exports.createGateCounter = async (req, res) => {
                 data: {
                     adminId: admin.id,
                     marketId,
-                    role: 'GATE_COUNTER'
+                    role: 'GATE_COUNTER',
+                    shift: shift || 'DAY',
+                    staffStatus: staffStatus || 'ACTIVE'
                 }
             });
 
@@ -282,4 +286,115 @@ exports.deleteGateCounter = async (req, res) => {
             message: 'Internal server error'
         });
     }
+};
+
+/**
+ * GET /api/market/staff/stock-counters
+ */
+exports.getStockCounters = async (req, res) => {
+    try {
+        const { roleName, marketId } = req.user;
+        let whereClause = { role: 'STOCK_COUNTER' };
+
+        if (roleName === 'MarketMaster') {
+            whereClause.marketId = marketId;
+        } else if (roleName !== 'SuperAdmin') {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const stockCounters = await prisma.pseudoMarketAdmin.findMany({
+            where: whereClause,
+            include: {
+                admin: { include: { user: { include: { profile: true } } } },
+                market: true,
+                supervisedSection: true // The relation from MarketSection
+            }
+        });
+
+        const formatted = stockCounters.map(sc => ({
+            id: sc.id,
+            userId: sc.admin?.user?.id,
+            name: `${sc.admin?.user?.profile?.firstName || ''} ${sc.admin?.user?.profile?.lastName || ''}`.trim(),
+            email: sc.admin?.user?.email,
+            marketName: sc.market?.name,
+            marketId: sc.marketId,
+            sectionName: sc.supervisedSection?.name || 'All Sections',
+            status: sc.admin?.user?.status,
+            staffStatus: sc.staffStatus || 'ACTIVE',
+            shift: sc.shift || 'Not Assigned'
+        }));
+
+        return res.status(200).json({ success: true, data: formatted });
+    } catch (err) {
+        console.error('getStockCounters error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
+ * POST /api/market/staff/stock-counters
+ */
+exports.createStockCounter = async (req, res) => {
+    try {
+        const { roleName, marketId: managerMarketId } = req.user;
+        let { name, email, phone, password, marketId, sectionId, shift, staffStatus } = req.body;
+
+        if (roleName === 'MarketMaster') marketId = managerMarketId;
+        if (!marketId) return res.status(400).json({ success: false, message: 'Market ID is required' });
+
+        const normalizedEmail = normalizeEmail(email);
+        const passwordHash = await bcrypt.hash(password, 10);
+        
+        // Find Role
+        const role = await prisma.role.findFirst({ where: { name: { in: ['StockCounter', 'Staff'] } } });
+
+        const result = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    email: normalizedEmail,
+                    passwordHash,
+                    phone,
+                    status: 'ACTIVE',
+                    emailVerified: true,
+                    profile: {
+                        create: {
+                            firstName: name.split(' ')[0],
+                            lastName: name.split(' ').slice(1).join(' ') || ' ',
+                            primaryPhone: phone || '',
+                            primaryEmail: normalizedEmail
+                        }
+                    },
+                    userRoles: { create: { roleId: role.id } }
+                }
+            });
+
+            const admin = await tx.admin.create({
+                data: { userId: user.id, adminLevel: 'PSEUDO_MARKET_ADMIN' }
+            });
+
+            return await tx.pseudoMarketAdmin.create({
+                data: {
+                    adminId: admin.id,
+                    marketId,
+                    role: 'STOCK_COUNTER',
+                    assignedSection: sectionId, // Optional link to a specific section
+                    shift: shift || 'DAY',
+                    staffStatus: staffStatus || 'ACTIVE'
+                }
+            });
+        });
+
+        return res.status(201).json({ success: true, message: 'Stock Counter created successfully', data: result });
+    } catch (err) {
+        console.error('createStockCounter error:', err);
+        return res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+/**
+ * DELETE /api/market/staff/stock-counters/:id
+ */
+exports.deleteStockCounter = async (req, res) => {
+    // Re-use logic or call deleteGateCounter logic (which is generic enough if we don't hardcode role check)
+    return exports.deleteGateCounter(req, res);
 };

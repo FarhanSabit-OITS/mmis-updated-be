@@ -858,8 +858,8 @@ exports.login = async (req, res) => {
           vendorId: user.stakeholder?.vendor?.id || null,
           supplierId: user.stakeholder?.supplier?.id || null,
           stalls: user.stakeholder?.vendor?.stalls || [],
-          needsOnboarding: (roleName === 'Vendor' && (!user.stakeholder?.vendor?.id || !user.profile?.taxIdNumber)) ||
-                           (roleName === 'Supplier' && (!user.stakeholder?.supplier?.id || !user.profile?.taxIdNumber))
+          needsOnboarding: ((roleName === 'Vendor' || user.stakeholder?.stakeholderType === 'VENDOR') && (!user.stakeholder?.vendor?.id || !user.profile?.taxIdNumber)) ||
+                           ((roleName === 'Supplier' || user.stakeholder?.stakeholderType === 'SUPPLIER') && (!user.stakeholder?.supplier?.id || !user.profile?.taxIdNumber))
         },
       },
     });

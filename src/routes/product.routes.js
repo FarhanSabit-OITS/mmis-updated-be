@@ -9,6 +9,13 @@ const express = require('express');
 const router = express.Router();
 const authMiddleware = require('../middleware/auth.middleware');
 const productController = require('../controllers/product.controller');
+const fileUpload = require('express-fileupload');
+
+const fileUploadMiddleware = fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 },
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+});
 
 // Middleware: All product routes require authentication
 router.use(authMiddleware);
@@ -36,7 +43,7 @@ router.get('/:vendorId/products', productController.listProducts);
  * File: multipart/form-data with 'file' field
  * Query params: dryRun, stopOnError
  */
-router.post('/:vendorId/products/bulk-upload', productController.bulkUpload);
+router.post('/:vendorId/products/bulk-upload', fileUploadMiddleware, productController.bulkUpload);
 
 /**
  * Get single product details
@@ -62,6 +69,6 @@ router.delete('/:productId', productController.deleteProduct);
  * File: multipart/form-data with 'file' field
  * Query params: dryRun, stopOnError
  */
-router.post('/:vendorId/products/bulk-upload', productController.bulkUpload);
+router.post('/:vendorId/products/bulk-upload', fileUploadMiddleware, productController.bulkUpload);
 
 module.exports = router;

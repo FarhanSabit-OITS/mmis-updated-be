@@ -30,10 +30,9 @@ const configureRouter = (app)=>{
     app.use('/api/products', productRoutes);
     app.use('/api/notifications', notificationRoutes);
     app.use('/api/superadmin/vendors', vendorRoutes);
-    app.use('/api/superadmin/suppliers', supplierRoutes);
+    app.use('/api/suppliers', supplierRoutes);
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
-    app.use('/api', paymentRoutes);
     app.use('/api/markets', marketRoutes)
     app.use('/api/shops', shopRoutes)
     app.use('/api/stalls', stallRoutes)
@@ -47,6 +46,9 @@ const configureRouter = (app)=>{
     app.use('/api/cities', cityRoutes)
     app.use('/api/gate', gateTerminalRoutes)
     app.use('/api/financials', financialsRoutes)
+    
+    // Generic /api mount for payment routes MUST come last to avoid intercepting specific routes above
+    app.use('/api', paymentRoutes);
 }
 
 module.exports = configureRouter

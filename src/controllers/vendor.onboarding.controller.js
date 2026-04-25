@@ -63,22 +63,29 @@ exports.setupShop = async (req, res) => {
         const { 
             marketId, shopName, stallNumber, monthlyRent, taxIdNumber,
             bankName, bankAccountNumber, bankAccountName,
-            mobileMoneyNumber, mobileMoneyNetwork
+            mobileMoneyNumber, mobileMoneyNetwork,
+            levelId: requestedLevelId   // Optional: vendor-selected floor/level
         } = req.body;
         const tinDocument = req.file;
-        let parsedMonthlyRent = Number(monthlyRent);
 
-        // Prefill rent from market if not provided
-        if (!parsedMonthlyRent || isNaN(parsedMonthlyRent)) {
+        // 1. Fetch Stakeholder/Vendor to check for existing stalls (seeded vendors)
+        const existingVendor = await prisma.vendor.findFirst({
+            where: { stakeholder: { userId: userId } },
+            include: { stalls: { take: 1 } }
+        });
+
+        // 2. Determine rent: Priority 1: Existing Stall Rate, Priority 2: Market Average
+        let parsedMonthlyRent = 0;
+        if (existingVendor && existingVendor.stalls && existingVendor.stalls.length > 0) {
+            parsedMonthlyRent = existingVendor.stalls[0].monthlyRate ? Number(existingVendor.stalls[0].monthlyRate) : 0;
+        }
+
+        if (!parsedMonthlyRent || parsedMonthlyRent === 0) {
             const market = await prisma.market.findUnique({
                 where: { id: marketId },
                 select: { averageRent: true }
             });
-            if (market && market.averageRent) {
-                parsedMonthlyRent = Number(market.averageRent);
-            } else {
-                parsedMonthlyRent = 0; // Fallback if no rate set
-            }
+            parsedMonthlyRent = market?.averageRent ? Number(market.averageRent) : 0;
         }
 
         if (!marketId || !shopName || !taxIdNumber) {
@@ -95,7 +102,7 @@ exports.setupShop = async (req, res) => {
             });
         }
 
-        if (!Number.isFinite(parsedMonthlyRent) || parsedMonthlyRent <= 0) {
+        if (!Number.isFinite(parsedMonthlyRent) || parsedMonthlyRent < 0) {
             return res.status(400).json({
                 success: false,
                 message: 'A valid monthly rent amount is required'
@@ -164,7 +171,8 @@ exports.setupShop = async (req, res) => {
                             vendorCode: generateUniqueCode('VND'),
                             businessName: shopName || user.profile?.firstName || user.email.split('@')[0],
                             businessType: 'Retail',
-                            primaryMarketId: marketId
+                            primaryMarketId: marketId,
+                            taxIdNumber: taxIdNumber // NEW: Sync TIN to Vendor record
                         }
                     });
                 }
@@ -201,21 +209,49 @@ exports.setupShop = async (req, res) => {
                 memberId = newMember.id;
             }
 
-            // B. Update Vendor primary market if needed
-            if (!vendor.primaryMarketId || vendor.primaryMarketId !== marketId) {
+            // B. Update Vendor primary market and TIN if needed
+            if (!vendor.primaryMarketId || vendor.primaryMarketId !== marketId || !vendor.taxIdNumber) {
                 await tx.vendor.update({
                     where: { id: vendorId },
-                    data: { primaryMarketId: marketId }
+                    data: { 
+                        primaryMarketId: marketId,
+                        taxIdNumber: taxIdNumber // NEW: Sync TIN to existing Vendor
+                    }
                 });
             }
 
             // C. Create Shop
-            // Check for level (optional, default to null or find first)
-            const level = await tx.marketLevel.findFirst({ where: { marketId } });
-            const levelId = level ? level.id : null;
+            // Use vendor-provided levelId if given, else auto-assign 'GF' or first level
+            let levelId = requestedLevelId || null;
+            let levelCode = 'GF';
+
+            if (!levelId) {
+                let level = await tx.marketLevel.findFirst({ 
+                    where: { marketId, OR: [{ name: { contains: 'Ground' } }, { uniqueCode: { contains: 'GF' } }] } 
+                });
+                if (!level) level = await tx.marketLevel.findFirst({ where: { marketId } });
+                levelId = level ? level.id : null;
+            }
+
+            if (levelId) {
+                const levelObj = await tx.marketLevel.findUnique({ where: { id: levelId } });
+                if (levelObj) {
+                    const match = levelObj.name.match(/Block\s([A-Za-z0-9]+)/i) || levelObj.name.match(/\b([A-Z0-9]{1,3})\b/);
+                    if (match && match[1]) levelCode = match[1].toUpperCase();
+                }
+            }
 
             const shopUniqueCode = generateUniqueCode('SHOP');
-            const shopNumberVal = `SHOP-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            
+            // Resolve base number from input or generate random
+            const baseNumber = stallNumber || crypto.randomBytes(2).toString('hex').toUpperCase();
+            
+            // Format as [LevelCode]-[ShopNo]
+            const formattedNumber = baseNumber.toUpperCase().startsWith(levelCode) 
+                ? baseNumber.toUpperCase() 
+                : `${levelCode}-${baseNumber.toUpperCase()}`;
+
+            const shopNumberVal = formattedNumber;
 
             const shop = await tx.shop.create({
                 data: {
@@ -238,7 +274,7 @@ exports.setupShop = async (req, res) => {
 
             // D. Create Stall
             const stallUniqueCode = generateUniqueCode('STALL');
-            const stallNumVal = stallNumber || `S-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+            const stallNumVal = formattedNumber;
 
             const stall = await tx.stall.create({
                 data: {
@@ -313,20 +349,33 @@ exports.setupShop = async (req, res) => {
                 }
             });
 
-            // H. Create Initial Rent Invoice
+            // H. Create Initial Rent Invoice (matching RentInvoice schema exactly)
+            const now = new Date();
+            const dueDate = new Date(now);
+            dueDate.setDate(dueDate.getDate() + 7); // Due in 7 days
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
             await tx.rentInvoice.create({
                 data: {
                     shopId: shop.id,
-                    contractId: contract.id,
-                    amount: parsedMonthlyRent.toFixed(2),
-                    taxAmount: (parsedMonthlyRent * 0.18).toFixed(2), // Assume 18% VAT
-                    totalAmount: (parsedMonthlyRent * 1.18).toFixed(2),
-                    dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // Due in 7 days
-                    periodStart: new Date(),
-                    periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-                    status: 'PENDING',
+                    rentContractId: contract.id,           // ← correct field name
+                    vendorId: vendorId,                    // ← required
+                    marketId: marketId,
                     invoiceNumber: generateUniqueCode('INV'),
-                    marketId: marketId
+                    billingYear: now.getFullYear(),
+                    billingMonth: now.getMonth() + 1,      // 1-12
+                    periodStart: now,
+                    periodEnd: periodEnd,
+                    billingStartDate: now,
+                    issueDate: now,
+                    dueDate: dueDate,
+                    baseRentAmount: parsedMonthlyRent.toFixed(2),
+                    totalAmount: parsedMonthlyRent.toFixed(2),
+                    outstandingAmount: parsedMonthlyRent.toFixed(2),
+                    status: 'OPEN',
+                    generationMode: 'AUTOMATIC',
+                    metadata: { source: 'VENDOR_ONBOARDING', autoGenerated: true }
                 }
             });
 
@@ -481,15 +530,17 @@ exports.setupSupplier = async (req, res) => {
             const supplier = await tx.supplier.upsert({
                 where: { stakeholderId: stakeholderId },
                 update: {
-                    companyName: businessName,
+                    businessName: businessName,
                     supplierType: businessType || 'GENERAL',
+                    taxId: taxIdNumber, // NEW: Sync TIN to Supplier record
                     status: 'ACTIVE'
                 },
                 create: {
                     stakeholderId: stakeholderId,
-                    companyName: businessName,
+                    businessName: businessName,
                     supplierCode: `SUP-${Date.now().toString().slice(-6)}`,
                     supplierType: businessType || 'GENERAL',
+                    taxId: taxIdNumber, // NEW: Sync TIN to Supplier record
                     status: 'ACTIVE'
                 }
             });

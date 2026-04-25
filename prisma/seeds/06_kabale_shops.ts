@@ -101,6 +101,9 @@ export async function seedKabaleShops(
   let created = 0;
   let skipped = 0;
 
+  // Cache for dynamic levels
+  const dynamicLevelMap: Record<string, string> = { ...levelMap };
+
   for (const record of memberRecords) {
     const { row, memberId } = record;
 
@@ -115,25 +118,52 @@ export async function seedKabaleShops(
 
     const uniqueCode = `MKT-KBL-001-${String(row.id).padStart(5, "0")}`;
 
+    // Parse Shop ID / fcNo
+    const rawShopId = row.fcNo ? String(row.fcNo).trim() : `SHOP-${row.id}`;
+    const shopNumber = rawShopId;
+    let shopLevelId = levelId; // Fallback to MAIN
+
+    // Extract prefix
+    const prefixMatch = rawShopId.match(/^[A-Za-z]+/);
+    if (prefixMatch) {
+      const prefix = prefixMatch[0].toUpperCase();
+      if (!dynamicLevelMap[prefix]) {
+        const newLevelCode = `MKT-KBL-001-LVL-${prefix}`;
+        const newLevel = await prisma.marketLevel.upsert({
+          where: { uniqueCode: newLevelCode },
+          update: {},
+          create: {
+            marketId,
+            levelNumber: Object.keys(dynamicLevelMap).length + 1,
+            uniqueCode: newLevelCode,
+            name: `Block ${prefix} Level`,
+            createdById: marketMasterUserId,
+          },
+        });
+        dynamicLevelMap[prefix] = newLevel.id;
+      }
+      shopLevelId = dynamicLevelMap[prefix];
+    }
+
     try {
       await prisma.shop.upsert({
         where: { uniqueCode },
         update: {},
         create: {
           marketId,
-          levelId,
+          levelId: shopLevelId,
           sectionId,
           memberId,
 
           uniqueCode,
-          shopNumber: `SHOP-${row.id}`,
+          shopNumber,
           shopName: toShopName(row.name).slice(0, 200),
 
           shopType: toShopType(row.category),
           categoryTags: [tag],
 
-          monthlyRent: row.monthlyPay,
-          securityDeposit: row.monthlyPay * 2,
+          monthlyRent: Number(row.monthlyPay) || 0,
+          securityDeposit: (Number(row.monthlyPay) || 0) * 2,
 
           contractStartDate: new Date("2024-01-01"),
           contractEndDate: new Date("2025-12-31"),

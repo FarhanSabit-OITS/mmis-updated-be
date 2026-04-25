@@ -1,0 +1,14 @@
+# Use this workspace to collaborate
+workspace:
+  id: f6721a52-7f66-49ac-8c5b-b8acefe90505
+
+localResources:
+  collections:
+    - ..\Data\Market Master Api.postman_collection (1).json
+    - ..\Data\Market Master Api.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
+cloudResources:
+  collections:
+    ..\postman\collections\Market Master Api: 67b8f734-62eb-41ef-845e-bd184d867829

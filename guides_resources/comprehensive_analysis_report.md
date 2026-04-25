@@ -80,6 +80,7 @@ To ensure the MMIS platform remains stable, the following guidelines **must** be
 | **Finance** | Record Rent Payment, Generate Invoices, List Rent Contracts. |
 | **Gate Terminal** | Entry Token Generation, Exit Scanning, Fee Calculation. |
 | **Notifications** | List User Notifications, Mark as Read. |
+| **Staff** | Create/List Gate & Stock Counters, Delete Staff. |
 
 ---
 

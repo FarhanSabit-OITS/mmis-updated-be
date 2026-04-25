@@ -8,7 +8,15 @@ async function migrate() {
         where: { primaryMarketId: null },
         include: {
             stalls: { take: 1 },
-            shops: { take: 1 }
+            stakeholder: {
+                include: {
+                    member: {
+                        include: {
+                            shops: { take: 1 }
+                        }
+                    }
+                }
+            }
         }
     });
 
@@ -19,10 +27,15 @@ async function migrate() {
     for (const vendor of vendors) {
         let targetMarketId = null;
 
-        if (vendor.stalls.length > 0) {
+        if (vendor.stalls && vendor.stalls.length > 0) {
             targetMarketId = vendor.stalls[0].marketId;
-        } else if (vendor.shops.length > 0) {
-            targetMarketId = vendor.shops[0].marketId;
+        } else if (
+            vendor.stakeholder &&
+            vendor.stakeholder.member &&
+            vendor.stakeholder.member.shops &&
+            vendor.stakeholder.member.shops.length > 0
+        ) {
+            targetMarketId = vendor.stakeholder.member.shops[0].marketId;
         }
 
         if (targetMarketId) {

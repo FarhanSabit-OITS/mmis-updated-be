@@ -3,6 +3,13 @@ const router = express.Router();
 const paymentController = require('../controllers/payment.controller');
 const billingController = require('../controllers/billing.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+const fileUpload = require('express-fileupload');
+
+const fileUploadMiddleware = fileUpload({
+  limits: { fileSize: 10 * 1024 * 1024 },
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+});
 
 // All payment routes require authentication
 router.use(authMiddleware);
@@ -14,7 +21,7 @@ router.get('/vendors/:vendorId/payments/tax', paymentController.getVendorTaxPaym
 router.get('/vendors/:vendorId/payments/history', paymentController.getVendorPaymentHistory);
 
 // Payment processing routes
-router.post('/payments/evidence', paymentController.uploadPaymentEvidence);
+router.post('/payments/evidence', fileUploadMiddleware, paymentController.uploadPaymentEvidence);
 router.post('/payments/rent/record', paymentController.recordRentPayment);
 
 // Admin payment routes
@@ -38,7 +45,7 @@ router.post('/admin/payment-claims/:id/reject', billingController.rejectPaymentC
 router.get('/vendors/:vendorId/invoices', billingController.listVendorInvoices);
 router.get('/vendors/:vendorId/invoices/:invoiceId', billingController.getVendorInvoiceDetail);
 router.get('/vendors/:vendorId/invoices/:invoiceId/pdf', billingController.downloadVendorInvoicePdf);
-router.post('/vendors/:vendorId/payment-claims', billingController.submitVendorPaymentClaim);
+router.post('/vendors/:vendorId/payment-claims', fileUploadMiddleware, billingController.submitVendorPaymentClaim);
 router.get('/vendors/:vendorId/payment-claims', billingController.listVendorPaymentClaims);
 
 module.exports = router;

@@ -57,6 +57,7 @@ enum StakeholderType {
   SUPPLIER
   CUSTOMER
   GUEST
+  ORGANIZATION
 }
 
 enum MfaType {
@@ -905,6 +906,7 @@ model Supplier {
   supplierType     String   @default("WHOLESALER") @db.VarChar(50)
   licenseNumber    String?  @unique @db.VarChar(100)
   taxId            String?  @unique @db.VarChar(50)
+  status           String   @default("ACTIVE") @db.VarChar(50)
   warehouseAddress String?  @db.VarChar(500)
   deliveryRadius   Int?
   minimumOrder     Decimal? @db.Decimal(10, 2)
@@ -1237,6 +1239,8 @@ model PseudoMarketAdmin {
   assignedSection   String?          @db.VarChar(100) // Text label (legacy)
   assignedSectionId String?          // FK to MarketSection for Stock Counter scope
   specialization    String?          @db.VarChar(100)
+  shift             String?          @db.VarChar(50)
+  staffStatus       String           @default("ACTIVE") @db.VarChar(50)
   workingHours      Json?
   permissions       Json?
 
