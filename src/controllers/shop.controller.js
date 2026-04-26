@@ -69,7 +69,7 @@ module.exports = {
 
   editShop: asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = req.validated;
 
     const existingShop = await shopService.getShopDetailsById(id);
     if (!existingShop) {
