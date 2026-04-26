@@ -7,7 +7,7 @@ const shopController = require("../controllers/shop.controller");
 router.post("/", validate(createShopSchema), shopController.createShop);
 router.get("/", validate(getShopsQuerySchema), shopController.getShops);
 router.get("/:id", shopController.getShopDetails);
-router.put("/:id", shopController.editShop);
+router.put("/:id", validate(createShopSchema), shopController.editShop);
 router.delete('/:id', shopController.deleteShop);
 
 module.exports = router;
