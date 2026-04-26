@@ -33,10 +33,18 @@ const remove = (id) => {
   });
 };
 
+const findByMarketId = (marketId) => {
+  return prisma.marketLevel.findMany({
+    where: { marketId },
+    include: { sections: true }
+  });
+};
+
 module.exports = {
   create,
   findAll,
   findById,
   update,
-  remove
+  remove,
+  findByMarketId
 };

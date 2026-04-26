@@ -77,10 +77,27 @@ const remove = async (req, res) => {
     );
 };
 
+const getByMarketId = async (req, res) => {
+  try {
+    const result = await service.getLevelsByMarketId(req.params.marketId);
+    res.status(200).json(
+        new ApiResponse({
+            statusCode: 200,
+            success: true,
+            message: "Market levels fetched successfully",
+            data: result
+        })
+    );
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 module.exports = {
   create,
   getAll,
   getById,
   update,
-  remove
+  remove,
+  getByMarketId
 };

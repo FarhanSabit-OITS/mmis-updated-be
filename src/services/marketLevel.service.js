@@ -35,10 +35,15 @@ const deleteLevel = async (id) => {
   return await repo.remove(id);
 };
 
+const getLevelsByMarketId = async (marketId) => {
+  return await repo.findByMarketId(marketId);
+};
+
 module.exports = {
   createLevel,
   getLevels,
   getLevelById,
   updateLevel,
-  deleteLevel
+  deleteLevel,
+  getLevelsByMarketId
 };
