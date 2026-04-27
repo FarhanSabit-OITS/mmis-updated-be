@@ -2,7 +2,13 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/payment.controller');
 const billingController = require('../controllers/billing.controller');
+const paymentAttemptController = require('../controllers/payment-attempt.controller');
+const paymentOpsController = require('../controllers/payment-ops.controller');
+const refundController = require('../controllers/refund.controller');
 const authMiddleware = require('../middleware/auth.middleware');
+
+// Provider webhook route must remain outside bearer-auth middleware
+router.post('/payments/flutterwave/webhook', paymentOpsController.receiveFlutterwaveWebhook);
 
 // All payment routes require authentication
 router.use(authMiddleware);
@@ -12,6 +18,12 @@ router.get('/vendors/:vendorId/payments/summary', paymentController.getVendorPay
 router.get('/vendors/:vendorId/payments/rent', paymentController.getVendorRentPayments);
 router.get('/vendors/:vendorId/payments/tax', paymentController.getVendorTaxPayments);
 router.get('/vendors/:vendorId/payments/history', paymentController.getVendorPaymentHistory);
+router.post('/vendors/:vendorId/payments/attempts', paymentAttemptController.createVendorAttempt);
+router.get('/vendors/:vendorId/payments/attempts', paymentAttemptController.listVendorAttempts);
+router.get('/vendors/:vendorId/payments/attempts/:attemptId', paymentAttemptController.getVendorAttemptDetail);
+router.get('/vendors/:vendorId/payments/attempts/:attemptId/status', paymentAttemptController.getVendorAttemptStatus);
+router.post('/vendors/:vendorId/payments/attempts/:attemptId/refresh', paymentAttemptController.refreshVendorAttempt);
+router.get('/vendors/:vendorId/payments/receipts/:paymentId/pdf', paymentAttemptController.downloadVendorReceiptPdf);
 
 // Payment processing routes
 router.post('/payments/evidence', paymentController.uploadPaymentEvidence);
@@ -22,6 +34,14 @@ router.get('/admin/payments/collections', paymentController.getAdminPaymentColle
 router.get('/admin/payments/outstanding', paymentController.getOutstandingPayments);
 router.get('/admin/payments/vendors', paymentController.getScopedVendorsWithPayments);
 router.post('/admin/payments/send-reminder', paymentController.sendPaymentReminder);
+router.get('/admin/payments/online', paymentOpsController.listAdminOnlinePayments);
+router.get('/admin/payments/online/:attemptId', paymentOpsController.getAdminOnlinePaymentDetail);
+router.post('/admin/payments/online/:attemptId/reverify', paymentOpsController.reverifyAttempt);
+router.get('/admin/payments/webhooks', paymentOpsController.listWebhookEvents);
+router.post('/admin/payments/webhooks/:eventId/reprocess', paymentOpsController.reprocessWebhookEvent);
+router.get('/admin/refunds', refundController.listRefunds);
+router.post('/admin/refunds', refundController.createRefundRecord);
+router.post('/admin/refunds/:refundId/status', refundController.updateRefundStatus);
 
 // Invoice generation and billing routes
 router.post('/admin/invoices/generation-runs', billingController.createGenerationRun);

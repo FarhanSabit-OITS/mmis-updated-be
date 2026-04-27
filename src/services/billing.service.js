@@ -766,23 +766,55 @@ class BillingService {
     });
   }
 
-  async allocatePaymentToInvoices(payment, vendorId, explicitInvoiceId = null) {
+  async allocatePaymentToInvoices(payment, vendorId, allocationOptions = null) {
+    const normalizedOptions = typeof allocationOptions === 'string'
+      ? { explicitInvoiceId: allocationOptions, selectedInvoiceIds: null, restrictToSelected: false }
+      : {
+          explicitInvoiceId: allocationOptions?.explicitInvoiceId || null,
+          selectedInvoiceIds: allocationOptions?.selectedInvoiceIds || null,
+          restrictToSelected: Boolean(allocationOptions?.restrictToSelected),
+        };
     let remaining = toDecimal(payment.amount);
     const allocations = [];
     const invoices = await prisma.rentInvoice.findMany({
       where: {
         vendorId,
         status: { in: ['OPEN', 'PARTIALLY_PAID', 'OVERDUE'] },
+        ...(normalizedOptions.selectedInvoiceIds?.length
+          ? normalizedOptions.restrictToSelected
+            ? { id: { in: normalizedOptions.selectedInvoiceIds } }
+            : {}
+          : {}),
       },
       orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
     });
 
-    const orderedInvoices = explicitInvoiceId
-      ? [
-          ...invoices.filter((invoice) => invoice.id === explicitInvoiceId),
-          ...invoices.filter((invoice) => invoice.id !== explicitInvoiceId),
-        ]
-      : invoices;
+    let orderedInvoices = invoices;
+    if (normalizedOptions.selectedInvoiceIds?.length) {
+      const selectedOrder = new Map(normalizedOptions.selectedInvoiceIds.map((id, index) => [id, index]));
+      const selectedInvoices = invoices
+        .filter((invoice) => selectedOrder.has(invoice.id))
+        .sort((a, b) => {
+          const aIdx = selectedOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+          const bIdx = selectedOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+          if (aIdx !== bIdx) return aIdx - bIdx;
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        });
+
+      orderedInvoices = normalizedOptions.restrictToSelected
+        ? selectedInvoices
+        : [
+            ...selectedInvoices,
+            ...invoices.filter((invoice) => !selectedOrder.has(invoice.id)),
+          ];
+    }
+
+    if (normalizedOptions.explicitInvoiceId) {
+      orderedInvoices = [
+        ...orderedInvoices.filter((invoice) => invoice.id === normalizedOptions.explicitInvoiceId),
+        ...orderedInvoices.filter((invoice) => invoice.id !== normalizedOptions.explicitInvoiceId),
+      ];
+    }
 
     for (const invoice of orderedInvoices) {
       if (remaining <= 0) break;
