@@ -4,8 +4,9 @@
   "description": "Backend APIs for MarketMasterERP",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "start": "tsx src/index.js",
+    "dev": "nodemon --exec tsx src/index.js",
+    "repair:first-month-rent-proration": "node scripts/repair-prorated-first-month-rent-rows.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +15,7 @@
   "type": "commonjs",
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "@react-pdf/renderer": "^4.5.1",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -25,6 +27,7 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^7.0.11",
     "prisma": "^6.19.0",
+    "react": "^19.2.5",
     "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
@@ -32,6 +35,7 @@
     "@types/bcryptjs": "^2.4.6",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.5.4"
   },
   "prisma": {

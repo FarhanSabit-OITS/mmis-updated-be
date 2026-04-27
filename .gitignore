@@ -197,3 +197,20 @@ scripts/run-phase5.sh
 FORGOT_PASSWORD_PLAN.md
 FORGOT_PASSWORD_THEORY.md
 prisma/query_to_create_a_market_master.sql
+
+
+
+
+
+
+
+
+check_all_vendors.js
+check_db.js
+check_shops.js
+prisma/migrations/20260415050500_init/
+prisma/query_to_change_roles_of_guest_kabale_to_vendors.sql
+src/email_template copy.html
+src/email_template_.html
+test_login_resp.js
+uploads/

@@ -1,5 +1,6 @@
 const prisma = require('../prisma');
 const crypto = require('crypto');
+const billingService = require('./billing.service');
 
 const toNumber = (value) => Number(value || 0);
 const startOfMonthUtc = (input) => {
@@ -10,6 +11,7 @@ const endOfMonthUtc = (input) => {
   const date = input ? new Date(input) : new Date();
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 23, 59, 59, 999));
 };
+const toDecimal = (value) => Number(toNumber(value).toFixed(2));
 const monthKeyFromDate = (date) => {
   const d = new Date(date);
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
@@ -32,8 +34,86 @@ const generateUniqueCode = (prefix) => {
   return `${prefix}-${timestamp}-${random}`;
 };
 const SYSTEM_LANDLORD_EMAIL = 'market.administration@marketmaster.local';
+const calculateProratedAmount = (monthlyRent, billingStartDate, periodStart) => {
+  const start = billingStartDate > periodStart ? billingStartDate : periodStart;
+  const periodEnd = endOfMonthUtc(periodStart);
+  const daysInMonth = new Date(Date.UTC(periodStart.getUTCFullYear(), periodStart.getUTCMonth() + 1, 0)).getUTCDate();
+  const billableDays = Math.max(0, Math.floor((periodEnd - start) / 86400000) + 1);
+  const dailyRate = toNumber(monthlyRent) / daysInMonth;
+  return {
+    daysInMonth,
+    billableDays,
+    amount: toDecimal(dailyRate * billableDays),
+    isProrated: billableDays > 0 && billableDays < daysInMonth,
+  };
+};
+const computeLegacyRentTerms = (contract, periodStartInput) => {
+  const periodStart = startOfMonthUtc(periodStartInput);
+  const periodEnd = endOfMonthUtc(periodStart);
+  const dueDay = Math.max(1, Math.min(Number(contract.paymentDay || 1), 28));
+  const configuredDueDate = new Date(Date.UTC(
+    periodStart.getUTCFullYear(),
+    periodStart.getUTCMonth(),
+    dueDay
+  ));
+  const billingStartDate = new Date(Math.max(
+    periodStart.getTime(),
+    new Date(contract.startDate).getTime(),
+    new Date(contract.shop?.contractStartDate || contract.startDate).getTime()
+  ));
+  const isFirstMonth = monthKeyFromDate(billingStartDate) === monthKeyFromDate(periodStart);
+  const proration = calculateProratedAmount(contract.monthlyRent, billingStartDate, periodStart);
+  const amount = isFirstMonth ? proration.amount : toDecimal(contract.monthlyRent);
+  const dueDate = isFirstMonth && billingStartDate > configuredDueDate ? billingStartDate : configuredDueDate;
+
+  return {
+    amount,
+    periodStart,
+    periodEnd,
+    dueDate,
+    billingStartDate,
+    isFirstMonth,
+    proration,
+    noteSuffix: isFirstMonth && proration.isProrated
+      ? `Prorated first month from ${billingStartDate.toISOString().slice(0, 10)} (${proration.billableDays}/${proration.daysInMonth} days).`
+      : null,
+  };
+};
 
 class PaymentService {
+  async repairLegacyRentPaymentRow(payment) {
+    if (!payment?.contract) return payment;
+
+    const expected = computeLegacyRentTerms(payment.contract, payment.periodStart);
+    const amountChanged = Math.abs(toNumber(payment.amount) - expected.amount) > 0.000001;
+    const dueDateChanged = new Date(payment.dueDate).getTime() !== expected.dueDate.getTime();
+
+    if (!amountChanged && !dueDateChanged) {
+      return payment;
+    }
+
+    const enriched = await this.enrichRentPayments([payment]);
+    const paidAmount = enriched[0]?.paidAmount || 0;
+    const outstandingAmount = Math.max(expected.amount - paidAmount, 0);
+    const nextStatus = outstandingAmount <= 0 ? 'PAID' : (expected.dueDate < new Date() ? 'OVERDUE' : 'PENDING');
+
+    return prisma.rentPayment.update({
+      where: { id: payment.id },
+      data: {
+        amount: expected.amount,
+        dueDate: expected.dueDate,
+        status: nextStatus,
+        paymentDate: outstandingAmount <= 0 ? (payment.paymentDate || new Date()) : payment.paymentDate,
+        notes: [
+          payment.notes,
+          expected.noteSuffix,
+          'Legacy rent row auto-repaired to match first-month proration rules.',
+        ].filter(Boolean).join('\n'),
+      },
+      include: { contract: { include: { shop: true, tenant: true } } },
+    });
+  }
+
   async ensureCurrentMonthRentRowsForContracts(contracts) {
     if (!contracts?.length) return;
 
@@ -50,21 +130,17 @@ class PaymentService {
       const monthlyRent = toNumber(contract.monthlyRent);
       if (monthlyRent <= 0) continue;
 
-      const dueDay = Math.max(1, Math.min(Number(contract.paymentDay || 1), 28));
+      const expected = computeLegacyRentTerms(contract, currentMonthStart);
       const created = await prisma.rentPayment.create({
         data: {
           contractId: contract.id,
-          amount: monthlyRent,
-          periodStart: currentMonthStart,
-          periodEnd: endOfMonthUtc(currentMonthStart),
-          dueDate: new Date(Date.UTC(
-            currentMonthStart.getUTCFullYear(),
-            currentMonthStart.getUTCMonth(),
-            dueDay
-          )),
+          amount: expected.amount,
+          periodStart: expected.periodStart,
+          periodEnd: expected.periodEnd,
+          dueDate: expected.dueDate,
           paymentMethod: 'CASH',
           status: 'PENDING',
-          notes: 'Auto-generated current month rent due row'
+          notes: ['Auto-generated current month rent due row', expected.noteSuffix].filter(Boolean).join('\n')
         }
       });
 
@@ -275,7 +351,12 @@ class PaymentService {
       })
     ]);
 
-    const obligations = await this.enrichRentPayments(duePayments);
+    const repairedDuePayments = [];
+    for (const payment of duePayments) {
+      repairedDuePayments.push(await this.repairLegacyRentPaymentRow(payment));
+    }
+
+    const obligations = await this.enrichRentPayments(repairedDuePayments);
     const totalRevenue = transactions.reduce((sum, tx) => sum + toNumber(tx.amount), 0);
     const monthlyRevenue = paidThisMonth.reduce((sum, tx) => sum + toNumber(tx.amount), 0);
     const pendingPayments = obligations.filter((item) => item.status === 'PENDING').reduce((sum, item) => sum + item.outstandingAmount, 0);
@@ -336,7 +417,12 @@ class PaymentService {
       orderBy: { dueDate: 'asc' }
     });
 
-    const obligations = await this.enrichRentPayments(duePayments);
+    const repairedDuePayments = [];
+    for (const payment of duePayments) {
+      repairedDuePayments.push(await this.repairLegacyRentPaymentRow(payment));
+    }
+
+    const obligations = await this.enrichRentPayments(repairedDuePayments);
     const rows = obligations
       .filter((item) => item.outstandingAmount > 0)
       .filter((item) => {
@@ -421,6 +507,9 @@ class PaymentService {
           contract: {
             id: contract.id,
             tenantId: vendor.id,
+            startDate: contract.startDate,
+            paymentDay: contract.paymentDay,
+            monthlyRent: contract.monthlyRent,
             tenant: { id: vendor.id, businessName: vendor.businessName },
             shop: contract.shop,
           }
@@ -428,7 +517,12 @@ class PaymentService {
       )
     );
 
-    const enrichedPayments = await this.enrichRentPayments(scopedPayments);
+    const repairedScopedPayments = [];
+    for (const payment of scopedPayments) {
+      repairedScopedPayments.push(await this.repairLegacyRentPaymentRow(payment));
+    }
+
+    const enrichedPayments = await this.enrichRentPayments(repairedScopedPayments);
     const obligationsByVendorId = new Map();
     for (const payment of enrichedPayments) {
       const list = obligationsByVendorId.get(payment.vendorId) || [];
@@ -561,7 +655,12 @@ class PaymentService {
       orderBy: { dueDate: 'asc' }
     });
 
-    const obligations = await this.enrichRentPayments(payments);
+    const repairedPayments = [];
+    for (const payment of payments) {
+      repairedPayments.push(await this.repairLegacyRentPaymentRow(payment));
+    }
+
+    const obligations = await this.enrichRentPayments(repairedPayments);
     return {
       payments: obligations,
       total: obligations.reduce((sum, item) => sum + item.outstandingAmount, 0),
@@ -778,19 +877,22 @@ class PaymentService {
         })();
 
     if (!paymentRow) {
+      const expected = computeLegacyRentTerms(resolvedContract, targetMonth);
       paymentRow = await prisma.rentPayment.create({
         data: {
           contractId: resolvedContract.id,
-          amount: resolvedContract.monthlyRent,
-          periodStart: targetMonth,
-          periodEnd: endOfMonthUtc(targetMonth),
-          dueDate: new Date(Date.UTC(targetMonth.getUTCFullYear(), targetMonth.getUTCMonth(), resolvedContract.paymentDay || 1)),
+          amount: expected.amount,
+          periodStart: expected.periodStart,
+          periodEnd: expected.periodEnd,
+          dueDate: expected.dueDate,
           paymentMethod: paymentMethod || 'CASH',
           status: 'PENDING',
-          notes: notes || null,
+          notes: [notes, expected.noteSuffix].filter(Boolean).join('\n') || null,
         },
         include: { contract: { include: { shop: true, tenant: true } } }
       });
+    } else {
+      paymentRow = await this.repairLegacyRentPaymentRow(paymentRow);
     }
 
     const document = await prisma.document.findUnique({ where: { id: documentId } });
@@ -842,6 +944,17 @@ class PaymentService {
     });
 
     const refreshedObligation = (await this.enrichRentPayments([updatedPayment]))[0];
+    await billingService.syncInvoiceAfterLegacyPayment({
+      vendorId,
+      rentPaymentId: paymentRow.id,
+      actorUserId,
+      paymentDate,
+      amount,
+      paymentMethod,
+      transactionId,
+      documentId,
+      notes,
+    });
     return {
       transaction: tx,
       payment: updatedPayment,

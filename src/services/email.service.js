@@ -73,7 +73,29 @@ async function sendPasswordResetEmail(to, resetUrl, options = {}) {
   return info;
 }
 
+async function sendSystemEmail({ to, subject, intro, actionUrl, actionText, outro, name = 'User', ctaTag = 'MMIS', heroTitle = 'MarketMaster Notification' }) {
+  const html = renderEmailTemplate({
+    name,
+    actionUrl,
+    actionText,
+    intro,
+    outro,
+    ctaTag,
+    heroTitle,
+  });
+  const textParts = [intro, actionUrl, outro].filter(Boolean);
+  const info = await getTransporter().sendMail({
+    from: SMTP_FROM || SMTP_USER,
+    to,
+    subject,
+    text: textParts.join('\n\n'),
+    html,
+  });
+  return info;
+}
+
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendSystemEmail,
 };

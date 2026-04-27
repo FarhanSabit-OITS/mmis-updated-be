@@ -12,6 +12,16 @@
  */
 
 const jwt = require('jsonwebtoken');
+const prisma = require('../prisma');
+
+const BILLING_ONLY_ALLOWED_PATTERNS = [
+  /^\/api\/auth\/me(?:\/|$)/,
+  /^\/api\/notifications(?:\/|$)/,
+  /^\/api\/vendors\/[^/]+\/invoices(?:\/|$)/,
+  /^\/api\/vendors\/[^/]+\/payment-claims(?:\/|$)/,
+  /^\/api\/vendors\/[^/]+\/payments(?:\/|$)/,
+  /^\/api\/payments(?:\/|$)/,
+];
 
 module.exports = function authMiddleware(req, res, next) {
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
@@ -47,6 +57,34 @@ module.exports = function authMiddleware(req, res, next) {
       roleLevel: decoded.roleLevel || null,
       marketId: decoded.marketId || null,
     };
+
+    if (decoded.roleName === 'Vendor') {
+      prisma.vendor.findFirst({
+        where: { stakeholder: { userId: decoded.userId } },
+        include: { billingStatus: true },
+      }).then((vendor) => {
+        if (vendor?.billingStatus?.billingAccessState === 'BILLING_ONLY_RESTRICTED') {
+          const requestPath = req.originalUrl || req.url || '';
+          const allowed = BILLING_ONLY_ALLOWED_PATTERNS.some((pattern) => pattern.test(requestPath));
+          if (!allowed) {
+            return res.status(403).json({
+              success: false,
+              message: 'Access restricted to billing and payment pages until rent arrears are resolved.',
+              data: {
+                billingAccessState: vendor.billingStatus.billingAccessState,
+                contactAdminEmail: vendor.billingStatus.contactAdminEmail,
+                contactAdminPhone: vendor.billingStatus.contactAdminPhone,
+              },
+            });
+          }
+        }
+        return next();
+      }).catch((lookupError) => {
+        console.error('Vendor billing restriction lookup error:', lookupError.message);
+        return next();
+      });
+      return;
+    }
 
     return next();
   } catch (err) {
