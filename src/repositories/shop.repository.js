@@ -1,10 +1,12 @@
 const prisma = require('../shared/prisma');
 const { PaginationResponse } = require('../utils');
 module.exports = {
-  getShopList: async ({ page = 1, limit = 10, search, marketId, status, occupationStatus, shopType, memberId }) => {
+  getShopList: async ({ page = 1, limit = 10, search, marketId, levelId, sectionId, status, occupationStatus, shopType, memberId }) => {
     const skip = (page - 1) * limit;
     const where = {
       ...(marketId && { marketId }),
+      ...(levelId && { levelId }),
+      ...(sectionId && { sectionId }),
       ...(status && { status }),
       ...(occupationStatus && { occupationStatus }),
       ...(shopType && { shopType }),

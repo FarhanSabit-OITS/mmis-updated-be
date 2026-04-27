@@ -64,7 +64,8 @@ exports.setupShop = async (req, res) => {
             marketId, shopName, stallNumber, monthlyRent, taxIdNumber,
             bankName, bankAccountNumber, bankAccountName,
             mobileMoneyNumber, mobileMoneyNetwork,
-            levelId: requestedLevelId   // Optional: vendor-selected floor/level
+            levelId: requestedLevelId,   // Optional: vendor-selected floor/level
+            shopId                      // Optional: existing shop to claim
         } = req.body;
         const tinDocument = req.file;
 
@@ -220,61 +221,84 @@ exports.setupShop = async (req, res) => {
                 });
             }
 
-            // C. Create Shop
-            // Use vendor-provided levelId if given, else auto-assign 'GF' or first level
-            let levelId = requestedLevelId || null;
-            let levelCode = 'GF';
-
-            if (!levelId) {
-                let level = await tx.marketLevel.findFirst({ 
-                    where: { marketId, OR: [{ name: { contains: 'Ground' } }, { uniqueCode: { contains: 'GF' } }] } 
+            // C. Create or Claim Shop
+            let shop;
+            let shopNumberVal;
+            
+            if (shopId) {
+                // Verify shop exists and is available
+                const existingShop = await tx.shop.findUnique({ where: { id: shopId } });
+                if (!existingShop) throw new Error("Selected shop not found");
+                if (existingShop.occupationStatus === 'OCCUPIED') throw new Error("Selected shop is already occupied");
+                
+                shop = await tx.shop.update({
+                    where: { id: shopId },
+                    data: {
+                        member: { connect: { id: memberId } },
+                        shopName: shopName,
+                        occupationStatus: 'OCCUPIED',
+                        contractStartDate: new Date(),
+                        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                        monthlyRent: parsedMonthlyRent.toFixed(2)
+                    }
                 });
-                if (!level) level = await tx.marketLevel.findFirst({ where: { marketId } });
-                levelId = level ? level.id : null;
-            }
+                shopNumberVal = shop.shopNumber;
+            } else {
+                // Use vendor-provided levelId if given, else auto-assign 'GF' or first level
+                let levelId = requestedLevelId || null;
+                let levelCode = 'GF';
 
-            if (levelId) {
-                const levelObj = await tx.marketLevel.findUnique({ where: { id: levelId } });
-                if (levelObj) {
-                    const match = levelObj.name.match(/Block\s([A-Za-z0-9]+)/i) || levelObj.name.match(/\b([A-Z0-9]{1,3})\b/);
-                    if (match && match[1]) levelCode = match[1].toUpperCase();
+                if (!levelId) {
+                    let level = await tx.marketLevel.findFirst({ 
+                        where: { marketId, OR: [{ name: { contains: 'Ground' } }, { uniqueCode: { contains: 'GF' } }] } 
+                    });
+                    if (!level) level = await tx.marketLevel.findFirst({ where: { marketId } });
+                    levelId = level ? level.id : null;
                 }
-            }
 
-            const shopUniqueCode = generateUniqueCode('SHOP');
-            
-            // Resolve base number from input or generate random
-            const baseNumber = stallNumber || crypto.randomBytes(2).toString('hex').toUpperCase();
-            
-            // Format as [LevelCode]-[ShopNo]
-            const formattedNumber = baseNumber.toUpperCase().startsWith(levelCode) 
-                ? baseNumber.toUpperCase() 
-                : `${levelCode}-${baseNumber.toUpperCase()}`;
-
-            const shopNumberVal = formattedNumber;
-
-            const shop = await tx.shop.create({
-                data: {
-                    market: { connect: { id: marketId } },
-                    createdBy: { connect: { id: userId } },
-                    member: { connect: { id: memberId } },
-                    ...(levelId ? { level: { connect: { id: levelId } } } : {}),
-                    uniqueCode: shopUniqueCode,
-                    shopNumber: shopNumberVal,
-                    shopName: shopName,
-                    shopType: 'RETAIL',
-                    status: 'ACTIVE',
-                    occupationStatus: 'OCCUPIED',
-                    contractStartDate: new Date(),
-                    contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
-                    monthlyRent: parsedMonthlyRent.toFixed(2),
-                    maintenanceFee: "0.00"
+                if (levelId) {
+                    const levelObj = await tx.marketLevel.findUnique({ where: { id: levelId } });
+                    if (levelObj) {
+                        const match = levelObj.name.match(/Block\s([A-Za-z0-9]+)/i) || levelObj.name.match(/\b([A-Z0-9]{1,3})\b/);
+                        if (match && match[1]) levelCode = match[1].toUpperCase();
+                    }
                 }
-            });
+
+                const shopUniqueCode = generateUniqueCode('SHOP');
+                
+                // Resolve base number from input or generate random
+                const baseNumber = stallNumber || crypto.randomBytes(2).toString('hex').toUpperCase();
+                
+                // Format as [LevelCode]-[ShopNo]
+                const formattedNumber = baseNumber.toUpperCase().startsWith(levelCode) 
+                    ? baseNumber.toUpperCase() 
+                    : `${levelCode}-${baseNumber.toUpperCase()}`;
+
+                shopNumberVal = formattedNumber;
+
+                shop = await tx.shop.create({
+                    data: {
+                        market: { connect: { id: marketId } },
+                        createdBy: { connect: { id: userId } },
+                        member: { connect: { id: memberId } },
+                        ...(levelId ? { level: { connect: { id: levelId } } } : {}),
+                        uniqueCode: shopUniqueCode,
+                        shopNumber: shopNumberVal,
+                        shopName: shopName,
+                        shopType: 'RETAIL',
+                        status: 'ACTIVE',
+                        occupationStatus: 'OCCUPIED',
+                        contractStartDate: new Date(),
+                        contractEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
+                        monthlyRent: parsedMonthlyRent.toFixed(2),
+                        maintenanceFee: "0.00"
+                    }
+                });
+            }
 
             // D. Create Stall
             const stallUniqueCode = generateUniqueCode('STALL');
-            const stallNumVal = formattedNumber;
+            const stallNumVal = shopNumberVal;
 
             const stall = await tx.stall.create({
                 data: {
