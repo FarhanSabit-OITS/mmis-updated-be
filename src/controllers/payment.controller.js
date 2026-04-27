@@ -1,5 +1,6 @@
 const prisma = require('../prisma');
 const paymentService = require('../services/payment.service');
+const unifiedPaymentService = require('../services/unifiedPayment.service');
 
 const isAdmin = (user) => user.roleName === 'SuperAdmin' || user.roleName === 'MarketMaster';
 
@@ -109,6 +110,21 @@ class PaymentController {
         actorUserId: req.user.userId,
         marketScopeId: req.user.roleName === 'MarketMaster' ? req.user.marketId : null,
       });
+
+      // Automatically trigger fiscalization for recorded payments
+      if (result && result.id) {
+        try {
+          // Find the invoice linked to this rent payment entry
+          const invoice = await prisma.rentInvoice.findFirst({ where: { rentPaymentId: result.id } });
+          if (invoice) {
+            await unifiedPaymentService.fiscalizeInvoice(invoice.id);
+          }
+        } catch (efrisError) {
+          console.error('Fiscalization failed after rent record:', efrisError);
+          // Don't fail the whole request, but log it
+        }
+      }
+
       res.status(201).json({ success: true, message: 'Rent payment recorded successfully', data: result });
     } catch (error) {
       res.status(500).json({ success: false, message: error.message || 'Failed to record rent payment' });
@@ -149,6 +165,41 @@ class PaymentController {
 
   async sendPaymentReminder(req, res) {
     res.json({ success: true, message: 'Reminder stub kept as-is for now' });
+  }
+
+  async initializeOnlinePayment(req, res) {
+    try {
+      const { invoiceId, amount, email } = req.body;
+      const result = await unifiedPaymentService.initializeOnlinePayment({
+        invoiceId,
+        userId: req.user.userId,
+        amount,
+        email
+      });
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async verifyOnlinePayment(req, res) {
+    try {
+      const { transaction_id, status, tx_ref } = req.query;
+      const result = await unifiedPaymentService.verifyAndFinalizePayment(transaction_id, status, tx_ref);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async fiscalizeInvoice(req, res) {
+    try {
+      const { invoiceId } = req.params;
+      const result = await unifiedPaymentService.fiscalizeInvoice(invoiceId);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
   }
 }
 

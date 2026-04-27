@@ -23,6 +23,9 @@ router.get('/vendors/:vendorId/payments/history', paymentController.getVendorPay
 // Payment processing routes
 router.post('/payments/evidence', fileUploadMiddleware, paymentController.uploadPaymentEvidence);
 router.post('/payments/rent/record', paymentController.recordRentPayment);
+router.post('/payments/online/initialize', paymentController.initializeOnlinePayment);
+router.get('/payments/online/verify', paymentController.verifyOnlinePayment);
+router.post('/admin/invoices/:invoiceId/fiscalize', paymentController.fiscalizeInvoice);
 
 // Admin payment routes
 router.get('/admin/payments/collections', paymentController.getAdminPaymentCollections);
