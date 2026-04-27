@@ -1,4 +1,4 @@
-// prisma/schema.prisma
+﻿// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -57,7 +57,6 @@ enum StakeholderType {
   SUPPLIER
   CUSTOMER
   GUEST
-  ORGANIZATION
 }
 
 enum MfaType {
@@ -225,14 +224,6 @@ enum MaritalStatus {
   WIDOWED
 }
 
-enum MarketStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
-  CLOSED
-  UNDER_RENOVATION
-}
-
 /**
  * ************
  * CORE USER & AUTH
@@ -247,7 +238,7 @@ model User {
   mfaEnabled      Boolean   @default(false)
   mfaType         MfaType   @default(NONE)
   totpSecret      String?   @db.VarChar(255)
-  totpBackupCodes String[] // Array — length enforced in app layer
+  totpBackupCodes String[] // Array ΓÇö length enforced in app layer
   lastTotpUsed    DateTime?
 
   emailVerified             Boolean   @default(false)
@@ -259,7 +250,7 @@ model User {
   lockUntil          DateTime?
   lastLogin          DateTime?
   lastPasswordChange DateTime?
-  passwordHistory    String[] // history entries — length enforced in app
+  passwordHistory    String[] // history entries ΓÇö length enforced in app
 
   status             UserStatus @default(PENDING)
   deactivationReason String?    @db.Text
@@ -351,6 +342,7 @@ model UserProfile {
   displayName String?   @db.VarChar(150)
   gender      Gender?
   dateOfBirth DateTime?
+  age         Int?
 
   nationalId      String? @unique @db.VarChar(50)
   nationalIdType  String? @default("NIN") @db.VarChar(20)
@@ -400,8 +392,6 @@ model UserProfile {
   bankName          String? @db.VarChar(100)
   bankAccountNumber String? @db.VarChar(50)
   bankAccountName   String? @db.VarChar(150)
-  mobileMoneyNumber  String? @db.VarChar(20)
-  mobileMoneyNetwork String? @db.VarChar(50) // e.g., MTN, Airtel
 
   metadata          Json?
   version           Int       @default(1)
@@ -513,7 +503,7 @@ model Geolocation {
 
 model District {
   id            String   @id @default(uuid())
-  geolocationId String
+  geolocationId String   @default("")
   name          String   @db.VarChar(200)
   code          String   @unique @db.VarChar(20)
   districtType  String?  @db.VarChar(50)
@@ -560,8 +550,8 @@ model City {
 }
 
 model Market {
-  id     String @id @default(uuid())
-  cityId String
+  id          String  @id @default(uuid())
+  cityId      String
   name        String  @db.VarChar(200)
   uniqueCode  String  @unique @db.VarChar(50)
   displayName String? @db.VarChar(200)
@@ -594,7 +584,7 @@ model Market {
   securityDeposit       Decimal? @db.Decimal(12, 2)
   monthlyMaintenanceFee Decimal? @db.Decimal(10, 2)
 
-  status            MarketStatus @default(ACTIVE)
+  status            String    @default("ACTIVE") @db.VarChar(50)
   establishmentDate DateTime?
   lastRenovation    DateTime?
   notes             String?   @db.Text
@@ -616,16 +606,18 @@ model Market {
   pseudoAdmins  PseudoMarketAdmin[]
   vendors       Vendor[]            @relation("PrimaryMarketVendors")
 
-  dailyCollections DailyCollection[]
-  taxes            MarketTax[]
-  marketTokens     MarketToken[]     @relation("MarketTokens")
-  rentInvoices     RentInvoice[]
-  paymentClaims    PaymentClaim[]
-  invoicePayments  InvoicePayment[]
-  vendorCredits    VendorCredit[]
+  dailyCollections     DailyCollection[]
+  taxes                MarketTax[]
+  marketTokens         MarketToken[]         @relation("MarketTokens")
+  rentInvoices         RentInvoice[]
+  paymentClaims        PaymentClaim[]
+  invoicePayments      InvoicePayment[]
+  paymentAttempts      PaymentAttempt[]
+  paymentWebhookEvents PaymentWebhookEvent[]
+  vendorCredits        VendorCredit[]
+  refundRecords        RefundRecord[]
 
   tokenGenerationConfigs TokenGenerationConfig[]
-  qrGenerationConfigs    QrGenerationConfig[]   @relation("MarketQrConfigs")
 
   gateEntries       GateEntry[]        @relation("MarketGateEntries")
   stockMovements    StockMovement[]    @relation("MarketStockMovements")
@@ -635,14 +627,6 @@ model Market {
   scannerDevices ScannerDevice[] @relation("MarketScannerDevices")
 
   invitations Invitation[] @relation("MarketInvitations")
-
-  marketRegulations MarketRegulation[] @relation("MarketRegulations")
-  businessLicenses  BusinessLicense[]  @relation("MarketBusinessLicenses")
-  deliveries        Delivery[]         @relation("MarketDeliveries")
-
-  webhookEvents     PaymentWebhookEvent[]
-  paymentAttempts   PaymentAttempt[]
-  refundRecords     RefundRecord[]
 
   @@unique([cityId, name])
   @@index([cityId])
@@ -740,8 +724,6 @@ model MarketSection {
   sectionRules        Json?
   specialRequirements String? @db.VarChar(500)
 
-  stockCounters PseudoMarketAdmin[] @relation("StockCounterSection")
-
   @@unique([marketId, levelId, name])
   @@index([marketId])
   @@map("market_sections")
@@ -818,8 +800,6 @@ model Stakeholder {
 
   auditLogs AuditLog[] @relation("StakeholderAuditLogs")
 
-  businessLicenses BusinessLicense[] @relation("StakeholderBusinessLicenses")
-
   @@map("stakeholders")
 }
 
@@ -889,17 +869,17 @@ model Vendor {
   rentContracts RentContract[] @relation("VendorAsTenant")
   marketTokens  MarketToken[]
 
-  taxPayments TaxPayment[]
-  rentInvoices RentInvoice[]
-  paymentClaims PaymentClaim[]
-  recordedPayments InvoicePayment[]
-  vendorCredits VendorCredit[]
-  billingStatus VendorBillingStatus?
+  taxPayments          TaxPayment[]
+  rentInvoices         RentInvoice[]
+  paymentClaims        PaymentClaim[]
+  recordedPayments     InvoicePayment[]
+  paymentAttempts      PaymentAttempt[]
+  paymentWebhookEvents PaymentWebhookEvent[]
+  vendorCredits        VendorCredit[]
+  refundRecords        RefundRecord[]
+  billingStatus        VendorBillingStatus?
 
-  paymentAttempts PaymentAttempt[]
-  webhookEvents   PaymentWebhookEvent[]
-  refundRecords   RefundRecord[]
-  invitations     Invitation[]
+  invitations Invitation[]
 
   @@index([businessName])
   @@map("vendors")
@@ -913,7 +893,6 @@ model Supplier {
   supplierType     String   @default("WHOLESALER") @db.VarChar(50)
   licenseNumber    String?  @unique @db.VarChar(100)
   taxId            String?  @unique @db.VarChar(50)
-  status           String   @default("ACTIVE") @db.VarChar(50)
   warehouseAddress String?  @db.VarChar(500)
   deliveryRadius   Int?
   minimumOrder     Decimal? @db.Decimal(10, 2)
@@ -1038,7 +1017,6 @@ model Shop {
   rentContracts RentContract[]
   rentInvoices  RentInvoice[]
   shopAssets    ShopAsset[]
-  qrConfigs     QrGenerationConfig[] @relation("ShopQrConfigs")
 
   @@unique([marketId, shopNumber])
   @@index([marketId])
@@ -1113,7 +1091,6 @@ model Stall {
   marketTokens MarketToken[]
 
   healthInspections HealthInspection[]
-  stockMovements    StockMovement[] // Flexible: present when stall-level stock is tracked
 
   @@unique([shopId, stallNumber])
   @@index([shopId])
@@ -1239,21 +1216,17 @@ model MarketMaster {
 }
 
 model PseudoMarketAdmin {
-  id                String           @id @default(uuid())
-  adminId           String           @unique
-  marketId          String
-  role              PseudoMarketRole
-  assignedSection   String?          @db.VarChar(100) // Text label (legacy)
-  assignedSectionId String?          // FK to MarketSection for Stock Counter scope
-  specialization    String?          @db.VarChar(100)
-  shift             String?          @db.VarChar(50)
-  staffStatus       String           @default("ACTIVE") @db.VarChar(50)
-  workingHours      Json?
-  permissions       Json?
+  id              String           @id @default(uuid())
+  adminId         String           @unique
+  marketId        String
+  role            PseudoMarketRole
+  assignedSection String?          @db.VarChar(100)
+  specialization  String?          @db.VarChar(100)
+  workingHours    Json?
+  permissions     Json?
 
-  admin           Admin          @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  market          Market         @relation(fields: [marketId], references: [id])
-  sectionScope    MarketSection? @relation("StockCounterSection", fields: [assignedSectionId], references: [id])
+  admin  Admin  @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  market Market @relation(fields: [marketId], references: [id])
 
   gateEntries        GateEntry[]        @relation("GateCounter")
   stockCounts        StockMovement[]    @relation("StockCounter")
@@ -1807,10 +1780,10 @@ model Document {
   uploadedAt   DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  stakeholder Stakeholder @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
-  verifiedBy  Admin?      @relation("DocumentVerifier", fields: [verifiedById], references: [id])
-  uploadedBy  User        @relation("DocumentUploader", fields: [uploadedById], references: [id])
-  paymentClaims PaymentClaim[] @relation("PaymentClaimProofDocument")
+  stakeholder     Stakeholder      @relation(fields: [stakeholderId], references: [id], onDelete: Cascade)
+  verifiedBy      Admin?           @relation("DocumentVerifier", fields: [verifiedById], references: [id])
+  uploadedBy      User             @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  paymentClaims   PaymentClaim[]   @relation("PaymentClaimProofDocument")
   invoicePayments InvoicePayment[] @relation("InvoicePaymentDocument")
 
   @@index([stakeholderId])
@@ -2019,7 +1992,7 @@ model StockMovement {
   updatedAt   DateTime @updatedAt
 
   market      Market             @relation("MarketStockMovements", fields: [marketId], references: [id])
-  stall       Stall?             @relation(fields: [stallId], references: [id]) // Flexible: populated when stallId is present; shopId navigable via stall
+  // stall             Stall?     @relation(fields: [stallId], references: [id])
   inspectedBy PseudoMarketAdmin? @relation("StockCounter", fields: [inspectedById], references: [id])
   createdBy   User               @relation(fields: [createdById], references: [id])
 
@@ -2165,10 +2138,8 @@ model QrGenerationConfig {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  market    Market @relation("MarketQrConfigs", fields: [marketId], references: [id], onDelete: Cascade)
-  shopId    String?
-  shop      Shop?  @relation("ShopQrConfigs", fields: [shopId], references: [id])
-  createdBy User   @relation(fields: [createdById], references: [id])
+  // market            Market     @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  createdBy User @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
   @@index([isActive])
@@ -2214,6 +2185,374 @@ model ScannerDevice {
   @@index([isActive])
   @@index([lastSeen])
   @@map("scanner_devices")
+}
+
+model DailyCollection {
+  id String @id @default(uuid())
+
+  marketId        String
+  date            DateTime
+  collectedAmount Decimal  @db.Decimal(15, 2)
+  expectedAmount  Decimal? @db.Decimal(15, 2)
+
+  collectionMethod String  @db.VarChar(50)
+  bankDepositSlip  String? @db.VarChar(100)
+
+  collectorId  String
+  verifiedById String?
+
+  status String @default("COLLECTED") @db.VarChar(50)
+
+  notes String? @db.Text
+
+  metadata    Json?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  market     Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  collector  User   @relation("DailyCollectionCollector", fields: [collectorId], references: [id])
+  verifiedBy User?  @relation("DailyCollectionVerifier", fields: [verifiedById], references: [id])
+  createdBy  User   @relation("DailyCollectionCreator", fields: [createdById], references: [id])
+
+  @@index([marketId, date])
+  @@index([collectorId])
+  @@index([status])
+  @@map("daily_collections")
+}
+
+model RentPayment {
+  id String @id @default(uuid())
+
+  contractId  String
+  amount      Decimal   @db.Decimal(12, 2)
+  periodStart DateTime
+  periodEnd   DateTime
+  dueDate     DateTime
+  paymentDate DateTime?
+
+  paymentMethod String  @db.VarChar(50)
+  transactionId String? @db.VarChar(100)
+  receiptNumber String? @unique @db.VarChar(100)
+
+  isLate          Boolean  @default(false)
+  lateFee         Decimal? @db.Decimal(10, 2)
+  gracePeriodDays Int?     @default(5)
+
+  status String @default("PENDING") @db.VarChar(50)
+
+  notes        String?  @db.Text
+  receivedById String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  contract     RentContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  receivedBy   MarketMaster? @relation(fields: [receivedById], references: [id])
+  rentInvoices RentInvoice[]
+
+  @@index([contractId])
+  @@index([paymentDate])
+  @@index([status])
+  @@map("rent_payments")
+}
+
+model RentContract {
+  id String @id @default(uuid())
+
+  shopId         String
+  landlordId     String
+  tenantId       String
+  startDate      DateTime
+  endDate        DateTime
+  durationMonths Int
+
+  monthlyRent     Decimal  @db.Decimal(12, 2)
+  securityDeposit Decimal? @db.Decimal(12, 2)
+  maintenanceFee  Decimal? @db.Decimal(10, 2)
+  paymentDay      Int      @default(1)
+
+  status   String  @default("ACTIVE") @db.VarChar(50)
+  isActive Boolean @default(true)
+
+  terminationDate   DateTime?
+  terminationReason String?   @db.VarChar(500)
+
+  contractNumber     String   @unique @db.VarChar(100)
+  termsAndConditions String?  @db.Text
+  metadata           Json?
+  createdById        String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  shop      Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  landlord  Member @relation("MemberAsLandlord", fields: [landlordId], references: [id])
+  tenant    Vendor @relation("VendorAsTenant", fields: [tenantId], references: [id])
+  createdBy User   @relation("RentContractCreator", fields: [createdById], references: [id])
+
+  payments     RentPayment[]
+  rentInvoices RentInvoice[]
+
+  @@index([shopId])
+  @@index([landlordId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([contractNumber])
+  @@map("rent_contracts")
+}
+
+model InvoiceGenerationRun {
+  id String @id @default(uuid())
+
+  runMonth          Int
+  runYear           Int
+  scopeType         String  @db.VarChar(30)
+  scopeId           String?
+  triggerType       String  @db.VarChar(30)
+  triggeredByUserId String?
+  status            String  @default("RUNNING") @db.VarChar(30)
+  reason            String? @db.Text
+
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  summaryJson Json?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  triggeredByUser User?                      @relation("InvoiceGenerationRunTriggerUser", fields: [triggeredByUserId], references: [id])
+  invoices        RentInvoice[]
+  items           InvoiceGenerationRunItem[]
+
+  @@index([runYear, runMonth])
+  @@index([scopeType, scopeId])
+  @@index([triggerType])
+  @@index([status])
+  @@map("invoice_generation_runs")
+}
+
+model InvoiceGenerationRunItem {
+  id String @id @default(uuid())
+
+  generationRunId String
+  vendorId        String?
+  rentContractId  String?
+  invoiceId       String?
+  result          String   @db.VarChar(40)
+  reason          String?  @db.Text
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  generationRun InvoiceGenerationRun @relation(fields: [generationRunId], references: [id], onDelete: Cascade)
+
+  @@index([generationRunId])
+  @@index([vendorId])
+  @@index([rentContractId])
+  @@index([invoiceId])
+  @@map("invoice_generation_run_items")
+}
+
+model RentInvoice {
+  id String @id @default(uuid())
+
+  invoiceNumber  String? @unique @db.VarChar(100)
+  vendorId       String
+  marketId       String
+  rentContractId String
+  shopId         String
+  rentPaymentId  String?
+
+  billingYear      Int
+  billingMonth     Int
+  invoiceVersion   Int      @default(1)
+  periodStart      DateTime
+  periodEnd        DateTime
+  billingStartDate DateTime
+  issueDate        DateTime
+  dueDate          DateTime
+  currencyCode     String   @default("UGX") @db.VarChar(10)
+
+  baseRentAmount        Decimal @db.Decimal(15, 2)
+  proratedAmount        Decimal @default(0) @db.Decimal(15, 2)
+  arrearsAmount         Decimal @default(0) @db.Decimal(15, 2)
+  creditAppliedAmount   Decimal @default(0) @db.Decimal(15, 2)
+  totalAmount           Decimal @db.Decimal(15, 2)
+  paidAmount            Decimal @default(0) @db.Decimal(15, 2)
+  outstandingAmount     Decimal @db.Decimal(15, 2)
+  creditedForwardAmount Decimal @default(0) @db.Decimal(15, 2)
+
+  status               String   @default("OPEN") @db.VarChar(30)
+  generationMode       String   @default("AUTOMATIC") @db.VarChar(30)
+  generationRunId      String?
+  replacedInvoiceId    String?
+  isForcedRegeneration Boolean  @default(false)
+  notes                String?  @db.Text
+  metadata             Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  vendor              Vendor                @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market              Market                @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  rentContract        RentContract          @relation(fields: [rentContractId], references: [id], onDelete: Cascade)
+  shop                Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  rentPayment         RentPayment?          @relation(fields: [rentPaymentId], references: [id])
+  generationRun       InvoiceGenerationRun? @relation(fields: [generationRunId], references: [id])
+  replacedInvoice     RentInvoice?          @relation("InvoiceReplacementChain", fields: [replacedInvoiceId], references: [id])
+  replacementInvoices RentInvoice[]         @relation("InvoiceReplacementChain")
+
+  lineItems                RentInvoiceLine[]
+  paymentClaims            PaymentClaim[]
+  allocations              PaymentAllocation[]
+  paymentAttemptSelections PaymentAttemptInvoice[]
+
+  @@unique([rentContractId, billingYear, billingMonth, invoiceVersion])
+  @@index([vendorId, billingYear, billingMonth])
+  @@index([marketId, billingYear, billingMonth])
+  @@index([status])
+  @@index([dueDate])
+  @@map("rent_invoices")
+}
+
+model RentInvoiceLine {
+  id String @id @default(uuid())
+
+  invoiceId   String
+  lineType    String    @db.VarChar(40)
+  description String    @db.VarChar(300)
+  periodStart DateTime?
+  periodEnd   DateTime?
+  quantity    Decimal?  @db.Decimal(12, 4)
+  unitAmount  Decimal?  @db.Decimal(15, 4)
+  lineAmount  Decimal   @db.Decimal(15, 2)
+  sortOrder   Int       @default(0)
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  invoice RentInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([lineType])
+  @@map("rent_invoice_lines")
+}
+
+model PaymentClaim {
+  id String @id @default(uuid())
+
+  vendorId               String
+  marketId               String
+  claimReference         String    @unique @db.VarChar(100)
+  amount                 Decimal   @db.Decimal(15, 2)
+  currencyCode           String    @default("UGX") @db.VarChar(10)
+  paymentDate            DateTime
+  paymentMethod          String    @db.VarChar(50)
+  claimedForInvoiceId    String?
+  claimedForBillingMonth String?   @db.VarChar(7)
+  externalReference      String?   @db.VarChar(100)
+  notes                  String?   @db.Text
+  proofDocumentId        String?
+  status                 String    @default("SUBMITTED") @db.VarChar(30)
+  submittedByUserId      String
+  reviewedByUserId       String?
+  reviewedAt             DateTime?
+  rejectionReason        String?   @db.Text
+  metadata               Json?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  vendor            Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market            Market       @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  claimedForInvoice RentInvoice? @relation(fields: [claimedForInvoiceId], references: [id])
+  proofDocument     Document?    @relation("PaymentClaimProofDocument", fields: [proofDocumentId], references: [id])
+
+  @@index([vendorId])
+  @@index([marketId])
+  @@index([status])
+  @@index([claimedForInvoiceId])
+  @@map("payment_claims")
+}
+
+model InvoicePayment {
+  id String @id @default(uuid())
+
+  vendorId          String
+  marketId          String
+  paymentClaimId    String?
+  paymentAttemptId  String?  @unique
+  amount            Decimal  @db.Decimal(15, 2)
+  currencyCode      String   @default("UGX") @db.VarChar(10)
+  paymentMethod     String   @db.VarChar(50)
+  paymentChannel    String   @db.VarChar(40)
+  provider          String?  @db.VarChar(50)
+  providerReference String?  @db.VarChar(100)
+  providerPayload   Json?
+  status            String   @default("CONFIRMED") @db.VarChar(30)
+  paymentDate       DateTime
+  recordedByUserId  String
+  approvedByUserId  String?
+  documentId        String?
+  notes             String?  @db.Text
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  vendor         Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market         Market          @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  document       Document?       @relation("InvoicePaymentDocument", fields: [documentId], references: [id])
+  paymentAttempt PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id])
+
+  allocations   PaymentAllocation[]
+  vendorCredits VendorCredit[]
+  webhookEvents PaymentWebhookEvent[]
+  refundRecords RefundRecord[]
+
+  @@index([vendorId])
+  @@index([marketId])
+  @@index([paymentClaimId])
+  @@index([status])
+  @@map("invoice_payments")
+}
+
+model PaymentAllocation {
+  id String @id @default(uuid())
+
+  paymentId       String
+  invoiceId       String
+  allocatedAmount Decimal  @db.Decimal(15, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  payment InvoicePayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  invoice RentInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([paymentId, invoiceId])
+  @@index([paymentId])
+  @@index([invoiceId])
+  @@map("payment_allocations")
+}
+
+model VendorCredit {
+  id String @id @default(uuid())
+
+  vendorId        String
+  marketId        String
+  sourcePaymentId String
+  amountRemaining Decimal  @db.Decimal(15, 2)
+  currencyCode    String   @default("UGX") @db.VarChar(10)
+  status          String   @default("AVAILABLE") @db.VarChar(30)
+  notes           String?  @db.Text
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  vendor        Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  market        Market         @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  sourcePayment InvoicePayment @relation(fields: [sourcePaymentId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@index([marketId])
+  @@index([status])
+  @@map("vendor_credits")
 }
 
 model PaymentAttempt {
@@ -2351,392 +2690,20 @@ model RefundRecord {
   @@map("refund_records")
 }
 
-
-model DailyCollection {
-  id String @id @default(uuid())
-
-  marketId        String
-  date            DateTime
-  collectedAmount Decimal  @db.Decimal(15, 2)
-  expectedAmount  Decimal? @db.Decimal(15, 2)
-
-  collectionMethod String  @db.VarChar(50)
-  bankDepositSlip  String? @db.VarChar(100)
-
-  collectorId  String
-  verifiedById String?
-
-  status String @default("COLLECTED") @db.VarChar(50)
-
-  notes String? @db.Text
-
-  metadata    Json?
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  market     Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  collector  User   @relation("DailyCollectionCollector", fields: [collectorId], references: [id])
-  verifiedBy User?  @relation("DailyCollectionVerifier", fields: [verifiedById], references: [id])
-  createdBy  User   @relation("DailyCollectionCreator", fields: [createdById], references: [id])
-
-  @@index([marketId, date])
-  @@index([collectorId])
-  @@index([status])
-  @@map("daily_collections")
-}
-
-model RentPayment {
-  id String @id @default(uuid())
-
-  contractId  String
-  amount      Decimal   @db.Decimal(12, 2)
-  periodStart DateTime
-  periodEnd   DateTime
-  dueDate     DateTime
-  paymentDate DateTime?
-
-  paymentMethod String  @db.VarChar(50)
-  transactionId String? @db.VarChar(100)
-  receiptNumber String? @unique @db.VarChar(100)
-
-  isLate          Boolean  @default(false)
-  lateFee         Decimal? @db.Decimal(10, 2)
-  gracePeriodDays Int?     @default(5)
-
-  status String @default("PENDING") @db.VarChar(50)
-
-  notes        String?  @db.Text
-  receivedById String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  contract   RentContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  receivedBy MarketMaster? @relation(fields: [receivedById], references: [id])
-  rentInvoices RentInvoice[]
-
-  @@index([contractId])
-  @@index([paymentDate])
-  @@index([status])
-  @@map("rent_payments")
-}
-
-model RentContract {
-  id String @id @default(uuid())
-
-  shopId         String
-  landlordId     String
-  tenantId       String
-  startDate      DateTime
-  endDate        DateTime
-  durationMonths Int
-
-  monthlyRent     Decimal  @db.Decimal(12, 2)
-  securityDeposit Decimal? @db.Decimal(12, 2)
-  maintenanceFee  Decimal? @db.Decimal(10, 2)
-  paymentDay      Int      @default(1)
-
-  status   String  @default("ACTIVE") @db.VarChar(50)
-  isActive Boolean @default(true)
-
-  terminationDate   DateTime?
-  terminationReason String?   @db.VarChar(500)
-
-  contractNumber     String   @unique @db.VarChar(100)
-  termsAndConditions String?  @db.Text
-  metadata           Json?
-  createdById        String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  shop      Shop   @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  landlord  Member @relation("MemberAsLandlord", fields: [landlordId], references: [id])
-  tenant    Vendor @relation("VendorAsTenant", fields: [tenantId], references: [id])
-  createdBy User   @relation("RentContractCreator", fields: [createdById], references: [id])
-
-  payments RentPayment[]
-  rentInvoices RentInvoice[]
-
-  @@index([shopId])
-  @@index([landlordId])
-  @@index([tenantId])
-  @@index([status])
-  @@index([contractNumber])
-  @@map("rent_contracts")
-}
-
-model InvoiceGenerationRun {
-  id String @id @default(uuid())
-
-  runMonth Int
-  runYear  Int
-  scopeType String @db.VarChar(30)
-  scopeId   String?
-  triggerType String @db.VarChar(30)
-  triggeredByUserId String?
-  status String @default("RUNNING") @db.VarChar(30)
-  reason String? @db.Text
-
-  startedAt DateTime @default(now())
-  completedAt DateTime?
-  summaryJson Json?
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  triggeredByUser User? @relation("InvoiceGenerationRunTriggerUser", fields: [triggeredByUserId], references: [id])
-  invoices RentInvoice[]
-  items InvoiceGenerationRunItem[]
-
-  @@index([runYear, runMonth])
-  @@index([scopeType, scopeId])
-  @@index([triggerType])
-  @@index([status])
-  @@map("invoice_generation_runs")
-}
-
-model InvoiceGenerationRunItem {
-  id String @id @default(uuid())
-
-  generationRunId String
-  vendorId String?
-  rentContractId String?
-  invoiceId String?
-  result String @db.VarChar(40)
-  reason String? @db.Text
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  generationRun InvoiceGenerationRun @relation(fields: [generationRunId], references: [id], onDelete: Cascade)
-
-  @@index([generationRunId])
-  @@index([vendorId])
-  @@index([rentContractId])
-  @@index([invoiceId])
-  @@map("invoice_generation_run_items")
-}
-
-model RentInvoice {
-  id String @id @default(uuid())
-
-  invoiceNumber String? @unique @db.VarChar(100)
-  vendorId String
-  marketId String
-  rentContractId String
-  shopId String
-  rentPaymentId String?
-
-  billingYear Int
-  billingMonth Int
-  invoiceVersion Int @default(1)
-  periodStart DateTime
-  periodEnd DateTime
-  billingStartDate DateTime
-  issueDate DateTime
-  dueDate DateTime
-  currencyCode String @default("UGX") @db.VarChar(10)
-
-  baseRentAmount Decimal @db.Decimal(15, 2)
-  proratedAmount Decimal @default(0) @db.Decimal(15, 2)
-  arrearsAmount Decimal @default(0) @db.Decimal(15, 2)
-  creditAppliedAmount Decimal @default(0) @db.Decimal(15, 2)
-  totalAmount Decimal @db.Decimal(15, 2)
-  paidAmount Decimal @default(0) @db.Decimal(15, 2)
-  outstandingAmount Decimal @db.Decimal(15, 2)
-  creditedForwardAmount Decimal @default(0) @db.Decimal(15, 2)
-
-  status String @default("OPEN") @db.VarChar(30)
-  generationMode String @default("AUTOMATIC") @db.VarChar(30)
-  generationRunId String?
-  replacedInvoiceId String?
-  isForcedRegeneration Boolean @default(false)
-  notes String? @db.Text
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  rentContract RentContract @relation(fields: [rentContractId], references: [id], onDelete: Cascade)
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  rentPayment RentPayment? @relation(fields: [rentPaymentId], references: [id])
-  generationRun InvoiceGenerationRun? @relation(fields: [generationRunId], references: [id])
-  replacedInvoice RentInvoice? @relation("InvoiceReplacementChain", fields: [replacedInvoiceId], references: [id])
-  replacementInvoices RentInvoice[] @relation("InvoiceReplacementChain")
-
-  lineItems RentInvoiceLine[]
-  paymentClaims PaymentClaim[]
-  allocations              PaymentAllocation[]
-  paymentAttemptSelections PaymentAttemptInvoice[]
-
-  @@unique([rentContractId, billingYear, billingMonth, invoiceVersion])
-  @@index([vendorId, billingYear, billingMonth])
-  @@index([marketId, billingYear, billingMonth])
-  @@index([status])
-  @@index([dueDate])
-  @@map("rent_invoices")
-}
-
-model RentInvoiceLine {
-  id String @id @default(uuid())
-
-  invoiceId String
-  lineType String @db.VarChar(40)
-  description String @db.VarChar(300)
-  periodStart DateTime?
-  periodEnd DateTime?
-  quantity Decimal? @db.Decimal(12, 4)
-  unitAmount Decimal? @db.Decimal(15, 4)
-  lineAmount Decimal @db.Decimal(15, 2)
-  sortOrder Int @default(0)
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  invoice RentInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([invoiceId])
-  @@index([lineType])
-  @@map("rent_invoice_lines")
-}
-
-model PaymentClaim {
-  id String @id @default(uuid())
-
-  vendorId String
-  marketId String
-  claimReference String @unique @db.VarChar(100)
-  amount Decimal @db.Decimal(15, 2)
-  currencyCode String @default("UGX") @db.VarChar(10)
-  paymentDate DateTime
-  paymentMethod String @db.VarChar(50)
-  claimedForInvoiceId String?
-  claimedForBillingMonth String? @db.VarChar(7)
-  externalReference String? @db.VarChar(100)
-  notes String? @db.Text
-  proofDocumentId String?
-  status String @default("SUBMITTED") @db.VarChar(30)
-  submittedByUserId String
-  reviewedByUserId String?
-  reviewedAt DateTime?
-  rejectionReason String? @db.Text
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  claimedForInvoice RentInvoice? @relation(fields: [claimedForInvoiceId], references: [id])
-  proofDocument Document? @relation("PaymentClaimProofDocument", fields: [proofDocumentId], references: [id])
-
-  invoicePayments InvoicePayment[] @relation("InvoicePaymentClaim")
-
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([status])
-  @@index([claimedForInvoiceId])
-  @@map("payment_claims")
-}
-
-model InvoicePayment {
-  id String @id @default(uuid())
-
-  vendorId String
-  marketId String
-  paymentClaimId   String?
-  paymentAttemptId String? @unique
-  amount Decimal @db.Decimal(15, 2)
-  currencyCode String @default("UGX") @db.VarChar(10)
-  paymentMethod String @db.VarChar(50)
-  paymentChannel String @db.VarChar(40)
-  provider String? @db.VarChar(50)
-  providerReference String? @db.VarChar(100)
-  providerPayload Json?
-  status String @default("CONFIRMED") @db.VarChar(30)
-  paymentDate DateTime
-  recordedByUserId String
-  approvedByUserId String?
-  documentId String?
-  notes String? @db.Text
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  document Document? @relation("InvoicePaymentDocument", fields: [documentId], references: [id])
-  paymentClaim PaymentClaim? @relation("InvoicePaymentClaim", fields: [paymentClaimId], references: [id])
-
-  allocations   PaymentAllocation[]
-  vendorCredits VendorCredit[]
-  webhookEvents PaymentWebhookEvent[]
-  refundRecords RefundRecord[]
-  paymentAttempt PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id])
-
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([paymentClaimId])
-  @@index([status])
-  @@map("invoice_payments")
-}
-
-model PaymentAllocation {
-  id String @id @default(uuid())
-
-  paymentId String
-  invoiceId String
-  allocatedAmount Decimal @db.Decimal(15, 2)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  payment InvoicePayment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  invoice RentInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@index([paymentId])
-  @@index([invoiceId])
-  @@unique([paymentId, invoiceId])
-  @@map("payment_allocations")
-}
-
-model VendorCredit {
-  id String @id @default(uuid())
-
-  vendorId String
-  marketId String
-  sourcePaymentId String
-  amountRemaining Decimal @db.Decimal(15, 2)
-  currencyCode String @default("UGX") @db.VarChar(10)
-  status String @default("AVAILABLE") @db.VarChar(30)
-  notes String? @db.Text
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  sourcePayment InvoicePayment @relation(fields: [sourcePaymentId], references: [id], onDelete: Cascade)
-
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([status])
-  @@map("vendor_credits")
-}
-
 model VendorBillingStatus {
   vendorId String @id
 
-  billingAccessState String @default("ACTIVE") @db.VarChar(40)
-  restrictionReason String? @db.Text
-  restrictedAt DateTime?
-  unrestrictedAt DateTime?
-  consecutiveZeroPaymentMonths Int @default(0)
-  lastEvaluatedMonth String? @db.VarChar(7)
-  contactAdminEmail String? @db.VarChar(255)
-  contactAdminPhone String? @db.VarChar(20)
-  metadata Json?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  billingAccessState           String    @default("ACTIVE") @db.VarChar(40)
+  restrictionReason            String?   @db.Text
+  restrictedAt                 DateTime?
+  unrestrictedAt               DateTime?
+  consecutiveZeroPaymentMonths Int       @default(0)
+  lastEvaluatedMonth           String?   @db.VarChar(7)
+  contactAdminEmail            String?   @db.VarChar(255)
+  contactAdminPhone            String?   @db.VarChar(20)
+  metadata                     Json?
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime  @updatedAt
 
   vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
@@ -2808,7 +2775,6 @@ model MarketRegulation {
   updatedAt   DateTime @updatedAt
 
   authority MarketAuthority @relation(fields: [authorityId], references: [id])
-  market    Market          @relation("MarketRegulations", fields: [marketId], references: [id])
   createdBy User            @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
@@ -2847,8 +2813,6 @@ model BusinessLicense {
   updatedAt   DateTime @updatedAt
 
   authority MarketAuthority @relation(fields: [authorityId], references: [id])
-  market    Market          @relation("MarketBusinessLicenses", fields: [marketId], references: [id])
-  licensee  Stakeholder     @relation("StakeholderBusinessLicenses", fields: [licenseeId], references: [id])
   createdBy User            @relation(fields: [createdById], references: [id])
 
   @@index([marketId])
@@ -3161,11 +3125,9 @@ model StallAsset {
 
 model Delivery {
   id String @id @default(uuid())
-  deliveryCode String @unique @db.VarChar(50)
 
   // Delivery Details
   supplierId   String
-  marketId     String
   stallId      String
   deliveryDate DateTime
   expectedDate DateTime?
@@ -3190,9 +3152,8 @@ model Delivery {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
+  // Relations 
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
-  market     Market   @relation("MarketDeliveries", fields: [marketId], references: [id])
   verifiedBy User?    @relation("DeliveryVerifier", fields: [verifiedById], references: [id])
   createdBy  User     @relation("DeliveryCreator", fields: [createdById], references: [id])
 
@@ -3201,7 +3162,6 @@ model Delivery {
 
   // Indexes
   @@index([supplierId])
-  @@index([marketId])
   @@index([stallId])
   @@index([deliveryDate])
   @@index([status])

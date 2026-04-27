@@ -66,5 +66,39 @@ module.exports = {
         message: "Delivery updated successfully"
       })
     );
+  }),
+
+  recordGateEntry: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { gateId } = req.body;
+    const officerId = req.user.id;
+
+    const result = await deliveryService.recordGateEntry(id, gateId, officerId);
+
+    res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: result,
+        message: "Gate entry recorded for delivery"
+      })
+    );
+  }),
+
+  verifyStock: asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const verificationData = req.body; // { items: [{ productId, quantity }], notes }
+    const verifierId = req.user.id;
+
+    const result = await deliveryService.verifyAndReceiveStock(id, verificationData, verifierId);
+
+    res.status(200).json(
+      new ApiResponse({
+        statusCode: 200,
+        success: true,
+        data: result,
+        message: "Stock verified and inventory updated"
+      })
+    );
   })
 };

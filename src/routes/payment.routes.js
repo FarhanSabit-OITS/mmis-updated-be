@@ -23,8 +23,12 @@ router.get('/vendors/:vendorId/payments/history', paymentController.getVendorPay
 // Payment processing routes
 router.post('/payments/evidence', fileUploadMiddleware, paymentController.uploadPaymentEvidence);
 router.post('/payments/rent/record', paymentController.recordRentPayment);
-router.post('/payments/online/initialize', paymentController.initializeOnlinePayment);
-router.get('/payments/online/verify', paymentController.verifyOnlinePayment);
+// Online Payment Attempts (Standardized for Frontend)
+router.post('/vendors/:vendorId/payments/attempts', paymentController.initializeOnlinePayment);
+router.get('/vendors/:vendorId/payments/attempts/:id/status', paymentController.verifyOnlinePayment);
+router.get('/vendors/:vendorId/payments/attempts/:id', paymentController.getPaymentAttempt);
+router.get('/vendors/:vendorId/payments/attempts', paymentController.listVendorPaymentAttempts);
+
 router.post('/admin/invoices/:invoiceId/fiscalize', paymentController.fiscalizeInvoice);
 
 // Admin payment routes

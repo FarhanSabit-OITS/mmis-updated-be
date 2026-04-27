@@ -71,4 +71,10 @@ router.delete('/:productId', productController.deleteProduct);
  */
 router.post('/:vendorId/products/bulk-upload', fileUploadMiddleware, productController.bulkUpload);
 
+/**
+ * Adjust stock level (Manual)
+ * POST /api/products/:productId/adjust-stock
+ */
+router.post('/:productId/adjust-stock', productController.adjustStock);
+
 module.exports = router;

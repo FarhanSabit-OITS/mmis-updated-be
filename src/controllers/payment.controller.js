@@ -169,9 +169,10 @@ class PaymentController {
 
   async initializeOnlinePayment(req, res) {
     try {
-      const { invoiceId, amount, email } = req.body;
+      const { invoiceIds, amount, email, vendorId } = req.body;
       const result = await unifiedPaymentService.initializeOnlinePayment({
-        invoiceId,
+        invoiceIds,
+        vendorId,
         userId: req.user.userId,
         amount,
         email
@@ -184,13 +185,52 @@ class PaymentController {
 
   async verifyOnlinePayment(req, res) {
     try {
-      const { transaction_id, status, tx_ref } = req.query;
-      const result = await unifiedPaymentService.verifyAndFinalizePayment(transaction_id, status, tx_ref);
+      const { transaction_id, attempt_id } = req.query;
+      const result = await unifiedPaymentService.verifyAndFinalizePayment(attempt_id, req.user.userId);
       res.json(result);
     } catch (error) {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async getPaymentAttempt(req, res) {
+    try {
+      const { id } = req.params;
+      const attempt = await prisma.paymentAttempt.findUnique({
+        where: { id },
+        include: {
+          selectedInvoices: true,
+          invoicePayment: true
+        }
+      });
+      res.json({ success: true, data: attempt });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async listVendorPaymentAttempts(req, res) {
+    try {
+      const { vendorId } = req.params;
+      const { limit = 10, status } = req.query;
+      const attempts = await prisma.paymentAttempt.findMany({
+        where: { 
+          vendorId,
+          ...(status ? { status } : {})
+        },
+        orderBy: { createdAt: 'desc' },
+        take: parseInt(limit, 10),
+        include: {
+          selectedInvoices: true,
+          invoicePayment: true
+        }
+      });
+      res.json({ success: true, data: attempts });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
 
   async fiscalizeInvoice(req, res) {
     try {

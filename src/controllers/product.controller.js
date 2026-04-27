@@ -667,3 +667,44 @@ exports.bulkUpload = async (req, res) => {
     });
   }
 };
+
+/**
+ * POST /api/products/:productId/adjust-stock
+ * Adjust stock level (Manual/Scanning)
+ */
+exports.adjustStock = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { quantity, type, notes } = req.body;
+    const userId = req.user.id;
+
+    if (quantity === undefined || !type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Quantity and adjustment type are required'
+      });
+    }
+
+    const updatedProduct = await productService.adjustStock(
+      productId,
+      quantity,
+      type,
+      null, // No referenceId for manual adjustment
+      null, // No transaction
+      userId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: 'Stock adjusted successfully',
+      data: updatedProduct
+    });
+  } catch (err) {
+    console.error('Error adjusting stock:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: err.message
+    });
+  }
+};

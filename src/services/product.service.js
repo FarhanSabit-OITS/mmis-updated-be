@@ -366,6 +366,53 @@ const getVendorProducts = async (vendorId, filters = {}) => {
   };
 };
 
+/**
+ * Adjust product stock and record inventory movement
+ * @param {string} productId - Product ID
+ * @param {number} quantity - Quantity to add (positive) or subtract (negative)
+ * @param {string} type - Movement type (e.g., 'SALE', 'DELIVERY_RECEIPT', 'ADJUSTMENT')
+ * @param {string} referenceId - Related entity ID
+ * @param {object} tx - Optional Prisma transaction client
+ * @param {string} actorUserId - User ID performing the adjustment
+ * @returns {object} - Updated product
+ */
+const adjustStock = async (productId, quantity, type, referenceId = null, tx = null, actorUserId = null) => {
+  const client = tx || prisma;
+  
+  const product = await client.product.findUnique({
+    where: { id: productId }
+  });
+
+  if (!product) throw new Error('Product not found');
+
+  const previousQuantity = parseFloat(product.currentStock);
+  const newQuantity = previousQuantity + parseFloat(quantity);
+
+  const updatedProduct = await client.product.update({
+    where: { id: productId },
+    data: { currentStock: newQuantity }
+  });
+
+  // Find a fallback user if not provided (e.g. the one who created the product)
+  const recordedById = actorUserId || product.createdById;
+
+  await client.inventoryRecord.create({
+    data: {
+      productId,
+      recordType: type,
+      quantity: parseFloat(quantity),
+      previousQuantity,
+      newQuantity,
+      referenceId,
+      referenceType: type.includes('_') ? type.split('_')[0] : type,
+      recordedById,
+      notes: `Automated stock adjustment for ${type}`
+    }
+  });
+
+  return updatedProduct;
+};
+
 module.exports = {
   createProduct,
   getProductById,
@@ -373,5 +420,6 @@ module.exports = {
   softDeleteProduct,
   isSkuUnique,
   isBarcodeUnique,
-  getVendorProducts
+  getVendorProducts,
+  adjustStock
 };
