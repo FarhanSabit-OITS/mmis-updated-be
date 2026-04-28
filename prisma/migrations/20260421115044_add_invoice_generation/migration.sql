@@ -24,4 +24,4 @@ DROP COLUMN IF EXISTS "targetRole",
 ALTER COLUMN "userId" SET NOT NULL;
 
 -- AlterTable
-ALTER TABLE "user_profiles" DROP COLUMN "mmisId";
+ALTER TABLE "user_profiles" DROP COLUMN IF EXISTS "mmisId";
