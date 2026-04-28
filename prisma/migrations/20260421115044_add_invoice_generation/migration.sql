@@ -10,16 +10,10 @@
 
 */
 -- DropForeignKey
-ALTER TABLE "invitations" DROP CONSTRAINT "invitations_roleId_fkey";
-
--- DropForeignKey
-ALTER TABLE "notifications" DROP CONSTRAINT "notifications_marketId_fkey";
-
--- DropIndex
-DROP INDEX "notifications_marketId_idx";
-
--- DropIndex
-DROP INDEX "user_profiles_mmisId_key";
+ALTER TABLE "invitations" DROP CONSTRAINT IF EXISTS "invitations_roleId_fkey";
+ALTER TABLE "notifications" DROP CONSTRAINT IF EXISTS "notifications_marketId_fkey";
+DROP INDEX IF EXISTS "notifications_marketId_idx";
+DROP INDEX IF EXISTS "user_profiles_mmisId_key";
 
 -- AlterTable
 ALTER TABLE "notifications" DROP COLUMN "dismissedAt",
