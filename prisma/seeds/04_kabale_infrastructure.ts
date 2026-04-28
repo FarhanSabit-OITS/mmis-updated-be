@@ -133,6 +133,62 @@ export async function seedKabaleInfrastructure(
 
   console.log("✅ Kabale Infrastructure created (1 level, 5 sections)");
 
+  // ── Staff Seeding ─────────────────────────────────────────────────────────
+  console.log("👥 Seeding Kabale Staff...");
+  const staffMembers = [
+    {
+      email: "kabale.gate@marketmaster.ug",
+      firstName: "James",
+      lastName: "Mugisha",
+      role: "GATE_COUNTER",
+      employeeId: "EMP-KBL-GATE-001"
+    },
+    {
+      email: "kabale.stock@marketmaster.ug",
+      firstName: "Sarah",
+      lastName: "Tumwebaze",
+      role: "STOCK_COUNTER",
+      employeeId: "EMP-KBL-STOCK-001"
+    }
+  ];
+
+  for (const staff of staffMembers) {
+    await prisma.user.upsert({
+      where: { email: staff.email },
+      update: {},
+      create: {
+        email: staff.email,
+        passwordHash: DEV_PASSWORD,
+        phone: "+2567080000" + (staff.role === "GATE_COUNTER" ? "10" : "11"),
+        emailVerified: true,
+        status: UserStatus.ACTIVE,
+        mfaType: MfaType.NONE,
+        profile: {
+          create: {
+            firstName: staff.firstName,
+            lastName: staff.lastName,
+            primaryPhone: "+2567080000" + (staff.role === "GATE_COUNTER" ? "10" : "11"),
+            primaryEmail: staff.email,
+          },
+        },
+        admin: {
+          create: {
+            adminLevel: AdminLevel.PSEUDO_MARKET_ADMIN,
+            employeeId: staff.employeeId,
+            assignedByAdminId: superAdminRecord.id,
+            pseudoMarketAdmin: {
+              create: {
+                marketId: market.id,
+                role: staff.role as any,
+              }
+            }
+          },
+        },
+      },
+    });
+    console.log(`  ✅ Staff: ${staff.firstName} (${staff.role})`);
+  }
+
   return {
     market,
     marketMasterRecord,
