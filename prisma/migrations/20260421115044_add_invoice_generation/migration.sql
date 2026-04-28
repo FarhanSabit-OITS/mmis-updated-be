@@ -16,10 +16,11 @@ DROP INDEX IF EXISTS "notifications_marketId_idx";
 DROP INDEX IF EXISTS "user_profiles_mmisId_key";
 
 -- AlterTable
-ALTER TABLE "notifications" DROP COLUMN "dismissedAt",
-DROP COLUMN "marketId",
-DROP COLUMN "requiresDismissal",
-DROP COLUMN "targetRole",
+ALTER TABLE "notifications"
+DROP COLUMN IF EXISTS "dismissedAt",
+DROP COLUMN IF EXISTS "marketId",
+DROP COLUMN IF EXISTS "requiresDismissal",
+DROP COLUMN IF EXISTS "targetRole",
 ALTER COLUMN "userId" SET NOT NULL;
 
 -- AlterTable
