@@ -643,10 +643,6 @@ model Market {
   businessLicenses  BusinessLicense[]  @relation("MarketBusinessLicenses")
   deliveries        Delivery[]         @relation("MarketDeliveries")
 
-  webhookEvents     PaymentWebhookEvent[]
-  paymentAttempts   PaymentAttempt[]
-  refundRecords     RefundRecord[]
-
   @@unique([cityId, name])
   @@index([cityId])
   @@map("markets")
@@ -897,15 +893,11 @@ model Vendor {
   paymentClaims        PaymentClaim[]
   recordedPayments     InvoicePayment[]
   paymentAttempts      PaymentAttempt[]
-  paymentWebhookEvents PaymentWebhookEvent[]
+  webhookEvents        PaymentWebhookEvent[]
   vendorCredits        VendorCredit[]
   refundRecords        RefundRecord[]
   billingStatus        VendorBillingStatus?
-
-  paymentAttempts PaymentAttempt[]
-  webhookEvents   PaymentWebhookEvent[]
-  refundRecords   RefundRecord[]
-  invitations     Invitation[]
+  invitations          Invitation[]
 
   @@index([businessName])
   @@map("vendors")
@@ -2728,141 +2720,6 @@ model VendorCredit {
   @@index([marketId])
   @@index([status])
   @@map("vendor_credits")
-}
-
-model PaymentAttempt {
-  id String @id @default(uuid())
-
-  attemptReference          String    @unique @db.VarChar(100)
-  vendorId                  String
-  marketId                  String
-  currencyCode              String    @default("UGX") @db.VarChar(10)
-  selectionMode             String    @db.VarChar(40)
-  requestedAmount           Decimal   @db.Decimal(15, 2)
-  confirmedAmount           Decimal?  @db.Decimal(15, 2)
-  status                    String    @default("INITIATED") @db.VarChar(40)
-  provider                  String    @default("FLUTTERWAVE") @db.VarChar(50)
-  providerTxRef             String?   @unique @db.VarChar(120)
-  providerTransactionId     String?   @unique @db.VarChar(120)
-  checkoutUrl               String?   @db.VarChar(500)
-  providerPayload           Json?
-  invoiceSelectionSnapshot  Json?
-  allocationPreviewSnapshot Json?
-  failureReason             String?   @db.Text
-  mismatchReason            String?   @db.Text
-  redirectedAt              DateTime?
-  expiresAt                 DateTime?
-  verifiedAt                DateTime?
-  createdByUserId           String
-  supersededByAttemptId     String?
-  metadata                  Json?
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
-
-  vendor              Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market              Market           @relation(fields: [marketId], references: [id], onDelete: Cascade)
-  supersededByAttempt PaymentAttempt?  @relation("PaymentAttemptRetryChain", fields: [supersededByAttemptId], references: [id])
-  retryAttempts       PaymentAttempt[] @relation("PaymentAttemptRetryChain")
-
-  selectedInvoices PaymentAttemptInvoice[]
-  webhookEvents    PaymentWebhookEvent[]
-  invoicePayment   InvoicePayment?
-
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([status])
-  @@index([createdAt])
-  @@map("payment_attempts")
-}
-
-model PaymentAttemptInvoice {
-  id String @id @default(uuid())
-
-  paymentAttemptId           String
-  invoiceId                  String
-  invoiceNumberSnapshot      String?  @db.VarChar(100)
-  invoiceOutstandingSnapshot Decimal  @db.Decimal(15, 2)
-  sortOrder                  Int      @default(0)
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-
-  paymentAttempt PaymentAttempt @relation(fields: [paymentAttemptId], references: [id], onDelete: Cascade)
-  invoice        RentInvoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-
-  @@unique([paymentAttemptId, invoiceId])
-  @@index([paymentAttemptId])
-  @@index([invoiceId])
-  @@map("payment_attempt_invoices")
-}
-
-model PaymentWebhookEvent {
-  id String @id @default(uuid())
-
-  provider              String    @default("FLUTTERWAVE") @db.VarChar(50)
-  eventReference        String?   @unique @db.VarChar(150)
-  eventType             String    @db.VarChar(80)
-  paymentAttemptId      String?
-  invoicePaymentId      String?
-  vendorId              String?
-  marketId              String?
-  providerTransactionId String?   @db.VarChar(120)
-  providerTxRef         String?   @db.VarChar(120)
-  status                String    @default("RECEIVED") @db.VarChar(40)
-  signatureValid        Boolean?
-  payload               Json?
-  headers               Json?
-  processingNotes       String?   @db.Text
-  receivedAt            DateTime  @default(now())
-  processedAt           DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  paymentAttempt PaymentAttempt? @relation(fields: [paymentAttemptId], references: [id], onDelete: SetNull)
-  invoicePayment InvoicePayment? @relation(fields: [invoicePaymentId], references: [id], onDelete: SetNull)
-  vendor         Vendor?         @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  market         Market?         @relation(fields: [marketId], references: [id], onDelete: SetNull)
-
-  @@index([paymentAttemptId])
-  @@index([invoicePaymentId])
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([status])
-  @@index([receivedAt])
-  @@map("payment_webhook_events")
-}
-
-model RefundRecord {
-  id String @id @default(uuid())
-
-  invoicePaymentId  String
-  vendorId          String
-  marketId          String
-  amount            Decimal   @db.Decimal(15, 2)
-  currencyCode      String    @default("UGX") @db.VarChar(10)
-  status            String    @default("REQUESTED") @db.VarChar(30)
-  reason            String    @db.Text
-  internalReference String?   @unique @db.VarChar(100)
-  requestedByUserId String
-  approvedByUserId  String?
-  processedByUserId String?
-  requestedAt       DateTime  @default(now())
-  approvedAt        DateTime?
-  processedAt       DateTime?
-  notes             String?   @db.Text
-  metadata          Json?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  invoicePayment InvoicePayment @relation(fields: [invoicePaymentId], references: [id], onDelete: Cascade)
-  vendor         Vendor         @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  market         Market         @relation(fields: [marketId], references: [id], onDelete: Cascade)
-
-  @@index([invoicePaymentId])
-  @@index([vendorId])
-  @@index([marketId])
-  @@index([status])
-  @@index([requestedAt])
-  @@map("refund_records")
 }
 
 model VendorBillingStatus {
