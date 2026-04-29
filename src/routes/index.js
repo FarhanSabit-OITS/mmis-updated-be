@@ -20,9 +20,11 @@ const kycRoutes = require("./kyc.routes")
 const cityRoutes = require('./cities.routes')
 const gateTerminalRoutes = require("./gateTerminal.routes")
 const financialsRoutes = require("./financials.routes")
-
+const marketLevelRoutes = require('./marketLevel.routes')
+const marketSectionRoutes = require('./marketSection.routes')
 
 const configureRouter = (app)=>{
+    app.use('/api/markets', marketRoutes)
     app.use('/api/auth', authRoutes);
     app.use('/api/dashboard', dashboardRoutes);
     app.use('/api/vendors', vendorRoutes); 
@@ -33,7 +35,6 @@ const configureRouter = (app)=>{
     app.use('/api/suppliers', supplierRoutes);
     app.use('/api/market/staff', staffRoutes);
     app.use('/api/market/tokens', tokenRoutes);
-    app.use('/api/markets', marketRoutes)
     app.use('/api/shops', shopRoutes)
     app.use('/api/stalls', stallRoutes)
     app.use('/api/marketGates', gateRoutes)
@@ -46,6 +47,8 @@ const configureRouter = (app)=>{
     app.use('/api/cities', cityRoutes)
     app.use('/api/gate', gateTerminalRoutes)
     app.use('/api/financials', financialsRoutes)
+    app.use('/api/marketLevels', marketLevelRoutes)
+    app.use('/api/marketSections', marketSectionRoutes)
     
     // Generic /api mount for payment routes MUST come last to avoid intercepting specific routes above
     app.use('/api', paymentRoutes);

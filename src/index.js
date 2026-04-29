@@ -48,4 +48,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`MarketMasterApi running on port ${PORT}`);
   console.log(`CORS enabled for: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log('MMIS Flutterwave debug build active: conflict-recovery markers enabled');
 });

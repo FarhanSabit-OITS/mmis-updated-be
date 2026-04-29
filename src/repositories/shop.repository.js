@@ -94,31 +94,31 @@ module.exports = {
 
     return shop;
   },
+  createShop: async (marketId, createdById, marketMasterId, input) => {
+    const uniqueCode = `SHOP-${marketId.slice(0, 8).toUpperCase()}-${input.shopNumber}`;
 
-  createShop: async (shopData) => {
-    return await prisma.shop.create({
-      data: shopData,
+    return prisma.shop.create({
+      data: {
+        ...input,
+        marketId,
+        uniqueCode,
+        status: 'ACTIVE',
+        occupationStatus: 'OCCUPIED',
+        marketMasterId,
+        createdById,
+      },
       include: {
-        market: {
-          select: { id: true, name: true, address: true, status: true }
-        },
-        member: {
-          include: {
-            stakeholder: {
-              include: {
-                user: {
-                  select: { id: true, email: true, phone: true }
-                }
-              }
-            }
-          }
-        },
+        market: { select: { id: true, name: true } },
+        member: { select: { id: true, membershipNumber: true, businessName: true } },
+        level: { select: { id: true, name: true } },
+        section: { select: { id: true, name: true } },
+        createdBy: { select: { id: true, email: true } },
       },
     });
   },
 
   deleteShop: async (shopId) => {
-    // We soft-delete or hard delete. For shops, let's just mark status as INACTIVE
+    // We soft-delete for audit trail. Mark status as INACTIVE
     return await prisma.shop.update({
       where: { id: shopId },
       data: { status: "INACTIVE" }
