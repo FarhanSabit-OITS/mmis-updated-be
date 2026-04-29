@@ -86,4 +86,4 @@ ALTER TABLE "business_licenses" ADD CONSTRAINT "business_licenses_licenseeId_fke
 ALTER TABLE "deliveries" ADD CONSTRAINT "deliveries_marketId_fkey" FOREIGN KEY ("marketId") REFERENCES "markets"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- RenameIndex
-ALTER INDEX "rent_invoices_rentContractId_billingYear_billingMonth_invoiceVe" RENAME TO "rent_invoices_rentContractId_billingYear_billingMonth_invoi_key";
+-- ALTER INDEX "rent_invoices_rentContractId_billingYear_billingMonth_invoiceVe" RENAME TO "rent_invoices_rentContractId_billingYear_billingMonth_invoi_key";
